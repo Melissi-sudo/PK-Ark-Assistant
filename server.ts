@@ -1,13 +1,51 @@
 import express, { Request, Response, NextFunction } from 'express';
-import path from 'path';
-import fs from 'fs';
+import * as path from 'path';
+import * as fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 
 const app = express();
 const PORT = 3000;
 
+// Trust reverse proxy (Cloud Run / AI Studio preview environment)
+app.set('trust proxy', 1);
+
 // ==========================================
-// 1. ADVANCED DDOS PROTECTION & RATE LIMITING
+// 1. HARDENED HTTP SECURITY HEADERS
+// ==========================================
+const securityHeadersMiddleware = (_req: Request, res: Response, next: NextFunction) => {
+  // Prevent MIME type sniffing
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  // Cross-site scripting filter
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  // Strict Referrer Policy
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  // Restrict unwanted browser features
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+
+  // Content Security Policy (allows iframe in AI Studio / mobile previews, Firebase, Google Fonts, and images)
+  res.setHeader(
+    'Content-Security-Policy',
+    [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://*.firebaseio.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com data:",
+      "img-src 'self' data: blob: https: http:",
+      "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebasestorage.app wss://*.firebaseio.com",
+      "frame-src 'self' https://*.firebaseapp.com https://accounts.google.com",
+      "frame-ancestors *",
+      "object-src 'none'",
+      "base-uri 'self'"
+    ].join('; ')
+  );
+
+  next();
+};
+
+app.use(securityHeadersMiddleware);
+
+// ==========================================
+// 2. ADVANCED DDOS PROTECTION & RATE LIMITING
 // ==========================================
 
 interface ClientTrafficRecord {
@@ -23,7 +61,7 @@ const clientTrafficMap = new Map<string, ClientTrafficRecord>();
 // Clean up stale IP records every 5 minutes to prevent memory leaks
 setInterval(() => {
   const now = Date.now();
-  for (const [ip, record] of clientTrafficMap.entries()) {
+  for (const [ip, record] of Array.from(clientTrafficMap.entries())) {
     if (now - record.lastRequestTime > 10 * 60 * 1000) {
       clientTrafficMap.delete(ip);
     }
@@ -101,38 +139,7 @@ const ddosProtectionMiddleware = (req: Request, res: Response, next: NextFunctio
   next();
 };
 
-// ==========================================
-// 2. HARDENED HTTP SECURITY HEADERS (CSP & COEP)
-// ==========================================
-const securityHeadersMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  // Prevent MIME type sniffing
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  // Cross-site scripting filter
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  // Strict Referrer Policy
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  // Restrict unwanted browser features
-  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
-  
-  // Content Security Policy (allows iframe in AI Studio, Firebase, Google Fonts, and images)
-  res.setHeader(
-    'Content-Security-Policy',
-    [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://*.firebaseio.com",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' https://fonts.gstatic.com data:",
-      "img-src 'self' data: blob: https: http:",
-      "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebasestorage.app wss://*.firebaseio.com",
-      "frame-src 'self' https://*.firebaseapp.com https://accounts.google.com",
-      "frame-ancestors 'self' https://ai.studio https://*.google.com https://*.google.dev",
-      "object-src 'none'",
-      "base-uri 'self'"
-    ].join('; ')
-  );
-
-  next();
-};
+app.use(ddosProtectionMiddleware);
 
 // Explicit static asset handlers - serve images directly with optimal caching
 app.use('/images', express.static(path.join(process.cwd(), 'public', 'images'), {
@@ -145,7 +152,7 @@ app.use(express.static(path.join(process.cwd(), 'public'), {
 }));
 
 // Fallback for any requested /images/* that might not exist -> serve placeholder_dino.svg
-app.use('/images', (req: Request, res: Response, next: NextFunction) => {
+app.use('/images', (_req: Request, res: Response, next: NextFunction) => {
   const placeholderPath = path.join(process.cwd(), 'public', 'images', 'placeholder_dino.svg');
   if (fs.existsSync(placeholderPath)) {
     res.setHeader('Content-Type', 'image/svg+xml');
@@ -153,10 +160,6 @@ app.use('/images', (req: Request, res: Response, next: NextFunction) => {
   }
   next();
 });
-
-// Attach early middlewares
-app.use(securityHeadersMiddleware);
-app.use(ddosProtectionMiddleware);
 
 // Strict payload limits to prevent memory exhaustion on API
 app.use('/api', express.json({ limit: '10kb' }));
@@ -179,7 +182,7 @@ try {
 }
 
 // Health check endpoint
-app.get('/api/health', (req: Request, res: Response) => {
+app.get('/api/health', (_req: Request, res: Response) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
@@ -190,13 +193,13 @@ app.get('/api/health', (req: Request, res: Response) => {
 });
 
 // Security status report
-app.get('/api/security-status', (req: Request, res: Response) => {
+app.get('/api/security-status', (_req: Request, res: Response) => {
   res.json({
     ddosShield: {
       status: 'active',
       slidingWindow: '60s',
       maxGlobalRate: '180 req/min',
-      maxApiRate: '40 req/min',
+      maxApiRate: '60 req/min',
       circuitBreaker: 'enabled',
       trackedIps: clientTrafficMap.size
     },
@@ -218,11 +221,7 @@ app.get('/api/security-status', (req: Request, res: Response) => {
 });
 
 // Secure endpoint providing Firebase client bootstrap with origin validation and rate limiting
-app.get('/api/firebase-config', (req: Request, res: Response) => {
-  // Check Origin / Referer to prevent automated 3rd party scrapers from stealing the project config
-  const origin = req.headers['origin'] || req.headers['referer'] || '';
-  const host = req.headers['host'] || '';
-
+app.get('/api/firebase-config', (_req: Request, res: Response) => {
   // Return server-stored config
   if (!serverFirebaseConfig) {
     return res.status(503).json({ error: 'CONFIG_NOT_READY' });
@@ -259,7 +258,7 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req: Request, res: Response) => {
+    app.get('*', (_req: Request, res: Response) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
