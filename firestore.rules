@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // User private survivor profiles, saved tames, and timers
+    // Strictly accessible ONLY by the authenticated account owner matching the user ID
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      match /timers/{timerId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      match /saved_plans/{planId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // Community dinosaur tips - Strictly require authentication to read and write
+    // Prevents public crawling, scraping, and unauthenticated reads
+    match /dino_tips/{tipId} {
+      // Must be authenticated survivor to read tips
+      allow read: if request.auth != null;
+      // Must be authenticated and authorUid must match current user's UID
+      allow create: if request.auth != null && request.resource.data.authorUid == request.auth.uid;
+      // Only author can edit content, or authenticated users can upvote
+      allow update: if request.auth != null && (
+        resource.data.authorUid == request.auth.uid ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['upvotes', 'upvotedBy'])
+      );
+      // Only the author can delete their own tip
+      allow delete: if request.auth != null && resource.data.authorUid == request.auth.uid;
+    }
+  }
+}
+
+

@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-tek: 'Chakra Petch', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-hud: 'Rajdhani', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-sans: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #060a11;
+    color: #e2e8f0;
+  }
+}
+
+.font-tek {
+  font-family: var(--font-tek);
+}
+
+.font-hud {
+  font-family: var(--font-hud);
+}
+
+/* Custom ARK Holographic & HUD Styling */
+.ark-panel {
+  background: linear-gradient(135deg, rgba(13, 20, 32, 0.92) 0%, rgba(8, 14, 23, 0.96) 100%);
+  border: 1px solid rgba(0, 229, 255, 0.22);
+  box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(0, 229, 255, 0.15);
+}
+
+.ark-panel-amber {
+  background: linear-gradient(135deg, rgba(28, 18, 10, 0.92) 0%, rgba(16, 11, 7, 0.96) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(245, 158, 11, 0.2);
+}
+
+.ark-panel-glow {
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.18), inset 0 0 15px rgba(0, 229, 255, 0.05);
+}
+
+.ark-border-cut {
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+}
+
+.ark-border-cut-sm {
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+}
+
+/* Scanline and Grid Background */
+.bg-ark-grid {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Tactical custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #070c14;
+}
+::-webkit-scrollbar-thumb {
+  background: #162438;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 229, 255, 0.2);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00e5ff;
+}
+
+/* Mobile Safe Area & Touch Responsiveness */
+.pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+}
+
+.pt-safe {
+  padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Touch manipulation optimization */
+button, select, input, a {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Accessibility: High-Visibility Focus Rings for Keyboard Navigation */
+:focus-visible {
+  outline: 2px solid #00e5ff !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.5) !important;
+}
+
+/* Accessible Skip-to-content link */
+.skip-to-content {
+  position: absolute;
+  top: -120px;
+  left: 1rem;
+  z-index: 99999;
+  padding: 0.625rem 1.25rem;
+  background: #070e1a;
+  border: 2px solid #00e5ff;
+  color: #00e5ff;
+  font-family: var(--font-tek);
+  font-weight: 700;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 20px rgba(0, 229, 255, 0.4);
+  transition: top 0.15s ease-in-out;
+}
+.skip-to-content:focus {
+  top: 1rem;
+}
+
+

@@ -1,0 +1,54 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "ARK Survivor user profile, gamertag, and tribe credentials",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "tribeName": { "type": "string" },
+        "serverName": { "type": "string" },
+        "platform": { "type": "string" },
+        "favoriteDinos": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "displayName"]
+    },
+    "DinoTip": {
+      "title": "DinoTip",
+      "description": "Survivor community comments and taming advice for specific creatures",
+      "type": "object",
+      "properties": {
+        "dinoId": { "type": "string" },
+        "dinoName": { "type": "string" },
+        "authorName": { "type": "string" },
+        "authorUid": { "type": "string" },
+        "content": { "type": "string" },
+        "category": { "type": "string", "enum": ["Taming Trap", "Knockout & Torpor", "Narcotics & Food", "PvP Strategy", "General Tip"] },
+        "upvotes": { "type": "number" },
+        "upvotedBy": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["dinoId", "authorName", "content", "category"]
+    }
+  },
+  "firestore": {
+    "users": {
+      "schema": "UserProfile",
+      "description": "User account and survivor settings"
+    },
+    "dino_tips": {
+      "schema": "DinoTip",
+      "description": "Public community taming and knockout advice for individual creatures"
+    }
+  }
+}
