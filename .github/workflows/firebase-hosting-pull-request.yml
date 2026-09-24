@@ -30,8 +30,10 @@ jobs:
       - name: Build
         run: npm run build
 
-      - uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GEN_LANG_CLIENT_0117247761 }}
-          projectId: gen-lang-client-0117247761
+	- uses: FirebaseExtended/action-hosting-deploy@v0
+ 	 with:
+   	 repoToken: ${{ secrets.GITHUB_TOKEN }}
+   	 firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GEN_LANG_CLIENT_0117247761 }}
+   	 channelId: live
+   	 projectId: gen-lang-client-0117247761
+  	  target: pkguides

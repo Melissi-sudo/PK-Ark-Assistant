@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "target": "pkguides",
     "public": "dist",
     "ignore": [
       "firebase.json",

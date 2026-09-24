@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "gen-lang-client-0117247761"
-  }
+  },
+  "targets": {
+    "gen-lang-client-0117247761": {
+      "hosting": {
+        "pkguides": [
+          "pkguides"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
