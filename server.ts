@@ -44,6 +44,14 @@ const securityHeadersMiddleware = (_req: Request, res: Response, next: NextFunct
 
 app.use(securityHeadersMiddleware);
 
+// Ensure map images are never served stale so user replacements take immediate effect
+app.use('/images/maps', (_req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  next();
+});
+
 // ==========================================
 // 2. ADVANCED DDOS PROTECTION & RATE LIMITING
 // ==========================================

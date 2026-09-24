@@ -122,4 +122,33 @@ button, select, input, a {
   top: 1rem;
 }
 
+/* ARK Tek Image Loader Keyframes & Utility Animations */
+@keyframes tekScanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(800%); }
+}
+
+@keyframes tekShimmer {
+  0% { transform: translateX(-150%); }
+  100% { transform: translateX(250%); }
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-tek-scanline {
+  animation: tekScanline 2.5s linear infinite;
+}
+
+.animate-tek-shimmer {
+  animation: tekShimmer 1.8s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spinSlow 8s linear infinite;
+}
+
+
 

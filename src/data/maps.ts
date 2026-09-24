@@ -100,7 +100,7 @@ export const ARK_MAPS_DATA: ArkMapInfo[] = [
     tagline: 'The original proving ground with towering calderas, frozen icebergs, and deep sea trenches.',
     bgGradient: 'from-emerald-950/40 via-cyan-950/20 to-slate-950',
     accentColor: '#06b6d4',
-    imageUrl: '/images/maps/the_island.jpg',
+    imageUrl: '/images/maps/the_island.jpg?v=20260924_2',
     credit: {
       author: 'Exhumed',
       url: 'https://steamcommunity.com/id/3xhumed',
@@ -179,7 +179,7 @@ export const ARK_MAPS_DATA: ArkMapInfo[] = [
     tagline: 'Ruthless sun, lethal superheats, vast oil veins, and the notorious World Scar Wyvern Trench.',
     bgGradient: 'from-amber-950/40 via-orange-950/20 to-slate-950',
     accentColor: '#f59e0b',
-    imageUrl: '/images/maps/scorched_earth.jpg',
+    imageUrl: '/images/maps/scorched_earth.jpg?v=20260924_2',
     credit: {
       author: 'Exhumed',
       url: 'https://steamcommunity.com/id/3xhumed',
@@ -254,7 +254,7 @@ export const ARK_MAPS_DATA: ArkMapInfo[] = [
     tagline: 'Colossal floating continents, volcanic islands, gigantic waterfalls, and deep oceanic trenches.',
     bgGradient: 'from-blue-950/40 via-cyan-950/20 to-slate-950',
     accentColor: '#38bdf8',
-    imageUrl: '/images/maps/the_center.jpg',
+    imageUrl: '/images/maps/the_center.jpg?v=20260924_2',
     credit: {
       author: 'Exhumed',
       url: 'https://steamcommunity.com/id/3xhumed',
@@ -326,7 +326,7 @@ export const ARK_MAPS_DATA: ArkMapInfo[] = [
     tagline: 'Broken ARK underground biosphere with glowing mushrooms, Charge Nodes, and toxic Element falls.',
     bgGradient: 'from-violet-950/40 via-purple-950/20 to-slate-950',
     accentColor: '#a855f7',
-    imageUrl: '/images/maps/aberration.jpg',
+    imageUrl: '/images/maps/aberration.jpg?v=20260924_2',
     credit: {
       author: 'Exhumed',
       url: 'https://steamcommunity.com/id/3xhumed',
@@ -391,7 +391,7 @@ export const ARK_MAPS_DATA: ArkMapInfo[] = [
     tagline: 'Ruined Earth overrun by Corrupted dinos, orbital supply drops, Element Veins, and the Sanctuary.',
     bgGradient: 'from-red-950/40 via-amber-950/20 to-slate-950',
     accentColor: '#ef4444',
-    imageUrl: '/images/maps/extinction.jpg',
+    imageUrl: '/images/maps/extinction.jpg?v=20260924_2',
     credit: {
       author: 'Exhumed',
       url: 'https://steamcommunity.com/id/3xhumed',

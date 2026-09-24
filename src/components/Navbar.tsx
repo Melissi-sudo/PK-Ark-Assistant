@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Crosshair, 
   Egg, 
@@ -30,8 +31,6 @@ import { useAuth } from '../context/AuthContext';
 export type NavTab = 'taming' | 'soakers' | 'pyromane' | 'breeding' | 'maps' | 'resources' | 'stats' | 'timers' | 'store';
 
 interface NavbarProps {
-  activeTab: NavTab;
-  setActiveTab: (tab: NavTab) => void;
   currentPreset: ServerRatePreset;
   setCurrentPreset: (preset: ServerRatePreset) => void;
   activeTimersCount: number;
@@ -46,6 +45,7 @@ interface NavbarProps {
 
 interface TabItem {
   id: NavTab;
+  path: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: string;
@@ -53,21 +53,19 @@ interface TabItem {
   desc?: string;
 }
 
-const TABS: TabItem[] = [
-  { id: 'taming', label: 'Taming', icon: Crosshair, desc: 'Auto food quotas, torpor & starve alerts' },
-  { id: 'soakers', label: 'Soakers', icon: ShieldAlert, badge: 'PVP META', accent: 'cyan', desc: 'Stego & Trike turret hitbox rules' },
-  { id: 'pyromane', label: 'Pyromane Guide', icon: Flame, badge: '30s Ride', accent: 'amber', desc: 'Water luring & 30s simulator' },
-  { id: 'maps', label: 'Resource Maps', icon: Map, badge: '5 MAPS', accent: 'cyan', desc: 'Interactive metal, silica & oil nodes' },
-  { id: 'breeding', label: 'Breeding', icon: Egg, desc: 'Incubation, gestation & imprint timers' },
-  { id: 'resources', label: 'Tribe Ammo', icon: ShieldCheck, desc: 'Heavy turret bullets & gunpowder quota' },
-  { id: 'stats', label: 'Dino Stats', icon: Search, desc: 'Extract wild levels & mutation points' },
-  { id: 'timers', label: 'Alarms', icon: Timer, desc: 'Starve & hatch TEK alarms' },
-  { id: 'store', label: 'PK Store', icon: ShoppingBag, badge: 'DISCORD', accent: 'amber', desc: 'Official Small Tribes lines & vault gear' },
+export const TABS: TabItem[] = [
+  { id: 'taming', path: '/taming', label: 'Taming', icon: Crosshair, desc: 'Auto food quotas, torpor & starve alerts' },
+  { id: 'soakers', path: '/soakers', label: 'Soakers', icon: ShieldAlert, badge: 'PVP META', accent: 'cyan', desc: 'Stego & Trike turret hitbox rules' },
+  { id: 'pyromane', path: '/pyromane', label: 'Pyromane Guide', icon: Flame, badge: '30s Ride', accent: 'amber', desc: 'Water luring & 30s simulator' },
+  { id: 'maps', path: '/maps', label: 'Resource Maps', icon: Map, badge: '5 MAPS', accent: 'cyan', desc: 'Interactive metal, silica & oil nodes' },
+  { id: 'breeding', path: '/breeding', label: 'Breeding', icon: Egg, desc: 'Incubation, gestation & imprint timers' },
+  { id: 'resources', path: '/resources', label: 'Tribe Ammo', icon: ShieldCheck, desc: 'Heavy turret bullets & gunpowder quota' },
+  { id: 'stats', path: '/stats', label: 'Dino Stats', icon: Search, desc: 'Extract wild levels & mutation points' },
+  { id: 'timers', path: '/timers', label: 'Alarms', icon: Timer, desc: 'Starve & hatch TEK alarms' },
+  { id: 'store', path: '/store', label: 'PK Store', icon: ShoppingBag, badge: 'DISCORD', accent: 'amber', desc: 'Official Small Tribes lines & vault gear' },
 ];
 
 export const Navbar: React.FC<NavbarProps> = ({
-  activeTab,
-  setActiveTab,
   currentPreset,
   setCurrentPreset,
   activeTimersCount,
@@ -81,19 +79,36 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const { currentUser, profile, accountName } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Determine active tab based on current pathname
+  const currentPath = location.pathname;
+  const activeTab: NavTab = (() => {
+    if (currentPath === '/' || currentPath.startsWith('/taming')) return 'taming';
+    if (currentPath.startsWith('/soakers')) return 'soakers';
+    if (currentPath.startsWith('/pyromane')) return 'pyromane';
+    if (currentPath.startsWith('/maps')) return 'maps';
+    if (currentPath.startsWith('/breeding')) return 'breeding';
+    if (currentPath.startsWith('/resources') || currentPath.startsWith('/ammo')) return 'resources';
+    if (currentPath.startsWith('/stats')) return 'stats';
+    if (currentPath.startsWith('/timers')) return 'timers';
+    if (currentPath.startsWith('/store')) return 'store';
+    return 'taming';
+  })();
 
   // Arrow key navigation across tabs
   const handleTabKeyDown = (e: React.KeyboardEvent, index: number) => {
     if (e.key === 'ArrowRight') {
       e.preventDefault();
       const nextIndex = (index + 1) % TABS.length;
-      setActiveTab(TABS[nextIndex].id);
+      navigate(TABS[nextIndex].path);
       const nextEl = document.getElementById(`tab-${TABS[nextIndex].id}`);
       nextEl?.focus();
     } else if (e.key === 'ArrowLeft') {
       e.preventDefault();
       const prevIndex = (index - 1 + TABS.length) % TABS.length;
-      setActiveTab(TABS[prevIndex].id);
+      navigate(TABS[prevIndex].path);
       const prevEl = document.getElementById(`tab-${TABS[prevIndex].id}`);
       prevEl?.focus();
     }
@@ -103,16 +118,20 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header className="sticky top-0 z-40 bg-[#050914]/95 backdrop-blur-xl border-b border-white/[0.08] shadow-2xl">
       {/* Top Bar: Brand, Empire Tag, Server Preset, Sound, Sync & PK Store */}
       <div className="max-w-7xl mx-auto px-2.5 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between gap-2">
-        {/* Left: Brand Identity */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <div className="relative flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-cyan-950 via-[#071324] to-[#040913] border border-cyan-400/40 shadow-md shadow-cyan-500/20 shrink-0">
+        {/* Left: Brand Identity (Clicking returns to Home / Taming) */}
+        <Link 
+          to="/taming"
+          className="flex items-center gap-2 sm:gap-3 shrink-0 group focus:outline-none focus:ring-1 focus:ring-cyan-400 rounded-xl p-0.5"
+          title="Return to Taming & War Room Home"
+        >
+          <div className="relative flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-cyan-950 via-[#071324] to-[#040913] border border-cyan-400/40 shadow-md shadow-cyan-500/20 shrink-0 group-hover:border-cyan-400 transition-colors">
             <span className="text-cyan-300 font-tek font-bold text-base sm:text-lg drop-shadow-[0_0_6px_rgba(6,182,212,0.8)]">◈</span>
             <div className="absolute inset-0 bg-cyan-400/10 rounded-xl animate-pulse pointer-events-none" />
           </div>
 
           <div>
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className="text-xs sm:text-base font-bold font-tek text-slate-100 tracking-wider flex items-center gap-1">
+              <span className="text-xs sm:text-base font-bold font-tek text-slate-100 tracking-wider flex items-center gap-1 group-hover:text-cyan-300 transition-colors">
                 PK ARK <span className="hidden xs:inline">ASSISTANT</span> <span className="text-cyan-400 text-[10px] sm:text-xs px-1 py-0.2 bg-cyan-500/10 border border-cyan-500/30 rounded font-mono">PVP</span>
               </span>
               <span className="hidden md:inline-block px-1.5 py-0.5 text-[9px] font-tek font-semibold uppercase tracking-wider bg-slate-800/80 text-slate-300 border border-slate-700/60 rounded">
@@ -126,7 +145,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               </span>
             </div>
           </div>
-        </div>
+        </Link>
 
         {/* Right: Controls & Actions (Optimized for Mobile Touch) */}
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-end">
@@ -244,18 +263,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             const isActive = activeTab === tab.id;
 
             return (
-              <button
+              <Link
                 key={tab.id}
+                to={tab.path}
                 role="tab"
                 id={`tab-${tab.id}`}
                 aria-selected={isActive}
                 aria-controls={`panel-${tab.id}`}
                 tabIndex={isActive ? 0 : -1}
                 onKeyDown={(e) => handleTabKeyDown(e, index)}
-                onClick={() => {
-                  setActiveTab(tab.id);
-                  setMobileMenuOpen(false);
-                }}
+                onClick={() => setMobileMenuOpen(false)}
                 className={`relative px-2.5 sm:px-3 py-1.5 rounded-xl font-hud font-semibold text-xs tracking-wide transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 min-h-[38px] ${
                   isActive
                     ? 'text-white font-bold'
@@ -301,7 +318,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </span>
                   )}
                 </span>
-              </button>
+              </Link>
             );
           })}
         </nav>
@@ -322,7 +339,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               </span>
               <button
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-xs text-slate-400 hover:text-white"
+                className="text-xs text-slate-400 hover:text-white cursor-pointer"
               >
                 Close
               </button>
@@ -334,12 +351,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 const isActive = activeTab === tab.id;
 
                 return (
-                  <button
+                  <Link
                     key={tab.id}
-                    onClick={() => {
-                      setActiveTab(tab.id);
-                      setMobileMenuOpen(false);
-                    }}
+                    to={tab.path}
+                    onClick={() => setMobileMenuOpen(false)}
                     className={`p-2.5 rounded-xl border text-left flex items-start gap-2 transition-all ${
                       isActive
                         ? 'bg-cyan-950/80 border-cyan-400 text-cyan-200'
@@ -362,7 +377,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         </div>
                       )}
                     </div>
-                  </button>
+                  </Link>
                 );
               })}
             </div>

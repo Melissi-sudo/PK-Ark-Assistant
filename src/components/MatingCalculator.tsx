@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { 
   Egg, 
   Search, 
@@ -17,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Creature, ServerRatePreset, ActiveTimer } from '../types';
 import { CREATURES_DATA } from '../data/creatures';
+import { TekImage } from './common/TekImage';
 
 interface MatingCalculatorProps {
   currentPreset: ServerRatePreset;
@@ -29,15 +31,34 @@ export const MatingCalculator: React.FC<MatingCalculatorProps> = ({
   onAddTimer,
   onOpenStoreModal
 }) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlDino = searchParams.get('dino');
+
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCreatureId, setSelectedCreatureId] = useState<string>('carcharodontosaurus');
+  const [selectedCreatureId, setSelectedCreatureId] = useState<string>(() => {
+    if (urlDino && CREATURES_DATA.some(c => c.id === urlDino && c.breeding)) {
+      return urlDino;
+    }
+    return 'carcharodontosaurus';
+  });
   const [customHatchMult, setCustomHatchMult] = useState<number>(currentPreset.eggHatchMult);
   const [customMatureMult, setCustomMatureMult] = useState<number>(currentPreset.babyMatureMult);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    if (urlDino && CREATURES_DATA.some(c => c.id === urlDino && c.breeding) && urlDino !== selectedCreatureId) {
+      setSelectedCreatureId(urlDino);
+    }
+  }, [urlDino]);
+
+  useEffect(() => {
     setCustomHatchMult(currentPreset.eggHatchMult);
     setCustomMatureMult(currentPreset.babyMatureMult);
   }, [currentPreset]);
+
+  const handleSelectCreature = (cid: string) => {
+    setSelectedCreatureId(cid);
+    setSearchParams({ dino: cid }, { replace: true });
+  };
 
   // Creatures that can breed
   const breedableCreatures = useMemo(() => {
@@ -194,7 +215,7 @@ export const MatingCalculator: React.FC<MatingCalculatorProps> = ({
           {filteredCreatures.slice(0, 10).map((c) => (
             <button
               key={c.id}
-              onClick={() => setSelectedCreatureId(c.id)}
+              onClick={() => handleSelectCreature(c.id)}
               className={`px-3 py-1.5 rounded-lg text-xs font-hud font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
                 creature.id === c.id
                   ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/30'
@@ -217,18 +238,15 @@ export const MatingCalculator: React.FC<MatingCalculatorProps> = ({
           <div className="bg-[#0b121e] border border-amber-500/30 rounded-xl p-5 shadow-xl relative overflow-hidden">
             <div className="flex items-start gap-4">
               <div className="relative w-20 h-20 rounded-xl overflow-hidden border-2 border-amber-500/40 shrink-0">
-                <img 
+                <TekImage 
                   src={creature.image} 
                   alt={`ARK Ascended creature profile for ${creature.name}, displaying ${breedingInfo.type} gestation and incubation metrics`} 
+                  variant="dossier"
+                  loadingLabel={`TRANSMITTING ${creature.name.toUpperCase()} DATA...`}
+                  containerClassName="w-full h-full"
                   className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.currentTarget;
-                    if (!target.src.endsWith('/images/placeholder_dino.svg')) {
-                      target.src = '/images/placeholder_dino.svg';
-                    }
-                  }}
                 />
-                <div className="absolute bottom-0 inset-x-0 bg-black/70 text-[10px] text-center font-tek text-amber-300 py-0.5">
+                <div className="absolute bottom-0 inset-x-0 bg-black/70 text-[10px] text-center font-tek text-amber-300 py-0.5 z-20">
                   {breedingInfo.type}
                 </div>
               </div>

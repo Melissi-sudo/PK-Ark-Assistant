@@ -31,7 +31,9 @@ import {
   KNOCKOUT_WEAPON_PROFILES, 
   WEAPON_QUALITIES 
 } from '../data/creatures';
+import { getWildStatRollProbability } from '../data/arkMechanics';
 import { DinoTipsCommunity } from './DinoTipsCommunity';
+import { TekImage } from './common/TekImage';
 
 interface DinoStatLookupProps {
   onSelectForTaming: (creatureId: string) => void;
@@ -73,7 +75,8 @@ function calculateDeathProbability(
   baseHealth: number,
   healthPerWildPoint: number,
   level: number,
-  isClub: boolean = false
+  isClub: boolean = false,
+  statRollProbability: number = (1 / 6) // ASA default: 6 eligible stats (no wasted speed)
 ): number {
   if (totalDamage <= 0) return 0;
 
@@ -89,7 +92,7 @@ function calculateDeathProbability(
     const kLethal = Math.floor((totalDamage - baseHealth) / healthPerWildPoint);
     if (kLethal >= wildPoints) return 100;
 
-    const p = 1 / 7;
+    const p = statRollProbability;
     let cumulativeProb = 0;
     for (let k = 0; k <= Math.min(kLethal, wildPoints); k++) {
       const logPMF = logCombination(wildPoints, k) + k * Math.log(p) + (wildPoints - k) * Math.log(1 - p);
@@ -217,7 +220,9 @@ export const DinoStatLookup: React.FC<DinoStatLookupProps> = ({
 
     const baseHealth = creature.baseStats.health;
     const hpPerWild = creature.healthPerWildPoint || (baseHealth * 0.2);
-    const avgWildHpPoints = (targetLevel - 1) / 7;
+    // In ASA, wild speed points are removed: standard dinos roll 6 stats, dinos with no oxygen roll 5 stats
+    const statRollProbability = getWildStatRollProbability(creature.id, true);
+    const avgWildHpPoints = (targetLevel - 1) * statRollProbability;
     const estimatedWildHealth = Math.round(baseHealth + avgWildHpPoints * hpPerWild);
     const minWildHealth = baseHealth;
     const maxWildHealth = Math.round(baseHealth + (targetLevel - 1) * hpPerWild);
@@ -307,7 +312,8 @@ export const DinoStatLookup: React.FC<DinoStatLookupProps> = ({
       baseHealth,
       hpPerWild,
       targetLevel,
-      isClub
+      isClub,
+      statRollProbability
     );
 
     return {
@@ -496,18 +502,14 @@ export const DinoStatLookup: React.FC<DinoStatLookupProps> = ({
                 >
                   <div className="flex items-center gap-3">
                     <div className="relative">
-                      <img
+                      <TekImage
                         src={c.image}
                         alt={`Dinosaur profile thumbnail of ${c.name}, classified as a ${c.pvpRole} combat tame`}
-                        className={`w-11 h-11 rounded-lg object-cover border shrink-0 ${
+                        variant="thumbnail"
+                        containerClassName={`w-11 h-11 rounded-lg border shrink-0 ${
                           isSelected ? 'border-cyan-400 ring-2 ring-cyan-400/30' : 'border-slate-700'
                         }`}
-                        onError={(e) => {
-                          const target = e.currentTarget;
-                          if (!target.src.endsWith('/images/placeholder_dino.svg')) {
-                            target.src = '/images/placeholder_dino.svg';
-                          }
-                        }}
+                        className="w-full h-full object-cover rounded-lg"
                       />
                     </div>
 
@@ -544,16 +546,13 @@ export const DinoStatLookup: React.FC<DinoStatLookupProps> = ({
             {/* Creature Header Card */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
               <div className="flex items-center gap-4">
-                <img
+                <TekImage
                   src={creature.image}
                   alt={`Full ARK Ascended combat dossier portrait of ${creature.name}, Tier ${creature.pvpTier} combat dino with ${creature.baseStats.health} base health`}
-                  className="w-18 h-18 rounded-2xl object-cover border-2 border-cyan-400/60 shrink-0 shadow-xl shadow-black"
-                  onError={(e) => {
-                    const target = e.currentTarget;
-                    if (!target.src.endsWith('/images/placeholder_dino.svg')) {
-                      target.src = '/images/placeholder_dino.svg';
-                    }
-                  }}
+                  variant="dossier"
+                  loadingLabel={`TRANSMITTING ${creature.name.toUpperCase()} DOSSIER...`}
+                  containerClassName="w-18 h-18 rounded-2xl border-2 border-cyan-400/60 shrink-0 shadow-xl shadow-black"
+                  className="w-full h-full object-cover rounded-2xl"
                 />
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">

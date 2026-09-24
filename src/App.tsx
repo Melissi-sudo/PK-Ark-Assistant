@@ -4,10 +4,11 @@
  * Featuring Automated Taming, Breeding, Tribe Resources, Alarms & PK Store Integration
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthModal } from './components/AuthModal';
-import { Navbar } from './components/Navbar';
+import { Navbar, TABS } from './components/Navbar';
 import { PkStoreBanner } from './components/PkStoreBanner';
 import { PkStoreModal } from './components/PkStoreModal';
 import { TamingCalculator } from './components/TamingCalculator';
@@ -22,10 +23,12 @@ import { PkStoreCatalog } from './components/PkStoreCatalog';
 import { ArkLoadingIntro } from './components/ArkLoadingIntro';
 import { DailyArkTip } from './components/DailyArkTip';
 import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal';
+import { NotFoundPage } from './components/NotFoundPage';
+import { PageMetaSync } from './components/common/PageMetaSync';
 import { ServerRatePreset, ActiveTimer } from './types';
 import { SERVER_PRESETS } from './data/presets';
 import { sendBrowserNotification, playTekAlarmSound } from './utils/audioAlert';
-import { Shield, Sparkles, ExternalLink, Flame, Zap, Heart, Keyboard } from 'lucide-react';
+import { Shield, ExternalLink, Zap, Keyboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db, doc, setDoc, getDoc } from './lib/firebase';
 
@@ -33,8 +36,9 @@ const LOCAL_STORAGE_TIMERS_KEY = 'ark_companion_active_timers_v1';
 const LOCAL_STORAGE_PRESET_KEY = 'ark_companion_server_preset_v1';
 
 function MainAppContent() {
-  const { currentUser, profile } = useAuth();
-  const [activeTab, setActiveTab] = useState<'taming' | 'soakers' | 'pyromane' | 'breeding' | 'maps' | 'resources' | 'stats' | 'timers' | 'store'>('taming');
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   
   // Rate preset (default to Official Small Tribes as requested)
   const [currentPreset, setCurrentPreset] = useState<ServerRatePreset>(() => {
@@ -251,33 +255,36 @@ function MainAppContent() {
         return;
       }
 
-      // Alt + 1..9 switches tabs
+      // Alt + 1..9 switches pages smoothly via router
       if (e.altKey) {
-        const tabKeyMap: Record<string, typeof activeTab> = {
-          '1': 'taming',
-          '2': 'soakers',
-          '3': 'pyromane',
-          '4': 'breeding',
-          '5': 'maps',
-          '6': 'resources',
-          '7': 'stats',
-          '8': 'timers',
-          '9': 'store'
+        const tabPathMap: Record<string, string> = {
+          '1': '/taming',
+          '2': '/soakers',
+          '3': '/pyromane',
+          '4': '/breeding',
+          '5': '/maps',
+          '6': '/resources',
+          '7': '/stats',
+          '8': '/timers',
+          '9': '/store'
         };
 
-        if (tabKeyMap[e.key]) {
+        if (tabPathMap[e.key]) {
           e.preventDefault();
-          setActiveTab(tabKeyMap[e.key]);
+          navigate(tabPathMap[e.key]);
         }
       }
     };
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-[#040810] text-slate-100 flex flex-col bg-ark-grid relative">
+      {/* Synchronize page document title & scroll to top on path change */}
+      <PageMetaSync />
+
       {/* Accessible Skip-to-content link for keyboard screen-reader users */}
       <a 
         href="#main-content" 
@@ -302,8 +309,6 @@ function MainAppContent() {
 
       {/* ARK HUD Top Header */}
       <Navbar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
         currentPreset={currentPreset}
         setCurrentPreset={setCurrentPreset}
         activeTimersCount={timers.length}
@@ -316,7 +321,7 @@ function MainAppContent() {
         onOpenKeyboardShortcuts={() => setIsShortcutsModalOpen(true)}
       />
 
-      {/* Main Container with smooth animated transitions */}
+      {/* Main Container with smooth animated page transitions */}
       <main 
         id="main-content" 
         tabIndex={-1} 
@@ -325,81 +330,112 @@ function MainAppContent() {
       >
         <AnimatePresence mode="wait">
           <motion.div
-            key={activeTab}
+            key={location.pathname}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.16, ease: 'easeOut' }}
           >
-            {activeTab === 'taming' && (
-              <TamingCalculator
-                currentPreset={currentPreset}
-                onAddTimer={handleAddTimer}
-                onOpenStoreModal={() => setIsStoreModalOpen(true)}
-                onViewSoakerGuide={() => setActiveTab('soakers')}
-                onViewPyromaneGuide={() => setActiveTab('pyromane')}
+            <Routes location={location}>
+              {/* Canonical Routes */}
+              <Route path="/" element={<Navigate to="/taming" replace />} />
+              
+              <Route
+                path="/taming"
+                element={
+                  <TamingCalculator
+                    currentPreset={currentPreset}
+                    onAddTimer={handleAddTimer}
+                    onOpenStoreModal={() => setIsStoreModalOpen(true)}
+                    onViewSoakerGuide={() => navigate('/soakers')}
+                    onViewPyromaneGuide={() => navigate('/pyromane')}
+                  />
+                }
               />
-            )}
 
-            {activeTab === 'soakers' && (
-              <TurretSoakerGuide />
-            )}
+              <Route path="/soakers" element={<TurretSoakerGuide />} />
 
-            {activeTab === 'pyromane' && (
-              <PyromaneTamingGuide />
-            )}
+              <Route path="/pyromane" element={<PyromaneTamingGuide />} />
 
-            {activeTab === 'breeding' && (
-              <MatingCalculator
-                currentPreset={currentPreset}
-                onAddTimer={handleAddTimer}
-                onOpenStoreModal={() => setIsStoreModalOpen(true)}
+              <Route
+                path="/breeding"
+                element={
+                  <MatingCalculator
+                    currentPreset={currentPreset}
+                    onAddTimer={handleAddTimer}
+                    onOpenStoreModal={() => setIsStoreModalOpen(true)}
+                  />
+                }
               />
-            )}
 
-            {activeTab === 'maps' && (
-              <ResourceMaps
-                onOpenStoreModal={() => setIsStoreModalOpen(true)}
+              <Route
+                path="/maps"
+                element={
+                  <ResourceMaps
+                    onOpenStoreModal={() => setIsStoreModalOpen(true)}
+                  />
+                }
               />
-            )}
 
-            {activeTab === 'resources' && (
-              <TribeResourceHub
-                currentPreset={currentPreset}
-                onOpenStoreModal={() => setIsStoreModalOpen(true)}
+              <Route
+                path="/maps/:mapId"
+                element={
+                  <ResourceMaps
+                    onOpenStoreModal={() => setIsStoreModalOpen(true)}
+                  />
+                }
               />
-            )}
 
-            {activeTab === 'stats' && (
-              <DinoStatLookup
-                onSelectForTaming={(cid) => {
-                  setActiveTab('taming');
-                }}
-                onSelectForBreeding={(cid) => {
-                  setActiveTab('breeding');
-                }}
+              <Route
+                path="/resources"
+                element={
+                  <TribeResourceHub
+                    currentPreset={currentPreset}
+                    onOpenStoreModal={() => setIsStoreModalOpen(true)}
+                  />
+                }
               />
-            )}
 
-            {activeTab === 'timers' && (
-              <TimerManager
-                timers={timers}
-                onDeleteTimer={handleDeleteTimer}
-                onClearExpired={handleClearExpired}
-                onAddTimer={handleAddTimer}
-                soundEnabled={soundEnabled}
-                setSoundEnabled={setSoundEnabled}
+              <Route path="/ammo" element={<Navigate to="/resources" replace />} />
+
+              <Route
+                path="/stats"
+                element={
+                  <DinoStatLookup
+                    onSelectForTaming={(cid) => {
+                      navigate(`/taming?dino=${cid}`);
+                    }}
+                    onSelectForBreeding={(cid) => {
+                      navigate(`/breeding?dino=${cid}`);
+                    }}
+                  />
+                }
               />
-            )}
 
-            {activeTab === 'store' && (
-              <PkStoreCatalog />
-            )}
+              <Route
+                path="/timers"
+                element={
+                  <TimerManager
+                    timers={timers}
+                    onDeleteTimer={handleDeleteTimer}
+                    onClearExpired={handleClearExpired}
+                    onAddTimer={handleAddTimer}
+                    soundEnabled={soundEnabled}
+                    setSoundEnabled={setSoundEnabled}
+                  />
+                }
+              />
+
+              <Route path="/store" element={<PkStoreCatalog />} />
+
+              {/* 404 Not Found Page */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
           </motion.div>
         </AnimatePresence>
 
         {/* Daily ARK Tip Component (Fades in at the bottom of the main dashboard) */}
-        <DailyArkTip onNavigateTab={(tab) => setActiveTab(tab)} />
+        <DailyArkTip onNavigateTab={(tab) => navigate('/' + tab)} />
       </main>
 
       {/* Bottom Action Bar (Mobile Responsive with Safe Area Support) */}
@@ -413,21 +449,21 @@ function MainAppContent() {
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            <button
-              onClick={() => setActiveTab('soakers')}
+            <Link
+              to="/soakers"
               className="px-2.5 py-1.5 bg-[#0a1526] hover:bg-cyan-950/60 border border-cyan-500/40 text-cyan-300 rounded-lg text-[11px] sm:text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer min-h-[36px]"
             >
               <Shield className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">SOAKER </span><span>HITBOX</span>
-            </button>
+            </Link>
 
-            <button
-              onClick={() => setIsStoreModalOpen(true)}
+            <Link
+              to="/store"
               className="px-2.5 py-1.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black font-bold rounded-lg text-[11px] sm:text-xs transition-all shadow-md shadow-amber-500/20 flex items-center gap-1.5 cursor-pointer min-h-[36px]"
             >
               <Zap className="w-3.5 h-3.5" />
               <span>PK STORE</span>
-            </button>
+            </Link>
           </div>
         </div>
       </aside>
@@ -500,7 +536,9 @@ function MainAppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <MainAppContent />
+      <BrowserRouter>
+        <MainAppContent />
+      </BrowserRouter>
     </AuthProvider>
   );
 }

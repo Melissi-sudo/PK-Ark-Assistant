@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { playTekAlarmSound } from '../utils/audioAlert';
+import { TekImage } from './common/TekImage';
 
 export const PyromaneTamingGuide: React.FC = () => {
   // Interactive Simulator State
@@ -110,18 +111,15 @@ export const PyromaneTamingGuide: React.FC = () => {
 
           <div className="lg:col-span-4">
             <div className="relative rounded-xl overflow-hidden border-2 border-amber-500/40 shadow-xl shadow-black">
-              <img 
+              <TekImage 
                 src="/images/pyromane.jpg" 
                 alt="Pyromane mythical feline creature shrouded in fiery flame aura during combat in ARK Ascended" 
+                variant="dossier"
+                loadingLabel="TRANSMITTING PYROMANE DOSSIER..."
+                containerClassName="w-full h-44"
                 className="w-full h-44 object-cover"
-                onError={(e) => {
-                  const target = e.currentTarget;
-                  if (!target.src.endsWith('/images/placeholder_dino.svg')) {
-                    target.src = '/images/placeholder_dino.svg';
-                  }
-                }}
               />
-              <div className="absolute bottom-2 inset-x-2 bg-black/80 backdrop-blur-md p-2 rounded border border-amber-500/30 text-[10px] text-amber-300 font-tek text-center">
+              <div className="absolute bottom-2 inset-x-2 bg-black/80 backdrop-blur-md p-2 rounded border border-amber-500/30 text-[10px] text-amber-300 font-tek text-center z-20">
                 ◈ IN-GAME SCREENSHOT • PYROMANE IN COMBAT
               </div>
             </div>

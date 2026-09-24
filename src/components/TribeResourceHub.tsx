@@ -16,6 +16,8 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { ServerRatePreset } from '../types';
+import { INDUSTRIAL_FORGE_MECHANICS } from '../data/arkMechanics';
+import { TekImage } from './common/TekImage';
 
 interface TribeResourceHubProps {
   currentPreset: ServerRatePreset;
@@ -87,9 +89,10 @@ export const TribeResourceHub: React.FC<TribeResourceHubProps> = ({
   const c4Electronics = totalC4 * 5;
 
   // --- Forge Smelting ---
-  const refinedIngots = Math.floor(rawMetalInput / 2);
-  const indyForgeSmeltSeconds = Math.ceil(refinedIngots / 40); // Indy forge melts 40 raw metal per sec
-  const indyForgeCharcoalSeconds = Math.ceil(woodForCharcoal / 60);
+  // Verified DevKit Industrial Forge: 1 batch = 40 Raw Metal -> 20 Metal Ingots every 1.50 seconds
+  const refinedIngots = Math.floor(rawMetalInput / INDUSTRIAL_FORGE_MECHANICS.rawMetalToIngotRatio);
+  const indyForgeSmeltSeconds = INDUSTRIAL_FORGE_MECHANICS.calculateSmeltTimeSeconds(rawMetalInput);
+  const indyForgeCharcoalSeconds = INDUSTRIAL_FORGE_MECHANICS.calculateCharcoalTimeSeconds(woodForCharcoal);
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -259,16 +262,13 @@ export const TribeResourceHub: React.FC<TribeResourceHubProps> = ({
 
               {/* Total Output Card */}
               <div className="bg-[#070e1a] border border-cyan-500/30 rounded-xl p-4 mt-4 flex items-center gap-4">
-                <img 
+                <TekImage 
                   src="/images/arb.jpg" 
                   alt="Advanced Rifle Bullet (ARB) ammunition stack crate utilized in automated heavy defense turrets" 
-                  className="w-14 h-14 rounded-xl object-cover border-2 border-cyan-500/40 p-0.5 bg-black/60 shadow-lg shadow-cyan-500/20 shrink-0"
-                  onError={(e) => {
-                    const target = e.currentTarget;
-                    if (!target.src.endsWith('/images/placeholder_dino.svg')) {
-                      target.src = '/images/placeholder_dino.svg';
-                    }
-                  }}
+                  variant="card"
+                  loadingLabel="LOADING AMMUNITION CRATE..."
+                  containerClassName="w-14 h-14 rounded-xl border-2 border-cyan-500/40 p-0.5 bg-black/60 shadow-lg shadow-cyan-500/20 shrink-0"
+                  className="w-full h-full object-cover rounded-lg"
                 />
                 <div>
                   <div className="text-[10px] text-slate-400 font-tek uppercase">Total Deathwall Ammo Target</div>
@@ -613,7 +613,7 @@ export const TribeResourceHub: React.FC<TribeResourceHubProps> = ({
                 <div className="text-xl font-tek font-bold text-amber-300 mt-1">
                   {Math.ceil(indyForgeSmeltSeconds / 60)} Minutes
                 </div>
-                <div className="text-[10px] text-slate-500">40 raw/sec per Indy Forge</div>
+                <div className="text-[10px] text-slate-500">40 raw / 1.5s cycle (26.7/s)</div>
               </div>
             </div>
           </div>

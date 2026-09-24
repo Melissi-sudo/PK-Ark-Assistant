@@ -1,126 +1,298 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { 
-  MapPin, 
-  Search, 
   Compass, 
   Layers, 
-  ShieldAlert, 
-  Pickaxe, 
-  Copy, 
-  Check, 
   Navigation, 
-  Sparkles, 
-  Flame, 
-  Zap, 
-  Eye, 
-  ChevronRight,
-  ExternalLink,
-  Crosshair,
-  Info,
-  Maximize2,
-  ZoomIn,
-  ZoomOut,
-  RotateCcw,
-  X
+  ExternalLink, 
+  Maximize2, 
+  ZoomIn, 
+  ZoomOut, 
+  RotateCcw, 
+  X, 
+  Move, 
+  ArrowUp, 
+  ArrowDown, 
+  ArrowLeft, 
+  ArrowRight 
 } from 'lucide-react';
-import { ArkMapInfo, ResourceCategory, ResourceNode } from '../types';
-import { ARK_MAPS_DATA, RESOURCE_CATEGORIES_CONFIG } from '../data/maps';
-import { playTekAlarmSound } from '../utils/audioAlert';
+import { ArkMapInfo } from '../types';
+import { ARK_MAPS_DATA } from '../data/maps';
+import { TekImage } from './common/TekImage';
+
+// Native aspect ratios of the official cartography images
+const MAP_ASPECT_RATIOS: Record<string, string> = {
+  the_island: '2028 / 1434',
+  the_center: '1024 / 1024',
+  scorched_earth: '1400 / 1024',
+  aberration: '1024 / 873',
+  extinction: '1400 / 1024',
+};
 
 interface ResourceMapsProps {
   onOpenStoreModal?: () => void;
 }
 
-export const ResourceMaps: React.FC<ResourceMapsProps> = ({ onOpenStoreModal }) => {
-  const [selectedMapId, setSelectedMapId] = useState<string>('the_island');
-  const [activeCategories, setActiveCategories] = useState<ResourceCategory[]>([
-    'metal', 'obsidian', 'crystal', 'oil', 'pearls', 'polymer', 'element', 'gems_sulfur', 'caves_obelisks', 'nests'
-  ]);
-  const [selectedNode, setSelectedNode] = useState<ResourceNode | null>(null);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [cursorGps, setCursorGps] = useState<{ lat: number; lon: number } | null>(null);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+export const ResourceMaps: React.FC<ResourceMapsProps> = () => {
+  const { mapId: paramMapId } = useParams<{ mapId?: string }>();
+  const [searchParams] = useSearchParams();
+  const queryMapId = searchParams.get('map');
+  const navigate = useNavigate();
+
+  const activeParamMap = paramMapId || queryMapId;
+  const initialMapId = (activeParamMap && ARK_MAPS_DATA.some(m => m.id === activeParamMap))
+    ? activeParamMap
+    : 'the_island';
+
+  const [selectedMapId, setSelectedMapId] = useState<string>(initialMapId);
   const [activeTab, setActiveTab] = useState<'map' | 'routes'>('map');
-  const [mapDisplayMode, setMapDisplayMode] = useState<'overlay' | 'pure'>('overlay');
+  const [fitMode, setFitMode] = useState<'fit' | 'fill'>('fit');
+
+  // Interactive Pan & Zoom State for Main Canvas
+  const [mapZoom, setMapZoom] = useState<number>(1);
+  const [mapPan, setMapPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const dragStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const touchPinchRef = useRef<{ initialDist: number; initialZoom: number } | null>(null);
+
+  // Fullscreen Inspect Modal State
   const [isFullscreenOpen, setIsFullscreenOpen] = useState<boolean>(false);
   const [modalZoom, setModalZoom] = useState<number>(1);
-  const [mapZoom, setMapZoom] = useState<number>(1);
+  const [modalPan, setModalPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isModalDragging, setIsModalDragging] = useState<boolean>(false);
+  const modalDragStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const modalTouchPinchRef = useRef<{ initialDist: number; initialZoom: number } | null>(null);
 
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const mapImageRef = useRef<HTMLImageElement | null>(null);
+  const modalContainerRef = useRef<HTMLDivElement | null>(null);
+  const modalImageRef = useRef<HTMLImageElement | null>(null);
 
-  // Active Map
-  const currentMap = useMemo(() => {
+  // Sync if URL param changes
+  useEffect(() => {
+    if (activeParamMap && ARK_MAPS_DATA.some(m => m.id === activeParamMap) && activeParamMap !== selectedMapId) {
+      setSelectedMapId(activeParamMap);
+      setMapZoom(1);
+      setMapPan({ x: 0, y: 0 });
+      setModalZoom(1);
+      setModalPan({ x: 0, y: 0 });
+    }
+  }, [activeParamMap]);
+
+  const handleSelectMap = (mapId: string) => {
+    setSelectedMapId(mapId);
+    navigate(`/maps/${mapId}`, { replace: true });
+    setMapZoom(1);
+    setMapPan({ x: 0, y: 0 });
+    setModalZoom(1);
+    setModalPan({ x: 0, y: 0 });
+  };
+
+  // Active Map Data
+  const currentMap: ArkMapInfo = useMemo(() => {
     return ARK_MAPS_DATA.find(m => m.id === selectedMapId) || ARK_MAPS_DATA[0];
   }, [selectedMapId]);
 
-  // Filter nodes
-  const filteredNodes = useMemo(() => {
-    return currentMap.nodes.filter(node => {
-      // Category filter
-      if (!activeCategories.includes(node.category)) return false;
+  // Zoom and Pan Controls
+  const handleZoomIn = () => {
+    setMapZoom(prev => Math.min(5, Math.round((prev + 0.5) * 10) / 10));
+  };
 
-      // Query filter
-      if (!searchQuery.trim()) return true;
-      const q = searchQuery.toLowerCase();
-      const coordMatch = `${node.lat.toFixed(1)}, ${node.lon.toFixed(1)}`.includes(q);
-      return (
-        node.name.toLowerCase().includes(q) ||
-        node.biome.toLowerCase().includes(q) ||
-        node.bestHarvester.toLowerCase().includes(q) ||
-        node.notes.toLowerCase().includes(q) ||
-        coordMatch
+  const handleZoomOut = () => {
+    setMapZoom(prev => {
+      const next = Math.max(0.75, Math.round((prev - 0.5) * 10) / 10);
+      if (next <= 1) setMapPan({ x: 0, y: 0 });
+      return next;
+    });
+  };
+
+  const handleResetView = () => {
+    setMapZoom(1);
+    setMapPan({ x: 0, y: 0 });
+  };
+
+  const handleNudgePan = (dx: number, dy: number) => {
+    setMapPan(prev => ({ x: prev.x + dx, y: prev.y + dy }));
+  };
+
+  // Mouse Handlers for Main Canvas
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return; // Only primary left click
+    setIsDragging(true);
+    dragStartRef.current = {
+      x: e.clientX - mapPan.x,
+      y: e.clientY - mapPan.y
+    };
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isDragging) {
+      const newX = e.clientX - dragStartRef.current.x;
+      const newY = e.clientY - dragStartRef.current.y;
+      setMapPan({ x: newX, y: newY });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDoubleClick = () => {
+    if (mapZoom > 1.2) {
+      handleResetView();
+    } else {
+      setMapZoom(2);
+    }
+  };
+
+  // Touch Handlers for Mobile Phones & Tablets
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length === 1) {
+      setIsDragging(true);
+      dragStartRef.current = {
+        x: e.touches[0].clientX - mapPan.x,
+        y: e.touches[0].clientY - mapPan.y
+      };
+    } else if (e.touches.length === 2) {
+      setIsDragging(false);
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
       );
-    });
-  }, [currentMap, activeCategories, searchQuery]);
-
-  // Active highlighted node (defaults to first filtered node if none selected)
-  const activeNode = selectedNode || filteredNodes[0] || null;
-
-  // Toggle Category
-  const toggleCategory = (cat: ResourceCategory) => {
-    setActiveCategories(prev => 
-      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
-    );
+      touchPinchRef.current = {
+        initialDist: dist,
+        initialZoom: mapZoom
+      };
+    }
   };
 
-  const selectAllCategories = () => {
-    setActiveCategories(RESOURCE_CATEGORIES_CONFIG.map(c => c.id));
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length === 1 && isDragging) {
+      const newX = e.touches[0].clientX - dragStartRef.current.x;
+      const newY = e.touches[0].clientY - dragStartRef.current.y;
+      setMapPan({ x: newX, y: newY });
+    } else if (e.touches.length === 2 && touchPinchRef.current) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      if (touchPinchRef.current.initialDist > 0) {
+        const scale = dist / touchPinchRef.current.initialDist;
+        const nextZoom = Math.max(0.75, Math.min(5, Math.round(touchPinchRef.current.initialZoom * scale * 100) / 100));
+        setMapZoom(nextZoom);
+      }
+    }
   };
 
-  const clearAllCategories = () => {
-    setActiveCategories([]);
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    touchPinchRef.current = null;
   };
 
-  // Handle Mouse Move for GPS Tracker (Tracks cursor across topographical map)
-  const handleMapMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!mapContainerRef.current) return;
-    const rect = mapContainerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    // Lat = Y / height * 100, Lon = X / width * 100
-    const lon = Math.max(0, Math.min(100, Math.round((x / rect.width) * 1000) / 10));
-    const lat = Math.max(0, Math.min(100, Math.round((y / rect.height) * 1000) / 10));
-    setCursorGps({ lat, lon });
+  // Mouse wheel zoom for canvas
+  useEffect(() => {
+    const container = mapContainerRef.current;
+    if (!container) return;
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const zoomFactor = e.deltaY < 0 ? 1.15 : 0.87;
+      setMapZoom(prev => {
+        const next = Math.max(0.75, Math.min(5, Math.round(prev * zoomFactor * 100) / 100));
+        if (next <= 1 && prev > 1) {
+          setMapPan({ x: 0, y: 0 });
+        }
+        return next;
+      });
+    };
+
+    container.addEventListener('wheel', onWheel, { passive: false });
+    return () => container.removeEventListener('wheel', onWheel);
+  }, []);
+
+  // Modal Handlers
+  const handleModalMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    setIsModalDragging(true);
+    modalDragStartRef.current = {
+      x: e.clientX - modalPan.x,
+      y: e.clientY - modalPan.y
+    };
   };
 
-  const handleMapMouseLeave = () => {
-    setCursorGps(null);
+  const handleModalMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isModalDragging) {
+      const newX = e.clientX - modalDragStartRef.current.x;
+      const newY = e.clientY - modalDragStartRef.current.y;
+      setModalPan({ x: newX, y: newY });
+    }
   };
 
-  // Copy GPS
-  const copyGpsToClipboard = (node: ResourceNode) => {
-    const text = `[ARK GPS: Lat ${node.lat.toFixed(1)}, Lon ${node.lon.toFixed(1)}] ${node.name} (${node.quantity}) - ${currentMap.name}`;
-    navigator.clipboard.writeText(text).then(() => {
-      setCopiedId(node.id);
-      setTimeout(() => setCopiedId(null), 2500);
-    });
+  const handleModalMouseUp = () => {
+    setIsModalDragging(false);
   };
 
-  // Map Color config lookup
-  const getCatConfig = (cat: ResourceCategory) => {
-    return RESOURCE_CATEGORIES_CONFIG.find(c => c.id === cat) || RESOURCE_CATEGORIES_CONFIG[0];
+  const handleModalTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length === 1) {
+      setIsModalDragging(true);
+      modalDragStartRef.current = {
+        x: e.touches[0].clientX - modalPan.x,
+        y: e.touches[0].clientY - modalPan.y
+      };
+    } else if (e.touches.length === 2) {
+      setIsModalDragging(false);
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      modalTouchPinchRef.current = {
+        initialDist: dist,
+        initialZoom: modalZoom
+      };
+    }
   };
+
+  const handleModalTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length === 1 && isModalDragging) {
+      const newX = e.touches[0].clientX - modalDragStartRef.current.x;
+      const newY = e.touches[0].clientY - modalDragStartRef.current.y;
+      setModalPan({ x: newX, y: newY });
+    } else if (e.touches.length === 2 && modalTouchPinchRef.current) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      if (modalTouchPinchRef.current.initialDist > 0) {
+        const scale = dist / modalTouchPinchRef.current.initialDist;
+        const nextZoom = Math.max(0.6, Math.min(5, Math.round(modalTouchPinchRef.current.initialZoom * scale * 100) / 100));
+        setModalZoom(nextZoom);
+      }
+    }
+  };
+
+  const handleModalTouchEnd = () => {
+    setIsModalDragging(false);
+    modalTouchPinchRef.current = null;
+  };
+
+  useEffect(() => {
+    if (!isFullscreenOpen) return;
+    const container = modalContainerRef.current;
+    if (!container) return;
+
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const zoomFactor = e.deltaY < 0 ? 1.15 : 0.87;
+      setModalZoom(prev => Math.max(0.6, Math.min(5, Math.round(prev * zoomFactor * 100) / 100)));
+    };
+
+    container.addEventListener('wheel', onWheel, { passive: false });
+    return () => container.removeEventListener('wheel', onWheel);
+  }, [isFullscreenOpen]);
 
   // Keyboard ESC listener to close map fullscreen modal
   useEffect(() => {
@@ -143,20 +315,20 @@ export const ResourceMaps: React.FC<ResourceMapsProps> = ({ onOpenStoreModal }) 
           <div>
             <div className="flex items-center gap-2">
               <span className="px-2 py-0.5 text-[10px] font-tek font-bold uppercase tracking-widest bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 rounded">
-                OFFICIAL ARK ASCENDED GPS DATABASE
+                OFFICIAL ARK ASCENDED CARTOGRAPHY
               </span>
               <span className="text-[10px] text-slate-400 font-mono">
-                {currentMap.nodes.length} GPS Waypoints
+                High-Resolution Topography
               </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold font-hud text-white tracking-wide mt-1 flex items-center gap-3">
-              <span>RESOURCE &amp; TACTICAL MAPS</span>
+              <span>TACTICAL RESOURCE MAPS</span>
               <span className="text-cyan-400 text-sm sm:text-base font-normal">
                 [{currentMap.name.toUpperCase()}]
               </span>
             </h2>
             <p className="text-xs text-slate-300 mt-1 max-w-3xl leading-relaxed">
-              Interactive high-precision GPS resource locator for all major official ARK: Survival Ascended maps. Find rich metal veins, volcanic obsidian, oil pumps, silica pearl rivers, element nodes, artifact caves, and wyvern trenches with exact official coordinates.
+              High-definition topographical and resource cartography for official ARK: Survival Ascended maps. Freely pan around the terrain, inspect mountain passes, deep oceans, and cave regions with smooth drag and zoom navigation.
             </p>
           </div>
 
@@ -165,10 +337,7 @@ export const ResourceMaps: React.FC<ResourceMapsProps> = ({ onOpenStoreModal }) 
             {ARK_MAPS_DATA.map(m => (
               <button
                 key={m.id}
-                onClick={() => {
-                  setSelectedMapId(m.id);
-                  setSelectedNode(null);
-                }}
+                onClick={() => handleSelectMap(m.id)}
                 className={`px-3 py-2 rounded-xl text-xs font-hud font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
                   selectedMapId === m.id
                     ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-black shadow-lg shadow-cyan-500/30'
@@ -194,7 +363,7 @@ export const ResourceMaps: React.FC<ResourceMapsProps> = ({ onOpenStoreModal }) 
               }`}
             >
               <Navigation className="w-3.5 h-3.5" />
-              <span>Interactive GPS Canvas</span>
+              <span>Interactive Map Canvas</span>
             </button>
             <button
               onClick={() => setActiveTab('routes')}
@@ -208,421 +377,278 @@ export const ResourceMaps: React.FC<ResourceMapsProps> = ({ onOpenStoreModal }) 
               <span>PVP Farming Routes ({currentMap.routes.length})</span>
             </button>
           </div>
-
-          {/* Search Bar */}
-          <div className="relative min-w-[240px] flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search node, biome, or Lat/Lon (e.g. 42, 37)..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 bg-[#060c18] border border-slate-700/80 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* RESOURCE CATEGORY FILTER BAR */}
-      <div className="bg-[#0b1424] border border-slate-800 rounded-xl p-3 shadow-lg">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[11px] font-tek font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Filter Resource Waypoints ({filteredNodes.length} Waypoints)</span>
-          </span>
-          <div className="flex items-center gap-2 text-[10px] font-mono">
-            <button
-              onClick={selectAllCategories}
-              className="text-cyan-400 hover:underline cursor-pointer"
-            >
-              Show All
-            </button>
-            <span className="text-slate-600">|</span>
-            <button
-              onClick={clearAllCategories}
-              className="text-slate-400 hover:text-white cursor-pointer"
-            >
-              Clear All
-            </button>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          {RESOURCE_CATEGORIES_CONFIG.map(cat => {
-            const count = currentMap.nodes.filter(n => n.category === cat.id).length;
-            const isSelected = activeCategories.includes(cat.id);
-            if (count === 0) return null; // Don't show categories not on this map
-
-            return (
-              <button
-                key={cat.id}
-                onClick={() => toggleCategory(cat.id)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-hud transition-all cursor-pointer flex items-center gap-1.5 border ${
-                  isSelected
-                    ? `${cat.badgeBg} ${cat.borderClass} font-bold shadow-md`
-                    : 'bg-[#060c18] text-slate-500 border-slate-800 hover:text-slate-300'
-                }`}
-              >
-                <span
-                  className="w-2 h-2 rounded-full shrink-0"
-                  style={{ backgroundColor: cat.iconColor }}
-                />
-                <span>{cat.name}</span>
-                <span className="text-[10px] opacity-75 font-mono">({count})</span>
-              </button>
-            );
-          })}
         </div>
       </div>
 
       {activeTab === 'map' ? (
-        /* INTERACTIVE MAP LAYOUT */
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Main Visual Map Canvas (Col 8) */}
-          <div className="lg:col-span-8 space-y-3">
-            <div className="bg-[#060c18] border border-cyan-500/30 rounded-2xl p-3 sm:p-4 shadow-2xl relative">
-              {/* Live GPS Tracker & View Mode Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-800/80 text-xs font-mono text-slate-300 gap-2">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Crosshair className="w-4 h-4 text-cyan-400 animate-spin-slow" />
-                  <span className="text-cyan-300 font-bold uppercase font-hud">
-                    {currentMap.displayName}
-                  </span>
-                  <span className="text-[10px] bg-cyan-950/80 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded font-sans">
-                    Cartography by <a href="https://steamcommunity.com/id/3xhumed" target="_blank" rel="noopener noreferrer" className="underline hover:text-white font-bold font-hud">Exhumed</a>
-                  </span>
-                </div>
+        /* FULL-WIDTH INTERACTIVE MAP VIEW */
+        <div className="space-y-4">
+          <div className="bg-[#060c18] border border-cyan-500/30 rounded-2xl p-3 sm:p-4 shadow-2xl relative">
+            {/* View Mode Header & Navigation Controls */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-800/80 text-xs font-mono text-slate-300 gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Compass className="w-4 h-4 text-cyan-400" />
+                <span className="text-cyan-300 font-bold uppercase font-hud text-sm">
+                  {currentMap.displayName}
+                </span>
+                <span className="text-[10px] bg-cyan-950/80 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded font-sans">
+                  Cartography by <a href="https://steamcommunity.com/id/3xhumed" target="_blank" rel="noopener noreferrer" className="underline hover:text-white font-bold font-hud">Exhumed</a>
+                </span>
+              </div>
 
-                <div className="flex items-center gap-2 flex-wrap justify-between sm:justify-end">
-                  {cursorGps ? (
-                    <span className="text-cyan-400 bg-cyan-950/80 px-2.5 py-0.5 rounded border border-cyan-500/40 text-[11px] font-mono shadow-md">
-                      GPS: LAT <strong className="text-white">{cursorGps.lat.toFixed(1)}</strong>, LON <strong className="text-white">{cursorGps.lon.toFixed(1)}</strong>
-                    </span>
-                  ) : (
-                    <span className="text-slate-500 text-[11px] hidden sm:inline">Hover terrain for live GPS</span>
-                  )}
-
-                  {/* Zoom Controls */}
-                  <div className="flex items-center gap-1 bg-[#040814] p-0.5 rounded-lg border border-slate-800">
-                    <button
-                      onClick={() => setMapZoom(prev => Math.max(1, Math.round((prev - 0.5) * 10) / 10))}
-                      disabled={mapZoom <= 1}
-                      className="p-1 text-slate-400 hover:text-white disabled:opacity-30 rounded transition-all cursor-pointer disabled:cursor-not-allowed"
-                      title="Zoom Out"
-                    >
-                      <ZoomOut className="w-3.5 h-3.5" />
-                    </button>
-                    <span className="text-[11px] font-mono font-bold text-cyan-300 px-1 select-none">
-                      {mapZoom.toFixed(1)}x
-                    </span>
-                    <button
-                      onClick={() => setMapZoom(prev => Math.min(3, Math.round((prev + 0.5) * 10) / 10))}
-                      disabled={mapZoom >= 3}
-                      className="p-1 text-slate-400 hover:text-white disabled:opacity-30 rounded transition-all cursor-pointer disabled:cursor-not-allowed"
-                      title="Zoom In"
-                    >
-                      <ZoomIn className="w-3.5 h-3.5" />
-                    </button>
-                    {mapZoom > 1 && (
-                      <button
-                        onClick={() => setMapZoom(1)}
-                        className="p-1 text-slate-400 hover:text-cyan-300 rounded transition-all cursor-pointer"
-                        title="Reset Zoom"
-                      >
-                        <RotateCcw className="w-3 h-3" />
-                      </button>
-                    )}
-                  </div>
-
-                  {/* View Mode Toggle (GPS Grid vs Pure Map) */}
-                  <div className="flex items-center gap-1 bg-[#040814] p-0.5 rounded-lg border border-slate-800 text-[11px] font-hud">
-                    <button
-                      onClick={() => setMapDisplayMode('overlay')}
-                      className={`px-2 py-1 rounded transition-all cursor-pointer ${
-                        mapDisplayMode === 'overlay'
-                          ? 'bg-cyan-500 text-black font-bold'
-                          : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      GPS GRID
-                    </button>
-                    <button
-                      onClick={() => setMapDisplayMode('pure')}
-                      className={`px-2 py-1 rounded transition-all cursor-pointer ${
-                        mapDisplayMode === 'pure'
-                          ? 'bg-cyan-500 text-black font-bold'
-                          : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      PURE MAP
-                    </button>
-                  </div>
-
-                  {/* Fullscreen / Inspect Button */}
+              <div className="flex items-center gap-2 flex-wrap justify-between sm:justify-end">
+                {/* Fit Mode Toggle */}
+                <div className="flex items-center gap-1 bg-[#040814] p-0.5 rounded-lg border border-slate-800 text-[11px] font-hud">
                   <button
-                    onClick={() => {
-                      setModalZoom(1);
-                      setIsFullscreenOpen(true);
-                    }}
-                    title="Inspect High-Res Map in Fullscreen"
-                    className="p-1.5 bg-slate-900/90 hover:bg-cyan-950/80 border border-slate-700 hover:border-cyan-400 text-slate-300 hover:text-cyan-300 rounded-lg text-xs transition-all cursor-pointer flex items-center gap-1"
+                    onClick={() => setFitMode('fit')}
+                    className={`px-2.5 py-1 rounded transition-all cursor-pointer ${
+                      fitMode === 'fit'
+                        ? 'bg-cyan-500 text-black font-bold'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                    title="Fit entire map in frame without cropping"
                   >
-                    <Maximize2 className="w-3.5 h-3.5" />
-                    <span className="text-[11px] font-hud hidden md:inline">INSPECT</span>
+                    FIT MAP
+                  </button>
+                  <button
+                    onClick={() => setFitMode('fill')}
+                    className={`px-2.5 py-1 rounded transition-all cursor-pointer ${
+                      fitMode === 'fill'
+                        ? 'bg-cyan-500 text-black font-bold'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                    title="Fill container"
+                  >
+                    FILL
                   </button>
                 </div>
-              </div>
 
-              {/* Map Canvas: Clean Authentic Map Image (No Clickable Stuff) */}
-              <div 
-                ref={mapContainerRef}
-                className="relative w-full aspect-square mt-2 rounded-xl overflow-hidden bg-[#030712] border border-slate-800 select-none cursor-crosshair"
-                onMouseMove={handleMapMouseMove}
-                onMouseLeave={handleMapMouseLeave}
-              >
-                <div 
-                  className="w-full h-full relative transition-transform duration-100 ease-out"
-                  style={{ transform: `scale(${mapZoom})`, transformOrigin: 'center center' }}
-                >
-                  <img
-                    src={currentMap.imageUrl}
-                    alt={`Topographical and resource waypoint map for ${currentMap.name} by Exhumed with resource node coordinates`}
-                    className="w-full h-full object-cover pointer-events-none"
-                    onError={(e) => {
-                      const target = e.currentTarget;
-                      if (!target.src.endsWith('/images/placeholder_dino.svg')) {
-                        target.src = '/images/placeholder_dino.svg';
-                      }
-                    }}
-                  />
-
-                  {/* Optional Non-Clickable GPS Grid Lines and Coordinate Labels Overlay */}
-                  {mapDisplayMode === 'overlay' && (
-                    <svg
-                      viewBox="0 0 1000 1000"
-                      className="absolute inset-0 w-full h-full pointer-events-none"
+                {/* Zoom Controls */}
+                <div className="flex items-center gap-1 bg-[#040814] p-0.5 rounded-lg border border-slate-800">
+                  <button
+                    onClick={handleZoomOut}
+                    disabled={mapZoom <= 0.75}
+                    className="p-1 text-slate-400 hover:text-white disabled:opacity-30 rounded transition-all cursor-pointer disabled:cursor-not-allowed"
+                    title="Zoom Out"
+                  >
+                    <ZoomOut className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="text-[11px] font-mono font-bold text-cyan-300 px-1.5 select-none min-w-[42px] text-center">
+                    {Math.round(mapZoom * 100)}%
+                  </span>
+                  <button
+                    onClick={handleZoomIn}
+                    disabled={mapZoom >= 5}
+                    className="p-1 text-slate-400 hover:text-white disabled:opacity-30 rounded transition-all cursor-pointer disabled:cursor-not-allowed"
+                    title="Zoom In"
+                  >
+                    <ZoomIn className="w-3.5 h-3.5" />
+                  </button>
+                  {(mapZoom !== 1 || mapPan.x !== 0 || mapPan.y !== 0) && (
+                    <button
+                      onClick={handleResetView}
+                      className="p-1 text-slate-400 hover:text-cyan-300 rounded transition-all cursor-pointer"
+                      title="Reset Pan & Zoom"
                     >
-                      <defs>
-                        <pattern id="gridPattern" width="100" height="100" patternUnits="userSpaceOnUse">
-                          <path d="M 100 0 L 0 0 0 100" fill="none" stroke="#06b6d4" strokeWidth="0.75" strokeOpacity="0.35"/>
-                        </pattern>
-                      </defs>
-
-                      {/* GPS Grid Lines */}
-                      <rect width="1000" height="1000" fill="url(#gridPattern)" />
-
-                      {/* GPS Coordinate Labels (10 to 90) */}
-                      {[10, 20, 30, 40, 50, 60, 70, 80, 90].map(val => (
-                        <g key={val}>
-                          {/* Top X axis (Longitude) */}
-                          <text x={val * 10} y="22" textAnchor="middle" fill="#06b6d4" fontSize="13" fontFamily="monospace" fontWeight="bold" opacity="0.9" className="select-none drop-shadow">
-                            {val}
-                          </text>
-                          {/* Left Y axis (Latitude) */}
-                          <text x="24" y={val * 10 + 4} textAnchor="middle" fill="#06b6d4" fontSize="13" fontFamily="monospace" fontWeight="bold" opacity="0.9" className="select-none drop-shadow">
-                            {val}
-                          </text>
-                        </g>
-                      ))}
-                    </svg>
+                      <RotateCcw className="w-3 h-3" />
+                    </button>
                   )}
                 </div>
-              </div>
 
-              {/* Map Footer Status Bar */}
-              <div className="flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 mt-2 font-mono gap-1">
-                <span>Coordinates: LAT (Vertical Y) • LON (Horizontal X)</span>
-                <span className="text-cyan-400">Hover terrain for live GPS • Select waypoints below for coordinates</span>
+                {/* Fullscreen / Inspect Button */}
+                <button
+                  onClick={() => {
+                    setModalZoom(1);
+                    setModalPan({ x: 0, y: 0 });
+                    setIsFullscreenOpen(true);
+                  }}
+                  title="Inspect High-Res Map in Fullscreen"
+                  className="p-1.5 px-2.5 bg-slate-900/90 hover:bg-cyan-950/80 border border-slate-700 hover:border-cyan-400 text-slate-300 hover:text-cyan-300 rounded-lg text-xs transition-all cursor-pointer flex items-center gap-1.5 font-hud font-bold"
+                >
+                  <Maximize2 className="w-3.5 h-3.5" />
+                  <span>INSPECT HIGH-RES</span>
+                </button>
               </div>
             </div>
 
-            {/* Authentic Exhumed Cartography Credit Banner */}
-            <div className="bg-[#050e1c] border border-cyan-500/40 rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-600 to-blue-700 border border-cyan-300 flex items-center justify-center text-black font-black font-hud text-base shrink-0 shadow-lg shadow-cyan-500/30">
-                  EX
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[10px] font-tek tracking-widest text-cyan-400 uppercase font-bold">
-                      AUTHENTIC ARK CARTOGRAPHY
-                    </span>
-                    <span className="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.2 rounded font-tek">
-                      VERIFIED REPLACEMENT
-                    </span>
-                  </div>
-                  <h4 className="text-sm font-bold font-hud text-white mt-0.5">
-                    HIGH-ACCURACY TOPOGRAPHICAL MAP BY <strong className="text-cyan-300">EXHUMED</strong>
-                  </h4>
-                  <p className="text-xs text-slate-300 mt-1 max-w-2xl font-sans leading-relaxed">
-                    Custom high-definition cartography created by <strong>Exhumed</strong>, featuring true-to-game terrain contours, cave entrance waypoints, deep sea loot crates, and obelisk terminals. Replaces inaccurate schematic shapes with verified survivor field cartography.
-                  </p>
+            {/* Main Interactive Map Viewport (Full Width, NO Grid Overlay, NO Inaccurate Coordinates) */}
+            <div 
+              ref={mapContainerRef}
+              className={`relative w-full h-[520px] sm:h-[650px] md:h-[760px] mt-3 rounded-2xl overflow-hidden bg-[#02050c] border border-cyan-500/30 select-none shadow-2xl transition-colors ${
+                isDragging ? 'cursor-grabbing' : 'cursor-grab'
+              }`}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onDoubleClick={handleDoubleClick}
+              style={{ touchAction: 'none' }}
+            >
+              {/* Tactical Radar Dot Background Grid */}
+              <div 
+                className="absolute inset-0 opacity-15 pointer-events-none"
+                style={{
+                  backgroundImage: 'radial-gradient(circle at 1px 1px, #06b6d4 1.2px, transparent 0)',
+                  backgroundSize: '24px 24px'
+                }}
+              />
+
+              {/* Transformed Map Frame */}
+              <div 
+                className="w-full h-full flex items-center justify-center pointer-events-none"
+                style={{
+                  transform: `translate(${mapPan.x}px, ${mapPan.y}px) scale(${mapZoom})`,
+                  transformOrigin: 'center center',
+                  transition: isDragging ? 'none' : 'transform 0.1s ease-out'
+                }}
+              >
+                <div 
+                  className="relative pointer-events-auto max-w-full max-h-full flex items-center justify-center"
+                  style={{
+                    aspectRatio: MAP_ASPECT_RATIOS[currentMap.id] || '1.4 / 1',
+                    width: fitMode === 'fill' ? '100%' : 'auto',
+                    height: fitMode === 'fill' ? '100%' : 'auto',
+                    maxWidth: '100%',
+                    maxHeight: '100%'
+                  }}
+                >
+                  <TekImage
+                    ref={mapImageRef}
+                    src={currentMap.imageUrl}
+                    alt={`Authentic topographical map for ${currentMap.name} by Exhumed`}
+                    variant="map"
+                    loadingLabel={`DECODING ${currentMap.name.toUpperCase()} TOPOGRAPHY...`}
+                    containerClassName="w-full h-full rounded-lg"
+                    className={`w-full h-full ${fitMode === 'fit' ? 'object-contain' : 'object-cover'} rounded-lg shadow-2xl drop-shadow-[0_15px_40px_rgba(0,0,0,0.9)] pointer-events-none`}
+                  />
                 </div>
               </div>
 
-              <a
-                href="https://steamcommunity.com/id/3xhumed"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-hud font-bold text-xs rounded-xl shadow-lg shadow-cyan-500/25 flex items-center gap-2 transition-all shrink-0 cursor-pointer self-start sm:self-auto"
-              >
-                <span>EXHUMED STEAM PROFILE</span>
-                <ExternalLink className="w-4 h-4" />
-              </a>
+              {/* Floating Navigation D-Pad (Bottom-Right) */}
+              <div className="absolute bottom-3 right-3 z-20 flex flex-col items-center gap-1 bg-[#050c18]/90 backdrop-blur-md border border-cyan-500/40 p-1.5 sm:p-2 rounded-2xl shadow-2xl">
+                <div className="text-[8px] sm:text-[9px] font-tek font-bold text-cyan-300 uppercase tracking-widest text-center">
+                  PAN MAP
+                </div>
+                <div className="grid grid-cols-3 gap-1">
+                  <div />
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleNudgePan(0, 80); }}
+                    className="p-1 sm:p-1.5 bg-slate-900 hover:bg-cyan-950 text-cyan-300 rounded-lg border border-slate-700 hover:border-cyan-400 transition-all cursor-pointer"
+                    title="Move Up"
+                  >
+                    <ArrowUp className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </button>
+                  <div />
+
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleNudgePan(80, 0); }}
+                    className="p-1 sm:p-1.5 bg-slate-900 hover:bg-cyan-950 text-cyan-300 rounded-lg border border-slate-700 hover:border-cyan-400 transition-all cursor-pointer"
+                    title="Move Left"
+                  >
+                    <ArrowLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </button>
+
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleResetView(); }}
+                    className="p-1 sm:p-1.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 rounded-lg border border-cyan-500/50 transition-all cursor-pointer"
+                    title="Recenter & Reset"
+                  >
+                    <RotateCcw className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </button>
+
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleNudgePan(-80, 0); }}
+                    className="p-1 sm:p-1.5 bg-slate-900 hover:bg-cyan-950 text-cyan-300 rounded-lg border border-slate-700 hover:border-cyan-400 transition-all cursor-pointer"
+                    title="Move Right"
+                  >
+                    <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </button>
+
+                  <div />
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleNudgePan(0, -80); }}
+                    className="p-1 sm:p-1.5 bg-slate-900 hover:bg-cyan-950 text-cyan-300 rounded-lg border border-slate-700 hover:border-cyan-400 transition-all cursor-pointer"
+                    title="Move Down"
+                  >
+                    <ArrowDown className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </button>
+                  <div />
+                </div>
+              </div>
+
+              {/* Quick Zoom Presets Floating Toolbar (Bottom-Left) */}
+              <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1 sm:gap-1.5 bg-[#050c18]/90 backdrop-blur-md border border-cyan-500/40 px-2 py-1.5 rounded-xl shadow-xl">
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleResetView(); }}
+                  className={`px-2.5 py-0.5 rounded text-[10px] sm:text-[11px] font-hud font-bold transition-all cursor-pointer ${
+                    mapZoom === 1 && mapPan.x === 0 && mapPan.y === 0
+                      ? 'bg-cyan-500 text-black shadow-md'
+                      : 'text-slate-300 hover:text-white bg-slate-900 border border-slate-800'
+                  }`}
+                >
+                  FIT
+                </button>
+                {[1.5, 2, 3, 4].map(z => (
+                  <button
+                    key={z}
+                    onClick={(e) => { e.stopPropagation(); setMapZoom(z); }}
+                    className={`px-2 py-0.5 rounded text-[10px] sm:text-[11px] font-mono font-bold transition-all cursor-pointer ${
+                      mapZoom === z
+                        ? 'bg-cyan-500 text-black shadow-md'
+                        : 'text-slate-300 hover:text-white bg-slate-900 border border-slate-800'
+                    }`}
+                  >
+                    {z}x
+                  </button>
+                ))}
+              </div>
+
+              {/* Navigation Hint Pill (Top-Center) */}
+              <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none opacity-85">
+                <div className="bg-[#050e1c]/90 backdrop-blur-md border border-cyan-500/30 px-3 py-1 rounded-full text-[10px] font-mono text-cyan-300 shadow-lg flex items-center gap-1.5 whitespace-nowrap">
+                  <Move className="w-3 h-3 text-cyan-400 shrink-0" />
+                  <span>Drag to pan • Scroll/Pinch to zoom • Double click 2x</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Right Column: Node Details & Coordinates (Col 4) */}
-          <div className="lg:col-span-4 space-y-4">
-            {activeNode ? (
-              /* Active Node Inspector Card */
-              <div className="bg-[#0b1424] border-2 border-cyan-500/60 rounded-2xl p-5 shadow-2xl space-y-4 animate-fadeIn">
-                {/* Header */}
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <span className={`text-[10px] font-tek font-bold px-2 py-0.5 rounded border uppercase ${getCatConfig(activeNode.category).badgeBg} ${getCatConfig(activeNode.category).borderClass}`}>
-                      {getCatConfig(activeNode.category).name}
-                    </span>
-                    <h3 className="text-lg font-bold font-hud text-white mt-1.5 leading-snug">
-                      {activeNode.name}
-                    </h3>
-                  </div>
-
-                  <span className={`text-[10px] font-tek font-bold px-2 py-0.5 rounded-full ${
-                    activeNode.dangerLevel === 'Extreme PvP Hotspot' ? 'bg-red-600 text-white' :
-                    activeNode.dangerLevel === 'High Danger' ? 'bg-amber-500 text-black' :
-                    'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                  }`}>
-                    {activeNode.dangerLevel}
+          {/* Cartography Credit Banner */}
+          <div className="bg-[#050e1c] border border-cyan-500/40 rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-600 to-blue-700 border border-cyan-300 flex items-center justify-center text-black font-black font-hud text-base shrink-0 shadow-lg shadow-cyan-500/30">
+                EX
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[10px] font-tek tracking-widest text-cyan-400 uppercase font-bold">
+                    AUTHENTIC ARK CARTOGRAPHY
+                  </span>
+                  <span className="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.2 rounded font-tek">
+                    HIGH-RESOLUTION
                   </span>
                 </div>
-
-                {/* GPS Coordinates Display */}
-                <div className="bg-[#060c18] border border-cyan-500/30 rounded-xl p-3 flex items-center justify-between">
-                  <div>
-                    <div className="text-[10px] font-tek text-slate-400 uppercase">OFFICIAL GPS COORDINATES</div>
-                    <div className="text-xl font-bold font-mono text-cyan-300 mt-0.5">
-                      LAT <span className="text-white">{activeNode.lat.toFixed(1)}</span> • LON <span className="text-white">{activeNode.lon.toFixed(1)}</span>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => copyGpsToClipboard(activeNode)}
-                    className="px-3 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/50 rounded-lg text-cyan-300 text-xs font-hud font-bold flex items-center gap-1.5 transition-all cursor-pointer"
-                  >
-                    {copiedId === activeNode.id ? (
-                      <>
-                        <Check className="w-4 h-4 text-emerald-400" />
-                        <span>COPIED!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-4 h-4" />
-                        <span>COPY GPS</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {/* Quick Stats Grid */}
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="bg-[#060c18] border border-slate-800 p-2.5 rounded-xl">
-                    <span className="text-[10px] text-slate-500 block uppercase">Cluster Yield</span>
-                    <span className="font-bold text-slate-200 mt-0.5 block">{activeNode.quantity}</span>
-                  </div>
-                  <div className="bg-[#060c18] border border-slate-800 p-2.5 rounded-xl">
-                    <span className="text-[10px] text-slate-500 block uppercase">Region / Biome</span>
-                    <span className="font-bold text-cyan-400 mt-0.5 block truncate">{activeNode.biome}</span>
-                  </div>
-                </div>
-
-                {/* Optimal Mount / Tool */}
-                <div className="bg-[#060c18] border border-slate-800 p-3 rounded-xl">
-                  <div className="text-[10px] text-slate-400 uppercase font-tek flex items-center gap-1.5">
-                    <Pickaxe className="w-3.5 h-3.5 text-amber-400" />
-                    <span>RECOMMENDED HARVESTER</span>
-                  </div>
-                  <div className="text-xs font-bold text-amber-300 mt-1">
-                    {activeNode.bestHarvester}
-                  </div>
-                </div>
-
-                {/* Tactical PvP Notes */}
-                <div className="bg-slate-900/60 border border-slate-800 p-3 rounded-xl">
-                  <div className="text-[10px] text-slate-400 uppercase font-tek flex items-center gap-1.5">
-                    <Info className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>TACTICAL INTEL &amp; PVP PROTOCOL</span>
-                  </div>
-                  <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                    {activeNode.notes}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              /* Empty Selection State */
-              <div className="bg-[#0b1424] border border-slate-800 rounded-2xl p-6 text-center space-y-3">
-                <div className="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 mx-auto">
-                  <Compass className="w-6 h-6" />
-                </div>
-                <h4 className="text-sm font-bold font-hud text-white">WAYPOINTS DIRECTORY</h4>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Select any resource from the directory below to view exact official GPS coordinates, cluster density, recommended farming mounts, and tactical PvP precautions.
+                <h4 className="text-sm font-bold font-hud text-white mt-0.5">
+                  TOPOGRAPHICAL CHART BY <strong className="text-cyan-300">EXHUMED</strong>
+                </h4>
+                <p className="text-xs text-slate-300 mt-1 max-w-2xl font-sans leading-relaxed">
+                  Authentic cartography created by <strong>Exhumed</strong>, featuring high-fidelity terrain contours, river deltas, deep sea trenches, and mountain passes directly embedded into the map.
                 </p>
               </div>
-            )}
-
-            {/* Quick Node List of Selected Map */}
-            <div className="bg-[#0b1424] border border-slate-800 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-tek text-slate-300 uppercase tracking-wider font-bold">
-                  WAYPOINTS DIRECTORY ({filteredNodes.length})
-                </span>
-                <span className="text-[10px] text-cyan-400 font-mono">LAT / LON</span>
-              </div>
-
-              <div className="space-y-2 max-h-72 overflow-y-auto pr-1 no-scrollbar">
-                {filteredNodes.map(node => {
-                  const cfg = getCatConfig(node.category);
-                  const isSelected = activeNode?.id === node.id;
-
-                  return (
-                    <div
-                      key={node.id}
-                      onClick={() => setSelectedNode(node)}
-                      className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-2 ${
-                        isSelected
-                          ? 'bg-cyan-950/80 border-cyan-400 shadow-md'
-                          : 'bg-[#060c18] border-slate-800 hover:border-slate-700'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span
-                          className="w-2.5 h-2.5 rounded-full shrink-0"
-                          style={{ backgroundColor: cfg.iconColor }}
-                        />
-                        <div className="min-w-0">
-                          <div className="text-xs font-bold text-white truncate">
-                            {node.name}
-                          </div>
-                          <div className="text-[10px] text-slate-400">
-                            {node.quantity} • {node.biome}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="text-right shrink-0">
-                        <span className="text-xs font-mono font-bold text-cyan-300 block">
-                          {node.lat.toFixed(1)}, {node.lon.toFixed(1)}
-                        </span>
-                        <span className="text-[9px] text-slate-500 font-tek uppercase">
-                          {node.dangerLevel === 'Extreme PvP Hotspot' ? 'HOTSPOT' : 'SAFE'}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
             </div>
+
+            <a
+              href="https://steamcommunity.com/id/3xhumed"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-hud font-bold text-xs rounded-xl shadow-lg shadow-cyan-500/25 flex items-center gap-2 transition-all shrink-0 cursor-pointer self-start sm:self-auto"
+            >
+              <span>EXHUMED STEAM PROFILE</span>
+              <ExternalLink className="w-4 h-4" />
+            </a>
           </div>
         </div>
       ) : (
@@ -659,9 +685,9 @@ export const ResourceMaps: React.FC<ResourceMapsProps> = ({ onOpenStoreModal }) 
                     {route.title}
                   </h4>
 
-                  {/* Waypoints */}
+                  {/* Waypoints Path Description */}
                   <div className="bg-[#060c18] border border-slate-800 p-2.5 rounded-xl font-mono text-xs text-cyan-300">
-                    <span className="text-[10px] text-slate-500 block font-tek uppercase">GPS Waypoint Path</span>
+                    <span className="text-[10px] text-slate-500 block font-tek uppercase">Farming Circuit Path</span>
                     {route.gpsWaypoints}
                   </div>
 
@@ -716,26 +742,29 @@ export const ResourceMaps: React.FC<ResourceMapsProps> = ({ onOpenStoreModal }) 
               {/* Zoom Controls */}
               <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1 text-xs font-mono">
                 <button
-                  onClick={() => setModalZoom(prev => Math.max(0.6, prev - 0.25))}
+                  onClick={() => setModalZoom(prev => Math.max(0.6, Math.round((prev - 0.25) * 100) / 100))}
                   className="p-1.5 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg transition-all cursor-pointer"
                   title="Zoom Out"
                 >
                   <ZoomOut className="w-4 h-4" />
                 </button>
-                <span className="px-2 font-bold text-cyan-300 min-w-[50px] text-center">
+                <span className="px-2 font-bold text-cyan-300 min-w-[50px] text-center select-none">
                   {Math.round(modalZoom * 100)}%
                 </span>
                 <button
-                  onClick={() => setModalZoom(prev => Math.min(3, prev + 0.25))}
+                  onClick={() => setModalZoom(prev => Math.min(5, Math.round((prev + 0.25) * 100) / 100))}
                   className="p-1.5 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg transition-all cursor-pointer"
                   title="Zoom In"
                 >
                   <ZoomIn className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => setModalZoom(1)}
+                  onClick={() => {
+                    setModalZoom(1);
+                    setModalPan({ x: 0, y: 0 });
+                  }}
                   className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-all cursor-pointer"
-                  title="Reset Zoom"
+                  title="Reset Pan & Zoom"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                 </button>
@@ -756,30 +785,62 @@ export const ResourceMaps: React.FC<ResourceMapsProps> = ({ onOpenStoreModal }) 
               <button
                 onClick={() => setIsFullscreenOpen(false)}
                 className="p-2 bg-slate-900 hover:bg-red-950/60 border border-slate-800 hover:border-red-500/50 text-slate-400 hover:text-red-300 rounded-xl transition-all cursor-pointer"
-                title="Close Fullscreen View"
+                title="Close Fullscreen View (Esc)"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
           </div>
 
-          {/* Modal Body: Scrollable Zoomable Image Canvas */}
-          <div className="flex-1 overflow-auto flex items-center justify-center p-2 sm:p-6 my-2 bg-[#02050c] rounded-2xl border border-slate-900">
+          {/* Modal Body: Interactive Zoomable and Pannable Canvas */}
+          <div 
+            ref={modalContainerRef}
+            className={`flex-1 overflow-hidden relative flex items-center justify-center p-2 sm:p-6 my-2 bg-[#02050c] rounded-2xl border border-slate-900 select-none ${
+              isModalDragging ? 'cursor-grabbing' : 'cursor-grab'
+            }`}
+            onMouseDown={handleModalMouseDown}
+            onMouseMove={handleModalMouseMove}
+            onMouseUp={handleModalMouseUp}
+            onMouseLeave={handleModalMouseUp}
+            onTouchStart={handleModalTouchStart}
+            onTouchMove={handleModalTouchMove}
+            onTouchEnd={handleModalTouchEnd}
+            style={{ touchAction: 'none' }}
+          >
+            {/* Background Radar Grid */}
             <div 
-              className="transition-transform duration-150 ease-out origin-center select-none"
-              style={{ transform: `scale(${modalZoom})` }}
+              className="absolute inset-0 opacity-10 pointer-events-none"
+              style={{
+                backgroundImage: 'radial-gradient(circle at 1px 1px, #06b6d4 1.2px, transparent 0)',
+                backgroundSize: '32px 32px'
+              }}
+            />
+
+            <div 
+              className="pointer-events-none flex items-center justify-center max-w-full max-h-full"
+              style={{
+                transform: `translate(${modalPan.x}px, ${modalPan.y}px) scale(${modalZoom})`,
+                transformOrigin: 'center center',
+                transition: isModalDragging ? 'none' : 'transform 0.1s ease-out'
+              }}
             >
-              <img
+              <TekImage
+                ref={modalImageRef}
                 src={currentMap.imageUrl}
-                alt={`Full-resolution enlarged overview map of ${currentMap.name} by Exhumed showing terrain and coordinates`}
-                className="max-h-[82vh] max-w-[82vw] object-contain rounded-lg shadow-2xl border border-slate-800"
-                onError={(e) => {
-                  const target = e.currentTarget;
-                  if (!target.src.endsWith('/images/placeholder_dino.svg')) {
-                    target.src = '/images/placeholder_dino.svg';
-                  }
-                }}
+                alt={`Full-resolution enlarged overview map of ${currentMap.name} by Exhumed showing terrain`}
+                variant="map"
+                loadingLabel={`TRANSMITTING HIGH-RES ${currentMap.name.toUpperCase()} TOPOGRAPHY...`}
+                containerClassName="max-h-[85vh] max-w-[90vw] rounded-lg"
+                className="max-h-[85vh] max-w-[90vw] object-contain rounded-lg shadow-2xl border border-slate-800 pointer-events-none drop-shadow-[0_20px_50px_rgba(0,0,0,0.9)]"
               />
+            </div>
+
+            {/* Modal Instruction Floating Pill */}
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-none opacity-80">
+              <div className="bg-[#050e1c]/90 backdrop-blur-md border border-cyan-500/30 px-3 py-1 rounded-full text-[10px] font-mono text-cyan-300 shadow-lg flex items-center gap-1.5 whitespace-nowrap">
+                <Move className="w-3 h-3 text-cyan-400" />
+                <span>Drag to pan • Scroll/Pinch to zoom • Click Reset (↺) to center</span>
+              </div>
             </div>
           </div>
 
@@ -800,7 +861,7 @@ export const ResourceMaps: React.FC<ResourceMapsProps> = ({ onOpenStoreModal }) 
               </a>
             </div>
             <div className="text-[11px] font-mono text-slate-500">
-              Scroll or use zoom controls to inspect mountain passes, deep valleys, and loot coordinates
+              Scroll or use zoom controls to inspect mountain passes, deep valleys, and resource regions
             </div>
           </div>
         </div>

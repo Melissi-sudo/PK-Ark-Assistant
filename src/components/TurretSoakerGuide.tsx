@@ -13,6 +13,7 @@ import {
   Activity
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { TekImage } from './common/TekImage';
 
 export const TurretSoakerGuide: React.FC = () => {
   const [selectedSoaker, setSelectedSoaker] = useState<'stego' | 'trike' | 'carbonemys'>('stego');
@@ -148,16 +149,13 @@ export const TurretSoakerGuide: React.FC = () => {
               </div>
 
               <div className="relative rounded-xl overflow-hidden border-2 border-cyan-500/40 shadow-lg shadow-black">
-                <img 
+                <TekImage 
                   src={stegoVariant === 'regular' ? '/images/stegosaurus.jpg' : '/images/tek_stegosaurus.jpg'} 
                   alt={stegoVariant === 'regular' ? 'Organic Stegosaurus heavy turret soaker with armored dorsal plates absorbing auto-turret bullets' : 'Tek Stegosaurus cybernetic variant with electrified defensive plates for high-tier raiding'}
+                  variant="dossier"
+                  loadingLabel={stegoVariant === 'regular' ? 'LOADING STEGOSAURUS DOSSIER...' : 'INITIALIZING TEK STEGO CYBERNETICS...'}
+                  containerClassName="w-full h-64"
                   className="w-full h-64 object-cover" 
-                  onError={(e) => {
-                    const target = e.currentTarget;
-                    if (!target.src.endsWith('/images/placeholder_dino.svg')) {
-                      target.src = '/images/placeholder_dino.svg';
-                    }
-                  }}
                 />
                 <div className="absolute top-3 left-3 bg-black/80 backdrop-blur-md px-2.5 py-1 rounded text-xs font-tek text-cyan-300 border border-cyan-500/40">
                   {stegoVariant === 'regular' ? '◈ THE ISLAND / BASE MAPS' : '⚡ EXTINCTION ONLY • LVL 180 WILD'}
@@ -229,16 +227,13 @@ export const TurretSoakerGuide: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-5">
               <div className="relative rounded-xl overflow-hidden border-2 border-cyan-500/40 shadow-lg shadow-black">
-                <img 
+                <TekImage 
                   src="/images/triceratops.jpg" 
                   alt="Triceratops displaying 85 percent frontal head damage reduction armor against auto-turret fire" 
+                  variant="dossier"
+                  loadingLabel="LOADING TRICERATOPS PROFILE..."
+                  containerClassName="w-full h-64"
                   className="w-full h-64 object-cover" 
-                  onError={(e) => {
-                    const target = e.currentTarget;
-                    if (!target.src.endsWith('/images/placeholder_dino.svg')) {
-                      target.src = '/images/placeholder_dino.svg';
-                    }
-                  }}
                 />
                 <div className="absolute top-3 left-3 bg-black/80 backdrop-blur-md px-2.5 py-1 rounded text-xs font-tek text-amber-300 border border-amber-500/40">
                   ◈ 85% FRONTAL HEAD REDUCTION
@@ -300,16 +295,13 @@ export const TurretSoakerGuide: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-5">
               <div className="relative rounded-xl overflow-hidden border-2 border-cyan-500/40 shadow-lg shadow-black">
-                <img 
+                <TekImage 
                   src="/images/carbonemys.jpg" 
                   alt="Carbonemys giant turtle demonstrating 80 percent shell and 50 percent tail bullet damage reduction angles" 
+                  variant="dossier"
+                  loadingLabel="LOADING CARBONEMYS PROFILE..."
+                  containerClassName="w-full h-64"
                   className="w-full h-64 object-cover" 
-                  onError={(e) => {
-                    const target = e.currentTarget;
-                    if (!target.src.endsWith('/images/placeholder_dino.svg')) {
-                      target.src = '/images/placeholder_dino.svg';
-                    }
-                  }}
                 />
                 <div className="absolute top-3 left-3 bg-black/80 backdrop-blur-md px-2.5 py-1 rounded text-xs font-tek text-emerald-300 border border-emerald-500/40">
                   ◈ 80% SHELL / 50% TAIL REDUCTION
