@@ -2,17 +2,30 @@ import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const ROUTE_TITLES: Record<string, string> = {
-  '/': 'PK Ark Assistant | Official ARK PvP Companion',
-  '/taming': 'Taming Calculator & Starve Engine | PK Ark Assistant',
-  '/soakers': 'Turret Soaker Hitbox Matrix & PvP Meta | PK Ark Assistant',
-  '/pyromane': 'Pyromane Taming & Combat Guide | PK Ark Assistant',
-  '/breeding': 'Breeding, Incubation & Mutation Hub | PK Ark Assistant',
-  '/maps': 'Topographical Interactive Resource Maps | PK Ark Assistant',
-  '/resources': 'Tribe Ammo & Gunpowder Quota | PK Ark Assistant',
-  '/ammo': 'Tribe Ammo & Gunpowder Quota | PK Ark Assistant',
-  '/stats': 'Dino Wild Stats & Mutation Lookup | PK Ark Assistant',
-  '/timers': 'War Room Raid Timers & Alarms | PK Ark Assistant',
-  '/store': 'PK Store Small Tribes Vault Lines | PK Ark Assistant',
+  '/': 'PK Ultimate Guide | Multi-Game Tactical Library',
+  '/library': 'PK Ultimate Guide | Multi-Game Tactical Library',
+  
+  // ARK Routes
+  '/taming': 'ARK Taming & Starve Engine | PK Ultimate Guide',
+  '/soakers': 'ARK Turret Soaker Hitbox Matrix | PK Ultimate Guide',
+  '/pyromane': 'ARK Pyromane Taming & Combat Guide | PK Ultimate Guide',
+  '/breeding': 'ARK Breeding & Mutation Hub | PK Ultimate Guide',
+  '/maps': 'ARK Interactive Resource Maps | PK Ultimate Guide',
+  '/resources': 'ARK Tribe Ammo & Gunpowder Quota | PK Ultimate Guide',
+  '/ammo': 'ARK Tribe Ammo & Gunpowder Quota | PK Ultimate Guide',
+  '/stats': 'ARK Dino Wild Stats & Mutation Lookup | PK Ultimate Guide',
+  '/timers': 'ARK War Room Timers & Alarms | PK Ultimate Guide',
+  '/store': 'PK Store Official Vault Lines | PK Ultimate Guide',
+
+  // Minecraft Routes
+  '/minecraft': 'Minecraft Text Color & Gradient Generator | PK Ultimate Guide',
+  '/minecraft/generator': 'Minecraft Text Color & Gradient Generator | PK Ultimate Guide',
+  '/minecraft/potions': 'Minecraft 1.21+ Potion Brewing Lab | PK Ultimate Guide',
+  '/minecraft/ores': 'Minecraft Ore Elevation & Mining Heights | PK Ultimate Guide',
+  '/minecraft/villagers': 'Minecraft Villager Trading & Workstations | PK Ultimate Guide',
+  '/minecraft/redstone': 'Minecraft Redstone Timing & Logic Engine | PK Ultimate Guide',
+  '/minecraft/enchanting': 'Minecraft Enchanting & Anvil Optimizer | PK Ultimate Guide',
+  '/minecraft/mobs': 'Minecraft Mob Spawning & Raid Mechanics | PK Ultimate Guide',
 };
 
 export const PageMetaSync: React.FC = () => {
@@ -27,9 +40,9 @@ export const PageMetaSync: React.FC = () => {
     if (!matchedTitle) {
       if (pathname.startsWith('/maps/')) {
         const mapName = pathname.replace('/maps/', '').replace(/_/g, ' ').toUpperCase();
-        matchedTitle = `${mapName} Resource Map | PK Ark Assistant`;
+        matchedTitle = `ARK ${mapName} Resource Map | PK Ultimate Guide`;
       } else {
-        matchedTitle = 'Signal Lost (404) | PK Ark Assistant';
+        matchedTitle = 'Signal Lost (404) | PK Ultimate Guide';
       }
     }
 

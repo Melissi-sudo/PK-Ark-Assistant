@@ -2,6 +2,7 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { 
   getAuth, 
   GoogleAuthProvider, 
+  OAuthProvider,
   signInWithPopup, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
@@ -57,6 +58,7 @@ const app = getApps().length === 0 ? initializeApp(resolvedFirebaseConfig) : get
 export const auth = getAuth(app);
 export const db = getFirestore(app, resolvedFirebaseConfig.firestoreDatabaseId || '(default)');
 export const googleProvider = new GoogleAuthProvider();
+export const steamProvider = new OAuthProvider('oidc.steam');
 
 export { 
   signInWithPopup, 

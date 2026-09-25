@@ -1,14 +1,14 @@
 /**
- * PK Ark Assistant
+ * PK Ultimate Guide
  * Crafted by The Pitsoni Empire
- * Featuring Automated Taming, Breeding, Tribe Resources, Alarms & PK Store Integration
+ * Multi-Game Tactical Library: ARK Survival Ascended & Minecraft 1.21+
  */
 
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthModal } from './components/AuthModal';
-import { Navbar, TABS } from './components/Navbar';
+import { Navbar } from './components/Navbar';
 import { PkStoreBanner } from './components/PkStoreBanner';
 import { PkStoreModal } from './components/PkStoreModal';
 import { TamingCalculator } from './components/TamingCalculator';
@@ -25,22 +25,29 @@ import { DailyArkTip } from './components/DailyArkTip';
 import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal';
 import { NotFoundPage } from './components/NotFoundPage';
 import { PageMetaSync } from './components/common/PageMetaSync';
+import { LibraryHub } from './components/LibraryHub';
+import { MinecraftHub } from './components/minecraft/MinecraftHub';
 import { ServerRatePreset, ActiveTimer } from './types';
 import { SERVER_PRESETS } from './data/presets';
 import { sendBrowserNotification, playTekAlarmSound } from './utils/audioAlert';
-import { Shield, ExternalLink, Zap, Keyboard } from 'lucide-react';
+import { Shield, ExternalLink, Zap, Keyboard, BookOpen, Flame, Beaker, Pickaxe } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db, doc, setDoc, getDoc } from './lib/firebase';
 
 const LOCAL_STORAGE_TIMERS_KEY = 'ark_companion_active_timers_v1';
 const LOCAL_STORAGE_PRESET_KEY = 'ark_companion_server_preset_v1';
+const SESSION_INTRO_KEY = 'pk_intro_viewed_session';
 
 function MainAppContent() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const isMinecraft = location.pathname.startsWith('/minecraft');
+  const isLibrary = location.pathname === '/' || location.pathname === '/library';
+  const isArk = !isMinecraft && !isLibrary;
   
-  // Rate preset (default to Official Small Tribes as requested)
+  // Rate preset (default to Official Small Tribes)
   const [currentPreset, setCurrentPreset] = useState<ServerRatePreset>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(LOCAL_STORAGE_PRESET_KEY);
@@ -60,8 +67,13 @@ function MainAppContent() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState<boolean>(false);
   
-  // Holographic Boot Intro Sequence
-  const [showIntro, setShowIntro] = useState<boolean>(true);
+  // Holographic Boot Intro Sequence (Shown once per session)
+  const [showIntro, setShowIntro] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return !sessionStorage.getItem(SESSION_INTRO_KEY);
+    }
+    return false;
+  });
 
   // Timers
   const [timers, setTimers] = useState<ActiveTimer[]>(() => {
@@ -82,7 +94,7 @@ function MainAppContent() {
         title: 'Starve Alarm: Tek Stegosaurus (Lvl 150)',
         creatureName: 'Tek Stegosaurus',
         type: 'tame_starve',
-        targetTimestamp: Date.now() + 24 * 60 * 1000, // 24 mins
+        targetTimestamp: Date.now() + 24 * 60 * 1000,
         totalDurationSeconds: 24 * 60,
         notes: 'Starve timer for 16x Regular Kibble. Hit tail hitbox to soak without dismount.',
         soundAlerted: false
@@ -92,7 +104,7 @@ function MainAppContent() {
         title: 'Egg Hatch: Carcharodontosaurus',
         creatureName: 'Carcharodontosaurus',
         type: 'egg_hatch',
-        targetTimestamp: Date.now() + 45 * 60 * 1000, // 45 mins
+        targetTimestamp: Date.now() + 45 * 60 * 1000,
         totalDurationSeconds: 45 * 60,
         notes: 'Optimal temp 43-45°C. Keep raw meat inventory packed for baby hand-feed.',
         soundAlerted: false
@@ -147,7 +159,7 @@ function MainAppContent() {
             savedTimers: timers,
             lastTimerSync: Date.now()
           }, { merge: true });
-        } catch (e) {
+        } catch {
           // ignore cloud write transient error
         }
       };
@@ -169,8 +181,8 @@ function MainAppContent() {
             changed = true;
             if (soundEnabled) {
               sendBrowserNotification(
-                `🚨 ARK ALERT: ${timer.title}`,
-                timer.notes || 'Timer has expired! Return to your creature immediately.'
+                `🚨 ALERT: ${timer.title}`,
+                timer.notes || 'Timer has expired! Return immediately.'
               );
               playTekAlarmSound();
             }
@@ -208,17 +220,15 @@ function MainAppContent() {
 
   const hasExpiringTimers = timers.some(t => {
     const rem = t.targetTimestamp - Date.now();
-    return rem <= 120000; // <= 2 mins or already expired
+    return rem <= 120000;
   });
 
   // Global Keyboard Navigation Shortcuts
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      // If user is currently typing in an input, select, or textarea, don't trigger general shortcuts
       const activeTag = (document.activeElement?.tagName || '').toLowerCase();
       const isInputActive = activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select';
 
-      // Escape key closes modals
       if (e.key === 'Escape') {
         setIsStoreModalOpen(false);
         setIsAuthModalOpen(false);
@@ -226,14 +236,12 @@ function MainAppContent() {
         return;
       }
 
-      // '?' opens keyboard shortcuts help (only when not typing in an input field)
       if (e.key === '?' && !isInputActive) {
         e.preventDefault();
         setIsShortcutsModalOpen(prev => !prev);
         return;
       }
 
-      // Alt + C jumps focus directly to main content
       if (e.altKey && (e.key === 'c' || e.key === 'C')) {
         e.preventDefault();
         const mainEl = document.getElementById('main-content');
@@ -241,38 +249,16 @@ function MainAppContent() {
         return;
       }
 
-      // Alt + M toggles sound
       if (e.altKey && (e.key === 'm' || e.key === 'M')) {
         e.preventDefault();
         setSoundEnabled(prev => !prev);
         return;
       }
 
-      // Alt + P opens PK Store modal
       if (e.altKey && (e.key === 'p' || e.key === 'P')) {
         e.preventDefault();
         setIsStoreModalOpen(prev => !prev);
         return;
-      }
-
-      // Alt + 1..9 switches pages smoothly via router
-      if (e.altKey) {
-        const tabPathMap: Record<string, string> = {
-          '1': '/taming',
-          '2': '/soakers',
-          '3': '/pyromane',
-          '4': '/breeding',
-          '5': '/maps',
-          '6': '/resources',
-          '7': '/stats',
-          '8': '/timers',
-          '9': '/store'
-        };
-
-        if (tabPathMap[e.key]) {
-          e.preventDefault();
-          navigate(tabPathMap[e.key]);
-        }
       }
     };
 
@@ -285,21 +271,24 @@ function MainAppContent() {
       {/* Synchronize page document title & scroll to top on path change */}
       <PageMetaSync />
 
-      {/* Accessible Skip-to-content link for keyboard screen-reader users */}
+      {/* Accessible Skip-to-content link */}
       <a 
         href="#main-content" 
         className="skip-to-content focus:not-sr-only"
-        aria-label="Skip to main war room content"
+        aria-label="Skip to main guide content"
       >
-        ◈ SKIP TO WAR ROOM CONTENT (ALT+C)
+        ◈ SKIP TO MAIN CONTENT (ALT+C)
       </a>
 
-      {/* ARK Specimen Implant Holographic Boot Intro */}
+      {/* Specimen Holographic Boot Intro Sequence */}
       <AnimatePresence>
         {showIntro && (
           <ArkLoadingIntro
             key="ark-boot-intro"
-            onComplete={() => setShowIntro(false)}
+            onComplete={() => {
+              sessionStorage.setItem(SESSION_INTRO_KEY, 'true');
+              setShowIntro(false);
+            }}
           />
         )}
       </AnimatePresence>
@@ -307,7 +296,7 @@ function MainAppContent() {
       {/* PK Store Global Promotional Banner */}
       <PkStoreBanner onOpenStoreModal={() => setIsStoreModalOpen(true)} />
 
-      {/* ARK HUD Top Header */}
+      {/* HUD Top Header & Multi-Game Switcher */}
       <Navbar
         currentPreset={currentPreset}
         setCurrentPreset={setCurrentPreset}
@@ -321,11 +310,11 @@ function MainAppContent() {
         onOpenKeyboardShortcuts={() => setIsShortcutsModalOpen(true)}
       />
 
-      {/* Main Container with smooth animated page transitions */}
+      {/* Main Container */}
       <main 
         id="main-content" 
         tabIndex={-1} 
-        aria-label="War Room Main Display"
+        aria-label="PK Ultimate Guide Main Display"
         className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-6 focus:outline-none"
       >
         <AnimatePresence mode="wait">
@@ -337,8 +326,16 @@ function MainAppContent() {
             transition={{ duration: 0.16, ease: 'easeOut' }}
           >
             <Routes location={location}>
-              {/* Canonical Routes */}
-              <Route path="/" element={<Navigate to="/taming" replace />} />
+              {/* Library Home Route */}
+              <Route path="/" element={<LibraryHub />} />
+              <Route path="/library" element={<LibraryHub />} />
+
+              {/* Minecraft Hub Routes */}
+              <Route path="/minecraft" element={<MinecraftHub />} />
+              <Route path="/minecraft/:subtab" element={<MinecraftHub />} />
+
+              {/* ARK Canonical & Game Routes */}
+              <Route path="/ark" element={<Navigate to="/taming" replace />} />
               
               <Route
                 path="/taming"
@@ -434,28 +431,51 @@ function MainAppContent() {
           </motion.div>
         </AnimatePresence>
 
-        {/* Daily ARK Tip Component (Fades in at the bottom of the main dashboard) */}
-        <DailyArkTip onNavigateTab={(tab) => navigate('/' + tab)} />
+        {/* Daily ARK Tip Component (shown when browsing ARK War Room) */}
+        {isArk && (
+          <DailyArkTip onNavigateTab={(tab) => navigate('/' + tab)} />
+        )}
       </main>
 
-      {/* Bottom Action Bar (Mobile Responsive with Safe Area Support) */}
+      {/* Bottom Action Bar */}
       <aside className="sticky bottom-0 z-30 bg-[#060c18]/95 backdrop-blur-md border-t border-cyan-500/30 py-2 sm:py-2.5 px-3 sm:px-6 shadow-2xl pb-safe">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 text-xs font-hud">
           <div className="flex items-center gap-2 text-cyan-400 min-w-0">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
             <span className="font-tek text-[11px] sm:text-xs tracking-wider text-slate-300 truncate">
-              <span className="hidden xs:inline">OFFICIAL </span>SMALL TRIBES • <span className="text-cyan-300">PVP META</span>
+              {isMinecraft ? (
+                <>
+                  <span className="text-emerald-400 font-bold font-mojangles">MINECRAFT 1.21+</span> • BLOCKY COMPANION
+                </>
+              ) : isLibrary ? (
+                <>
+                  <span className="text-cyan-300 font-bold">PK ULTIMATE GUIDE</span> • GAME SELECTOR
+                </>
+              ) : (
+                <>
+                  <span className="hidden xs:inline">OFFICIAL </span>SMALL TRIBES • <span className="text-cyan-300">PVP META</span>
+                </>
+              )}
             </span>
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            <Link
-              to="/soakers"
-              className="px-2.5 py-1.5 bg-[#0a1526] hover:bg-cyan-950/60 border border-cyan-500/40 text-cyan-300 rounded-lg text-[11px] sm:text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer min-h-[36px]"
-            >
-              <Shield className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">SOAKER </span><span>HITBOX</span>
-            </Link>
+            {isMinecraft ? (
+              <Link
+                to="/library"
+                className="mc-button px-3 py-1 text-[11px] sm:text-xs text-white uppercase font-bold flex items-center gap-1.5 cursor-pointer min-h-[34px]"
+              >
+                <span>GAME MENU</span>
+              </Link>
+            ) : (
+              <Link
+                to="/soakers"
+                className="px-2.5 py-1.5 bg-[#0a1526] hover:bg-cyan-950/60 border border-cyan-500/40 text-cyan-300 rounded-lg text-[11px] sm:text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer min-h-[36px]"
+              >
+                <Shield className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">SOAKER </span><span>HITBOX</span>
+              </Link>
+            )}
 
             <Link
               to="/store"
@@ -477,20 +497,28 @@ function MainAppContent() {
             </div>
             <div>
               <div className="font-hud font-bold text-slate-200 tracking-wider">
-                PK ARK ASSISTANT // OFFICIAL PVP COMPANION
+                PK ULTIMATE GUIDE // MULTI-GAME TACTICAL LIBRARY
               </div>
               <div className="text-[11px] text-slate-400 font-tek mt-0.5">
-                CRAFTED BY <strong className="text-cyan-300">THE PITSONI EMPIRE</strong> // OFFICIAL PVP WAR ROOM
+                CRAFTED BY <strong className="text-cyan-300">THE PITSONI EMPIRE</strong> // ARK SURVIVAL ASCENDED & MINECRAFT 1.21+
               </div>
             </div>
           </div>
 
-          {/* Discord and Links */}
+          {/* Links & Quick Nav */}
           <div className="flex items-center gap-3 sm:gap-4 flex-wrap justify-center">
+            <Link
+              to="/library"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#091322] hover:bg-cyan-950/60 border border-cyan-500/30 rounded-lg text-cyan-300 font-hud text-xs transition-colors cursor-pointer"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>All Guides</span>
+            </Link>
+
             <button
               onClick={() => setIsShortcutsModalOpen(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-[#091322] hover:bg-cyan-950/60 border border-cyan-500/30 rounded-lg text-cyan-300 font-hud text-xs transition-colors cursor-pointer"
-              title="Keyboard Shortcuts & Accessibility Guide (Press ?)"
+              title="Keyboard Shortcuts Guide (Press ?)"
             >
               <Keyboard className="w-3.5 h-3.5" />
               <span>Shortcuts [?]</span>
@@ -506,10 +534,6 @@ function MainAppContent() {
               <span>PK Store Discord</span>
               <ExternalLink className="w-3 h-3" />
             </a>
-
-            <span className="text-[11px] text-slate-400 font-tek">
-              Active Preset: {currentPreset.name} ({currentPreset.badge})
-            </span>
           </div>
         </div>
       </footer>

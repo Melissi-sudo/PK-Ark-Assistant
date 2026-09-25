@@ -1,6 +1,6 @@
 {
   "name": "PK Ark Assistant",
-  "description": "PK Ark Assistant - official ARK Survival Ascended & Evolved companion with automated taming, breeding, and resource calculators by The Pitsoni Empire.",
+  "description": "PK Ultimate Guide - official multi-game tactical guide library featuring ARK Survival Ascended and Minecraft 1.21+ companion calculators by The Pitsoni Empire.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

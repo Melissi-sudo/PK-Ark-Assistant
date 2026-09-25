@@ -1,10 +1,17 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Mojangles';
+  src: local('Mojangles'), local('Minecraft'), local('Minecraftia'), url('https://fonts.cdnfonts.com/s/14878/MinecraftRegular-Bmg3.woff') format('woff');
+  font-display: swap;
+}
+
 @layer base {
   :root {
     --font-tek: 'Chakra Petch', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-hud: 'Rajdhani', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-sans: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mojangles: 'Mojangles', 'Silkscreen', 'Press Start 2P', 'VT323', monospace;
   }
 
   body {
@@ -20,6 +27,11 @@
 
 .font-hud {
   font-family: var(--font-hud);
+}
+
+.font-mojangles, .font-minecraft {
+  font-family: var(--font-mojangles);
+  letter-spacing: 0.5px;
 }
 
 /* Custom ARK Holographic & HUD Styling */
@@ -53,6 +65,72 @@
   background-image: 
     linear-gradient(to right, rgba(0, 229, 255, 0.03) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Minecraft Blocky UI Elements */
+.mc-button {
+  font-family: var(--font-mojangles);
+  background-color: #727272;
+  border-top: 3px solid #b4b4b4;
+  border-left: 3px solid #b4b4b4;
+  border-right: 3px solid #2b2b2b;
+  border-bottom: 3px solid #2b2b2b;
+  box-shadow: inset 2px 2px #dedede, inset -2px -2px #484848;
+  color: #ffffff;
+  text-shadow: 2px 2px #3f3f3f;
+  image-rendering: pixelated;
+  transition: none;
+}
+.mc-button:hover {
+  background-color: #8b8b8b;
+  border-top-color: #d1d1d1;
+  border-left-color: #d1d1d1;
+  border-right-color: #373737;
+  border-bottom-color: #373737;
+  color: #ffffa0;
+}
+.mc-button:active {
+  background-color: #555555;
+  border-top: 3px solid #2b2b2b;
+  border-left: 3px solid #2b2b2b;
+  border-right: 3px solid #b4b4b4;
+  border-bottom: 3px solid #b4b4b4;
+  box-shadow: inset 2px 2px #373737, inset -2px -2px #dedede;
+}
+
+.mc-button-green {
+  font-family: var(--font-mojangles);
+  background-color: #4a7522;
+  border-top: 3px solid #7cb342;
+  border-left: 3px solid #7cb342;
+  border-right: 3px solid #25400d;
+  border-bottom: 3px solid #25400d;
+  box-shadow: inset 2px 2px #8bc34a, inset -2px -2px #335414;
+  color: #ffffff;
+  text-shadow: 2px 2px #1b2e09;
+}
+.mc-button-green:hover {
+  background-color: #5b8c2c;
+  color: #ffffa0;
+}
+
+.mc-panel-dirt {
+  background-color: #1c130d;
+  border: 4px solid #0f0a06;
+  box-shadow: inset 0 0 0 2px #3d2a1d;
+}
+
+.mc-grass-header {
+  background: linear-gradient(180deg, #5b8731 0%, #466c24 100%);
+  border-bottom: 4px solid #2f4918;
+}
+
+.mc-slot {
+  background-color: #313131;
+  border-top: 3px solid #1a1a1a;
+  border-left: 3px solid #1a1a1a;
+  border-right: 3px solid #6e6e6e;
+  border-bottom: 3px solid #6e6e6e;
 }
 
 /* Tactical custom scrollbar */
@@ -95,60 +173,8 @@ button, select, input, a {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Accessibility: High-Visibility Focus Rings for Keyboard Navigation */
+/* Accessibility */
 :focus-visible {
   outline: 2px solid #00e5ff !important;
-  outline-offset: 2px !important;
-  box-shadow: 0 0 12px rgba(0, 229, 255, 0.5) !important;
+  outline-offset: 2px;
 }
-
-/* Accessible Skip-to-content link */
-.skip-to-content {
-  position: absolute;
-  top: -120px;
-  left: 1rem;
-  z-index: 99999;
-  padding: 0.625rem 1.25rem;
-  background: #070e1a;
-  border: 2px solid #00e5ff;
-  color: #00e5ff;
-  font-family: var(--font-tek);
-  font-weight: 700;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 20px rgba(0, 229, 255, 0.4);
-  transition: top 0.15s ease-in-out;
-}
-.skip-to-content:focus {
-  top: 1rem;
-}
-
-/* ARK Tek Image Loader Keyframes & Utility Animations */
-@keyframes tekScanline {
-  0% { transform: translateY(-100%); }
-  100% { transform: translateY(800%); }
-}
-
-@keyframes tekShimmer {
-  0% { transform: translateX(-150%); }
-  100% { transform: translateX(250%); }
-}
-
-@keyframes spinSlow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.animate-tek-scanline {
-  animation: tekScanline 2.5s linear infinite;
-}
-
-.animate-tek-shimmer {
-  animation: tekShimmer 1.8s ease-in-out infinite;
-}
-
-.animate-spin-slow {
-  animation: spinSlow 8s linear infinite;
-}
-
-
-

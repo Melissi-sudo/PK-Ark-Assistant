@@ -7,12 +7,12 @@ interface ArkLoadingIntroProps {
 }
 
 const TELEMETRY_STEPS = [
-  { at: 10, text: 'BOOTING SPECIMEN IMPLANT TELEMETRY...' },
-  { at: 30, text: 'CONNECTING TO OFFICIAL PVP CLUSTER (SMALL TRIBES)...' },
-  { at: 55, text: 'CALIBRATING TORPOR DEPLETION & STARVE ALGORITHMS...' },
-  { at: 75, text: 'SYNCING EXHUMED HIGH-RES CARTOGRAPHY MATRIX...' },
+  { at: 10, text: 'INITIALIZING MULTI-GAME COMPANION DATABASE...' },
+  { at: 30, text: 'CALIBRATING WORLD SEED CARTOGRAPHY & MAP ENGINES...' },
+  { at: 55, text: 'LOADING SURVIVAL & CREATIVE COMMAND MATRICES...' },
+  { at: 75, text: 'SYNCING GAME ARCHIVES (ARK, MINECRAFT & EXPANSIONS)...' },
   { at: 92, text: 'INITIALIZING PITSONI EMPIRE WAR ROOM PROTOCOLS...' },
-  { at: 100, text: 'SYSTEM READY // SURVIVOR IDENTIFIED' },
+  { at: 100, text: 'SYSTEM READY // ACCESS GRANTED' },
 ];
 
 export const ArkLoadingIntro: React.FC<ArkLoadingIntroProps> = ({ onComplete }) => {
@@ -94,7 +94,7 @@ export const ArkLoadingIntro: React.FC<ArkLoadingIntroProps> = ({ onComplete }) 
         <div className="flex items-center gap-2 font-mono text-[10px] sm:text-[11px] text-cyan-400/80 truncate mr-2">
           <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping shrink-0" />
           <span className="truncate">
-            <span className="hidden sm:inline">SPECIMEN IMPLANT LINK // </span>SECURE TEK CONNECTION
+            <span className="hidden sm:inline">PK ULTIMATE GUIDE // </span>TACTICAL GAME ARCHIVE
           </span>
         </div>
 
@@ -109,7 +109,7 @@ export const ArkLoadingIntro: React.FC<ArkLoadingIntroProps> = ({ onComplete }) 
         </motion.button>
       </div>
 
-      {/* Center Holographic Core: ARK Specimen Implant */}
+      {/* Center Holographic Core */}
       <div className="relative flex flex-col items-center justify-center z-10 max-w-lg px-4 text-center">
         {/* Holographic Ring Cluster */}
         <div className="relative w-40 h-40 sm:w-48 sm:h-48 flex items-center justify-center mb-6">
@@ -134,7 +134,7 @@ export const ArkLoadingIntro: React.FC<ArkLoadingIntroProps> = ({ onComplete }) 
             className="absolute w-32 h-[2px] bg-gradient-to-r from-transparent via-cyan-300 to-transparent shadow-[0_0_10px_#22d3ee] pointer-events-none"
           />
 
-          {/* Core ARK Specimen Implant Diamond Prism */}
+          {/* Core Tactical Diamond Emblem */}
           <motion.div
             animate={{ 
               scale: [0.95, 1.05, 0.95],
@@ -179,17 +179,17 @@ export const ArkLoadingIntro: React.FC<ArkLoadingIntroProps> = ({ onComplete }) 
           className="space-y-1"
         >
           <div className="flex items-center justify-center gap-2">
-            <span className="px-2 py-0.5 text-[10px] font-tek font-bold uppercase tracking-widest bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 rounded shadow-sm">
-              SPECIMEN IDENTIFIER // SURVIVOR
+            <span className="px-2.5 py-0.5 text-[10px] font-tek font-bold uppercase tracking-widest bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 rounded shadow-sm">
+              TACTICAL GAME COMPANION // KNOWLEDGE ARCHIVE
             </span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-black font-hud text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-200 to-cyan-400 tracking-wider">
-            PK ARK ASSISTANT
+            PK ULTIMATE GUIDE
           </h1>
 
           <p className="text-xs text-slate-400 font-tek uppercase tracking-widest">
-            THE PITSONI EMPIRE // OFFICIAL PVP WAR ROOM
+            THE PITSONI EMPIRE // MULTI-GAME WAR ROOM & GUIDES
           </p>
         </motion.div>
 
@@ -216,7 +216,7 @@ export const ArkLoadingIntro: React.FC<ArkLoadingIntroProps> = ({ onComplete }) 
           </div>
 
           <div className="flex items-center justify-between text-[10px] font-mono text-slate-500">
-            <span>OFFICIAL MESH CLUSTER: ACTIVE</span>
+            <span>MULTI-GAME ENGINE: ONLINE</span>
             <span>DATA RATE: 4.8 GB/S</span>
           </div>
         </div>
@@ -229,14 +229,14 @@ export const ArkLoadingIntro: React.FC<ArkLoadingIntroProps> = ({ onComplete }) 
           className="mt-6 px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-hud font-bold text-xs tracking-wider uppercase transition-all cursor-pointer shadow-lg shadow-cyan-500/25 flex items-center gap-2"
         >
           <Play className="w-3.5 h-3.5 fill-black" />
-          <span>ENTER WAR ROOM NOW</span>
+          <span>ENTER PK ULTIMATE GUIDE</span>
         </motion.button>
       </div>
 
       {/* Bottom Corner HUD Details */}
       <div className="absolute bottom-4 left-6 right-6 hidden sm:flex items-center justify-between text-[10px] font-mono text-slate-600 z-20">
-        <div>SYS_VER: 2.4.0-ASA // PITSONI PROTOCOL</div>
-        <div>AUTHORIZED ACCESS ONLY // PVP COMBAT READY</div>
+        <div>SYS_VER: 3.1.0-MULTI // PITSONI PROTOCOL</div>
+        <div>AUTHORIZED ACCESS ONLY // TACTICAL ARCHIVE READY</div>
       </div>
     </motion.div>
   );
