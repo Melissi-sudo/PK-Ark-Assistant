@@ -27,12 +27,12 @@ const securityHeadersMiddleware = (_req: Request, res: Response, next: NextFunct
     'Content-Security-Policy',
     [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://*.firebaseio.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://*.firebaseio.com https://pagead2.googlesyndication.com https://*.googlesyndication.com https://*.google.com https://*.doubleclick.net",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com data:",
       "img-src 'self' data: blob: https: http:",
-      "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebasestorage.app wss://*.firebaseio.com",
-      "frame-src 'self' https://*.firebaseapp.com https://accounts.google.com",
+      "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebasestorage.app wss://*.firebaseio.com https://pagead2.googlesyndication.com https://*.google.com https://*.doubleclick.net",
+      "frame-src 'self' https://*.firebaseapp.com https://accounts.google.com https://googleads.g.doubleclick.net https://*.google.com",
       "frame-ancestors *",
       "object-src 'none'",
       "base-uri 'self'"
@@ -251,6 +251,18 @@ app.get('/api/firebase-config', (_req: Request, res: Response) => {
     messagingSenderId: serverFirebaseConfig.messagingSenderId,
     oAuthClientId: serverFirebaseConfig.oAuthClientId
   });
+});
+
+// Google Search Console HTML verification endpoint
+app.get('/google26638444466983e9.html', (_req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send('google-site-verification: google26638444466983e9.html');
+});
+
+app.get(/^\/google([a-zA-Z0-9_-]+)\.html$/, (req: Request, res: Response) => {
+  const filename = req.path.replace(/^\//, '');
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(`google-site-verification: ${filename}`);
 });
 
 // ==========================================
