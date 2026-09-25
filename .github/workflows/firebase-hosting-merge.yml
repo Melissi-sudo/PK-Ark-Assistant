@@ -33,3 +33,4 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GEN_LANG_CLIENT_0117247761 }}
           channelId: live
           projectId: gen-lang-client-0117247761
+          target: pkguides
