@@ -216,7 +216,7 @@ export const MinecraftTextColorGenerator: React.FC = () => {
   }, [generatorMode, signLines, commandText, activeStops, effects]);
 
   return (
-    <div className="font-mojangles space-y-6">
+    <div className="font-minecraftia space-y-6">
       {/* Top Banner */}
       <div className="mc-panel-dirt border-4 border-[#0e0a07] shadow-2xl overflow-hidden">
         <div className="mc-grass-header px-4 py-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-4 border-[#2b4414]">
@@ -688,7 +688,7 @@ export const MinecraftTextColorGenerator: React.FC = () => {
               </div>
             ) : (
               /* Command Block / Chat Terminal Preview */
-              <div className="bg-[#0c0906] border-2 border-[#2b1c13] p-4 font-mojangles text-xs sm:text-sm min-h-[120px] flex items-center justify-center text-center leading-relaxed">
+              <div className="bg-[#0c0906] border-2 border-[#2b1c13] p-4 font-minecraftia text-xs sm:text-sm min-h-[120px] flex items-center justify-center text-center leading-relaxed">
                 <div>
                   {computedCommandChars.map((c, idx) => renderChar(c, idx))}
                 </div>

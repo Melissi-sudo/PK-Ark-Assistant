@@ -166,7 +166,7 @@ export const MinecraftHub: React.FC = () => {
   });
 
   return (
-    <div className="font-mojangles min-h-[85vh] flex flex-col space-y-6">
+    <div className="font-minecraftia min-h-[85vh] flex flex-col space-y-6">
       {/* Minecraft Blocky Top Grass Header */}
       <div className="mc-panel-dirt rounded-none border-4 border-[#0e0a07] shadow-2xl overflow-hidden">
         {/* Grass Block Green Top Layer */}

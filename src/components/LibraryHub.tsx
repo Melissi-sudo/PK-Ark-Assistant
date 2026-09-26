@@ -74,14 +74,14 @@ export const LibraryHub: React.FC = () => {
 
       {/* Primary Game Selector: Two Distinct Themed Game Showcases */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* GAME 1: MINECRAFT (Greenish, Blocky Vibe with Mojangles Text) */}
+        {/* GAME 1: MINECRAFT (Greenish, Blocky Vibe with Minecraftia Text) */}
         <div className="mc-panel-dirt rounded-none border-4 border-[#140d09] shadow-2xl overflow-hidden flex flex-col justify-between group hover:border-[#385e1b] transition-all">
           {/* Minecraft Top Header */}
           <div className="mc-grass-header px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2 font-mojangles text-yellow-300 text-xs sm:text-sm uppercase drop-shadow-[1px_1px_0px_#1e2f0d]">
+            <div className="flex items-center gap-2 font-minecraftia text-yellow-300 text-xs sm:text-sm uppercase drop-shadow-[1px_1px_0px_#1e2f0d]">
               <span>◈ Minecraft Guide</span>
             </div>
-            <span className="font-mojangles text-[10px] bg-[#1a2b0d] border border-[#41681a] text-emerald-300 px-2 py-0.5">
+            <span className="font-minecraftia text-[10px] bg-[#1a2b0d] border border-[#41681a] text-emerald-300 px-2 py-0.5">
               v1.21 Tricky Trials
             </span>
           </div>
@@ -96,7 +96,7 @@ export const LibraryHub: React.FC = () => {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#140d09] via-transparent to-transparent opacity-60" />
             
-            <div className="absolute bottom-3 left-3 right-3 font-mojangles">
+            <div className="absolute bottom-3 left-3 right-3 font-minecraftia">
               <span className="text-[10px] px-2 py-1 bg-[#2b4414] border border-[#527d28] text-white uppercase shadow-md">
                 Sandbox & Adventure
               </span>
@@ -104,7 +104,7 @@ export const LibraryHub: React.FC = () => {
           </div>
 
           {/* Minecraft Content & Launch Action */}
-          <div className="p-5 sm:p-6 space-y-4 bg-[#1a120c] font-mojangles flex-1 flex flex-col justify-between">
+          <div className="p-5 sm:p-6 space-y-4 bg-[#1a120c] font-minecraftia flex-1 flex flex-col justify-between">
             <div className="space-y-2">
               <h2 className="text-xl sm:text-2xl font-bold uppercase text-white tracking-wide drop-shadow-[2px_2px_0px_#000]">
                 Minecraft Guide Suite

@@ -396,7 +396,7 @@ export const CustomItemCommandGenerator: React.FC = () => {
   const activeEnchantCount = Object.values(selectedEnchants).filter(v => Number(v) > 0).length;
 
   return (
-    <div className="font-mojangles space-y-6">
+    <div className="font-minecraftia space-y-6">
       {/* Banner */}
       <div className="mc-panel-dirt border-4 border-[#0e0a07] shadow-2xl overflow-hidden">
         <div className="mc-grass-header px-4 py-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-4 border-[#2b4414]">
@@ -980,7 +980,7 @@ export const CustomItemCommandGenerator: React.FC = () => {
             {/* Dark Purple Gradient Minecraft Tooltip Box */}
             <div className="flex justify-center p-4 bg-[#050302] border-2 border-[#1a120b]">
               <div
-                className="w-full max-w-sm p-3.5 shadow-2xl relative select-none font-mojangles"
+                className="w-full max-w-sm p-3.5 shadow-2xl relative select-none font-minecraftia"
                 style={{
                   background: 'linear-gradient(135deg, #100010 0%, #170017 100%)',
                   border: '2px solid #28004f',

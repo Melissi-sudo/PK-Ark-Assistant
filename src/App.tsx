@@ -430,7 +430,7 @@ function MainAppContent() {
             <span className="font-tek text-[11px] sm:text-xs tracking-wider text-slate-300 truncate">
               {isMinecraft ? (
                 <>
-                  <span className="text-emerald-400 font-bold font-mojangles">MINECRAFT 1.21+</span> • BLOCKY COMPANION
+                  <span className="text-emerald-400 font-bold font-minecraftia">MINECRAFT 1.21+</span> • BLOCKY COMPANION
                 </>
               ) : isLibrary ? (
                 <>

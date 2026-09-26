@@ -79,7 +79,7 @@ export const MinecraftSeedMapViewer: React.FC = () => {
   const sampleTpCmd = `/tp @s ${xNum} ~ ${zNum}`;
 
   return (
-    <div className="font-mojangles space-y-6 max-w-4xl mx-auto">
+    <div className="font-minecraftia space-y-6 max-w-4xl mx-auto">
       {/* Top Grass Header */}
       <div className="mc-panel-dirt border-4 border-[#0e0a07] shadow-2xl overflow-hidden">
         <div className="mc-grass-header px-4 py-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-4 border-[#2b4414]">

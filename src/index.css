@@ -1,8 +1,11 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: 'Mojangles';
-  src: local('Mojangles'), local('Minecraft'), local('Minecraftia'), url('https://fonts.cdnfonts.com/s/14878/MinecraftRegular-Bmg3.woff') format('woff');
+  font-family: 'Minecraftia';
+  src: url('/fonts/minecraftia.woff') format('woff'),
+       url('/fonts/MinecraftiaRegular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
   font-display: swap;
 }
 
@@ -11,7 +14,9 @@
     --font-tek: 'Chakra Petch', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-hud: 'Rajdhani', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-sans: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-mojangles: 'Mojangles', 'Silkscreen', 'Press Start 2P', 'VT323', monospace;
+    --font-minecraft: 'Minecraftia', 'Silkscreen', 'Press Start 2P', 'VT323', monospace;
+    --font-minecraftia: 'Minecraftia', 'Silkscreen', 'Press Start 2P', 'VT323', monospace;
+    --font-mojangles: 'Minecraftia', 'Silkscreen', 'Press Start 2P', 'VT323', monospace;
   }
 
   body {
@@ -29,8 +34,8 @@
   font-family: var(--font-hud);
 }
 
-.font-mojangles, .font-minecraft {
-  font-family: var(--font-mojangles);
+.font-minecraftia, .font-minecraft, .font-mojangles {
+  font-family: var(--font-minecraft);
   letter-spacing: 0.5px;
 }
 
@@ -69,7 +74,7 @@
 
 /* Minecraft Blocky UI Elements */
 .mc-button {
-  font-family: var(--font-mojangles);
+  font-family: var(--font-minecraft);
   background-color: #727272;
   border-top: 3px solid #b4b4b4;
   border-left: 3px solid #b4b4b4;
@@ -99,7 +104,7 @@
 }
 
 .mc-button-green {
-  font-family: var(--font-mojangles);
+  font-family: var(--font-minecraft);
   background-color: #4a7522;
   border-top: 3px solid #7cb342;
   border-left: 3px solid #7cb342;
