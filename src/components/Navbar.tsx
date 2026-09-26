@@ -136,9 +136,12 @@ export const Navbar: React.FC<NavbarProps> = ({
           className="flex items-center gap-2 sm:gap-3 shrink-0 group focus:outline-none focus:ring-1 focus:ring-cyan-400 rounded-xl p-0.5"
           title="PK Ultimate Guide - Tactical Game Library"
         >
-          <div className="relative flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-cyan-950 via-[#071324] to-[#040913] border border-cyan-400/40 shadow-md shadow-cyan-500/20 shrink-0 group-hover:border-cyan-400 transition-colors">
-            <span className="text-cyan-300 font-tek font-bold text-base sm:text-lg drop-shadow-[0_0_6px_rgba(6,182,212,0.8)]">◈</span>
-            <div className="absolute inset-0 bg-cyan-400/10 rounded-xl animate-pulse pointer-events-none" />
+          <div className="relative flex items-center justify-center h-8 sm:h-9 w-auto min-w-[34px] max-w-[140px] rounded-xl bg-gradient-to-br from-[#06152a] to-[#040810] border border-cyan-400/50 shadow-md shadow-cyan-500/20 shrink-0 group-hover:border-cyan-300 transition-all px-1.5 py-0.5 overflow-hidden">
+            <img 
+              src="/logo.png?v=pk-v3" 
+              alt="PK Ultimate Guide Logo" 
+              className="h-full w-auto max-w-[120px] object-contain filter drop-shadow-[0_0_6px_rgba(6,182,212,0.6)] group-hover:scale-105 transition-transform duration-200" 
+            />
           </div>
 
           <div>
@@ -252,6 +255,20 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-cyan-400" /> : <VolumeX className="w-3.5 h-3.5" />}
           </motion.button>
+
+          {/* Replay Intro Cinematic Button */}
+          {onReplayIntro && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onReplayIntro}
+              title="Play Tactical Intro Cinematic"
+              className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl border border-cyan-500/30 bg-cyan-950/40 text-cyan-300 hover:text-white hover:border-cyan-400 transition-all cursor-pointer flex items-center gap-1 text-xs font-hud font-bold shadow-sm shadow-cyan-500/10"
+            >
+              <Sparkles className="w-3 h-3 text-cyan-400" />
+              <span className="hidden sm:inline text-[10px]">INTRO</span>
+            </motion.button>
+          )}
 
           {/* User Account / Sync */}
           <motion.button

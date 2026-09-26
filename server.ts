@@ -44,12 +44,25 @@ const securityHeadersMiddleware = (_req: Request, res: Response, next: NextFunct
 
 app.use(securityHeadersMiddleware);
 
-// Ensure map images are never served stale so user replacements take immediate effect
-app.use('/images/maps', (_req: Request, res: Response, next: NextFunction) => {
+// Ensure logo and map images are never served stale so user replacements take immediate effect
+app.use(['/logo.png', '/images/logo.png', '/images/pk_logo.png', '/images/maps'], (_req: Request, res: Response, next: NextFunction) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
   next();
+});
+
+// Direct logo handler to guarantee immediate delivery of user's custom logo file
+app.get(['/logo.png', '/images/logo.png', '/images/pk_logo.png'], (_req: Request, res: Response) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Content-Type', 'image/png');
+  const logoPath = path.resolve(process.cwd(), 'public/logo.png');
+  if (fs.existsSync(logoPath)) {
+    return res.sendFile(logoPath);
+  }
+  return res.status(404).send('Logo not found');
 });
 
 // ==========================================
@@ -263,6 +276,17 @@ app.get(/^\/google([a-zA-Z0-9_-]+)\.html$/, (req: Request, res: Response) => {
   const filename = req.path.replace(/^\//, '');
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.send(`google-site-verification: ${filename}`);
+});
+
+app.get('/robots.txt', (_req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.send("User-agent: *\nAllow: /\n\nSitemap: https://pkguides.web.app/sitemap.xml\n");
+});
+
+app.get('/sitemap.xml', (_req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+  const sitemapPath = path.resolve(process.cwd(), 'public/sitemap.xml');
+  res.sendFile(sitemapPath);
 });
 
 // ==========================================

@@ -26,23 +26,33 @@ export const LibraryHub: React.FC = () => {
     <div className="space-y-8 max-w-6xl mx-auto">
       {/* Launcher Header Banner */}
       <div className="bg-gradient-to-r from-[#09111f] via-[#050b14] to-[#040810] border border-cyan-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-cyan-400 font-tek text-xs tracking-widest uppercase">
-              <span>The Pitsoni Empire</span>
-              <span>·</span>
-              <span className="text-slate-300">Multi-Game Companion</span>
-              <span>·</span>
-              <span className="text-emerald-400">Library Menu</span>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+          <div className="flex items-start sm:items-center gap-4">
+            <div className="h-16 sm:h-20 w-auto min-w-[70px] max-w-[150px] shrink-0 rounded-2xl bg-[#061122] border border-cyan-400/40 p-1.5 shadow-lg shadow-cyan-500/20 overflow-hidden flex items-center justify-center">
+              <img 
+                src="/logo.png?v=pk-v3" 
+                alt="PK Ultimate Guide Logo" 
+                className="h-full w-auto max-w-full object-contain filter drop-shadow-[0_0_8px_rgba(6,182,212,0.5)]" 
+              />
             </div>
 
-            <h1 className="text-3xl sm:text-4xl font-extrabold font-hud text-slate-100 tracking-tight leading-tight">
-              PK ULTIMATE GUIDE
-            </h1>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 text-cyan-400 font-tek text-xs tracking-widest uppercase">
+                <span>The Pitsoni Empire</span>
+                <span>·</span>
+                <span className="text-slate-300">Multi-Game Companion</span>
+                <span>·</span>
+                <span className="text-emerald-400">Library Menu</span>
+              </div>
 
-            <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
-              Select a game below to launch its dedicated companion hub. Each title features its own custom-built theme and tactical tools.
-            </p>
+              <h1 className="text-2xl sm:text-4xl font-extrabold font-hud text-slate-100 tracking-tight leading-tight">
+                PK ULTIMATE GUIDE
+              </h1>
+
+              <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
+                Select a game below to launch its dedicated companion hub. Each title features its own custom-built theme and tactical tools.
+              </p>
+            </div>
           </div>
 
           {/* User Quick Info */}

@@ -19,6 +19,7 @@ const SHORTCUT_LIST = [
   { key: 'Alt + 9', description: 'Switch to PK Store Catalog' },
   { key: 'Alt + M', description: 'Toggle Audio Alarm Sounds (Mute / Unmute)' },
   { key: 'Alt + P', description: 'Open PK Store VIP Modal' },
+  { key: 'Alt + I', description: 'Replay Tactical Intro Cinematic Sequence' },
   { key: 'Escape', description: 'Close any open modal or menu' },
   { key: '?', description: 'Open / Close this Keyboard Shortcuts Guide' },
 ];

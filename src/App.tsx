@@ -67,13 +67,8 @@ function MainAppContent() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState<boolean>(false);
   
-  // Holographic Boot Intro Sequence (Shown once per session)
-  const [showIntro, setShowIntro] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      return !sessionStorage.getItem(SESSION_INTRO_KEY);
-    }
-    return false;
-  });
+  // Holographic Boot Intro Sequence
+  const [showIntro, setShowIntro] = useState<boolean>(true);
 
   // Timers
   const [timers, setTimers] = useState<ActiveTimer[]>(() => {
@@ -242,13 +237,6 @@ function MainAppContent() {
         return;
       }
 
-      if (e.altKey && (e.key === 'c' || e.key === 'C')) {
-        e.preventDefault();
-        const mainEl = document.getElementById('main-content');
-        mainEl?.focus();
-        return;
-      }
-
       if (e.altKey && (e.key === 'm' || e.key === 'M')) {
         e.preventDefault();
         setSoundEnabled(prev => !prev);
@@ -258,6 +246,12 @@ function MainAppContent() {
       if (e.altKey && (e.key === 'p' || e.key === 'P')) {
         e.preventDefault();
         setIsStoreModalOpen(prev => !prev);
+        return;
+      }
+
+      if (e.altKey && (e.key === 'i' || e.key === 'I')) {
+        e.preventDefault();
+        setShowIntro(true);
         return;
       }
     };
@@ -270,15 +264,6 @@ function MainAppContent() {
     <div className="min-h-screen bg-[#040810] text-slate-100 flex flex-col bg-ark-grid relative">
       {/* Synchronize page document title & scroll to top on path change */}
       <PageMetaSync />
-
-      {/* Accessible Skip-to-content link */}
-      <a 
-        href="#main-content" 
-        className="skip-to-content focus:not-sr-only"
-        aria-label="Skip to main guide content"
-      >
-        ◈ SKIP TO MAIN CONTENT (ALT+C)
-      </a>
 
       {/* Specimen Holographic Boot Intro Sequence */}
       <AnimatePresence>
