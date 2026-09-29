@@ -8,7 +8,8 @@ import {
   HelpCircle, 
   Check, 
   ArrowUpDown,
-  Search
+  Search,
+  Info
 } from 'lucide-react';
 import { MINECRAFT_ORES, OreDistribution } from '../../data/minecraftData';
 
@@ -18,6 +19,11 @@ export const OreDistributionGuide: React.FC = () => {
   const [dimensionFilter, setDimensionFilter] = useState<'All' | 'Overworld' | 'Nether'>('All');
 
   const selectedOre = MINECRAFT_ORES.find(o => o.id === selectedOreId) || MINECRAFT_ORES[0];
+
+  const filteredOres = MINECRAFT_ORES.filter(ore => {
+    if (dimensionFilter === 'All') return true;
+    return ore.dimension === dimensionFilter;
+  });
 
   // Find ores that generate at the chosen Y level
   const oresAtCurrentY = MINECRAFT_ORES.filter(ore => {
@@ -32,7 +38,7 @@ export const OreDistributionGuide: React.FC = () => {
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div>
-            <div className="flex items-center gap-2 text-sky-400 font-tek text-xs tracking-wider uppercase mb-1">
+            <div className="flex flex-wrap items-center gap-2 text-sky-400 font-tek text-xs tracking-wider uppercase mb-1">
               <span>Minecraft 1.21+ Geology</span>
               <span>·</span>
               <span className="text-sky-300">Deepslate Bedrock to Mountain Peaks</span>
@@ -46,7 +52,7 @@ export const OreDistributionGuide: React.FC = () => {
               Ore Distribution & Mining Elevation Guide
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 max-w-2xl mt-1.5 leading-relaxed">
-              Master the 1.18 - 1.21+ triangular ore generation curves. Discover why Diamond strip mining at Y = -58/-59 yields 2x more than caves, and how Ancient Debris bed mining at Y = 15 maximizes Netherite scrap.
+              Master the official 1.18 - 1.21+ multi-batch ore generation curves. Discover mathematical peaks vs. optimal strip-mine safety heights (Diamond peak at Y = -64, mined at -58 above lava lakes), plus Nether Quartz and Netherite bed-blasting.
             </p>
           </div>
 
@@ -79,9 +85,9 @@ export const OreDistributionGuide: React.FC = () => {
         {/* Slider */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs font-mono text-slate-400">
-            <span>Y = -64 (Bedrock Lava)</span>
-            <span className="text-sky-300 font-bold text-sm">Y = {selectedY}</span>
-            <span>Y = 320 (Peak Mountains)</span>
+            <span>Y = -64 (Bedrock Floor)</span>
+            <span className="text-sky-300 font-bold text-sm">Selected Height: Y = {selectedY}</span>
+            <span>Y = 320 (Mountain Sky Limit)</span>
           </div>
           <input
             type="range"
@@ -95,12 +101,13 @@ export const OreDistributionGuide: React.FC = () => {
           <div className="flex items-center gap-2 flex-wrap pt-1 text-xs">
             <span className="text-slate-400">Quick Jump Heights:</span>
             {[
-              { label: 'Diamonds (-58)', y: -58 },
+              { label: 'Diamond Mine (-58)', y: -58 },
+              { label: 'Diamond Peak (-64)', y: -64 },
               { label: 'Ancient Debris (15)', y: 15 },
               { label: 'Iron Peak (16)', y: 16 },
               { label: 'Copper Peak (48)', y: 48 },
               { label: 'Coal Peak (96)', y: 96 },
-              { label: 'Mountain Emeralds (232)', y: 232 },
+              { label: 'Mountain Emeralds (256)', y: 256 },
             ].map(btn => (
               <button
                 key={btn.label}
@@ -120,11 +127,12 @@ export const OreDistributionGuide: React.FC = () => {
         {/* Ores Active at this Height */}
         <div className="pt-2">
           <span className="text-xs font-bold text-slate-300 mb-2 block">
-            Ores Generating at Elevation Y = {selectedY} ({oresAtCurrentY.length} types):
+            Ores Generating at Elevation Y = {selectedY} ({oresAtCurrentY.length} types in Worldgen):
           </span>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {oresAtCurrentY.map(ore => {
               const isPeak = ore.peakY.includes(selectedY);
+              const isRecommended = ore.recommendedY?.includes(selectedY);
               return (
                 <button
                   key={ore.id}
@@ -140,17 +148,21 @@ export const OreDistributionGuide: React.FC = () => {
                       className="w-2.5 h-2.5 rounded-full" 
                       style={{ backgroundColor: ore.color }} 
                     />
-                    {isPeak && (
+                    {isPeak ? (
                       <span className="text-[9px] px-1 py-0.2 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded font-mono font-bold">
-                        PEAK HEIGHT!
+                        GEN PEAK!
                       </span>
-                    )}
+                    ) : isRecommended ? (
+                      <span className="text-[9px] px-1 py-0.2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded font-mono font-bold">
+                        OPTIMAL MINE
+                      </span>
+                    ) : null}
                   </div>
                   <div className="font-hud font-bold text-xs text-slate-100 mt-1 truncate">
                     {ore.name.split(' ')[0]}
                   </div>
                   <div className="text-[10px] font-mono text-slate-400 mt-0.5">
-                    {ore.shape}
+                    {ore.dimension} · {ore.shape}
                   </div>
                 </button>
               );
@@ -164,19 +176,37 @@ export const OreDistributionGuide: React.FC = () => {
         {/* Left: Ore Selector Cards */}
         <div className="lg:col-span-5 space-y-3">
           <div className="flex items-center justify-between text-xs text-slate-400 px-1">
-            <span>Select Ore for Mining Blueprint:</span>
-            <span>{MINECRAFT_ORES.length} Recorded</span>
+            <div className="flex items-center gap-1.5">
+              {(['All', 'Overworld', 'Nether'] as const).map(dim => (
+                <button
+                  key={dim}
+                  onClick={() => setDimensionFilter(dim)}
+                  className={`px-2 py-0.5 rounded text-[11px] font-hud transition-colors cursor-pointer ${
+                    dimensionFilter === dim
+                      ? 'bg-sky-600 text-white font-bold'
+                      : 'bg-black/30 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {dim}
+                </button>
+              ))}
+            </div>
+            <span>{filteredOres.length} Recorded Ores</span>
           </div>
 
           <div className="space-y-2 max-h-[580px] overflow-y-auto pr-1">
-            {MINECRAFT_ORES.map(ore => {
+            {filteredOres.map(ore => {
               const isSelected = ore.id === selectedOre.id;
               return (
                 <button
                   key={ore.id}
                   onClick={() => {
                     setSelectedOreId(ore.id);
-                    if (ore.peakY[0] !== undefined) setSelectedY(ore.peakY[0]);
+                    if (ore.recommendedY && ore.recommendedY[0] !== undefined) {
+                      setSelectedY(ore.recommendedY[0]);
+                    } else if (ore.peakY[0] !== undefined) {
+                      setSelectedY(ore.peakY[0]);
+                    }
                   }}
                   className={`w-full p-3.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
                     isSelected
@@ -201,7 +231,7 @@ export const OreDistributionGuide: React.FC = () => {
 
                   <div className="text-right">
                     <div className="text-xs font-mono text-sky-300 font-bold">
-                      Peak: Y = {ore.peakY.join(', ')}
+                      Mine Y: {ore.recommendedY?.join(', ') || ore.peakY.join(', ')}
                     </div>
                     <div className="text-[10px] text-slate-500 font-mono">
                       {ore.dimension}
@@ -235,7 +265,7 @@ export const OreDistributionGuide: React.FC = () => {
 
               <div className="text-right">
                 <span className="px-2.5 py-1 bg-sky-950/60 border border-sky-500/30 rounded-lg text-xs font-mono text-sky-300">
-                  Peak Y: {selectedOre.peakY.join(', ')}
+                  Gen Peak: Y = {selectedOre.peakY.join(', ')}
                 </span>
               </div>
             </div>
@@ -243,26 +273,39 @@ export const OreDistributionGuide: React.FC = () => {
             {/* Key Specs Matrix */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
               <div className="p-3 bg-[#0a1a2e] border border-sky-500/20 rounded-xl">
-                <span className="text-slate-400 block text-[11px]">Spawn Range</span>
+                <span className="text-slate-400 block text-[11px]">Spawn Elevation</span>
                 <span className="font-mono font-bold text-slate-100 text-sm mt-0.5 block">
                   Y = {selectedOre.minY} to {selectedOre.maxY}
                 </span>
               </div>
 
               <div className="p-3 bg-[#0a1a2e] border border-sky-500/20 rounded-xl">
-                <span className="text-slate-400 block text-[11px]">Distribution Shape</span>
-                <span className="font-mono font-bold text-sky-300 text-sm mt-0.5 block">
-                  {selectedOre.shape}
+                <span className="text-slate-400 block text-[11px]">Optimal Mine Level</span>
+                <span className="font-mono font-bold text-emerald-300 text-sm mt-0.5 block">
+                  Y = {selectedOre.recommendedY?.join(', ') || selectedOre.peakY.join(', ')}
                 </span>
               </div>
 
               <div className="p-3 bg-[#0a1a2e] border border-sky-500/20 rounded-xl col-span-2 sm:col-span-1">
-                <span className="text-slate-400 block text-[11px]">Fortune III Boost</span>
-                <span className="font-mono font-bold text-emerald-300 text-sm mt-0.5 block truncate">
-                  Fortune 3 Active
+                <span className="text-slate-400 block text-[11px]">Curve Shape</span>
+                <span className="font-mono font-bold text-sky-300 text-sm mt-0.5 block truncate">
+                  {selectedOre.shape}
                 </span>
               </div>
             </div>
+
+            {/* Multiple Batches Breakdown if applicable */}
+            {selectedOre.batches && (
+              <div className="p-3 bg-[#0a1a2e]/60 border border-sky-500/20 rounded-xl text-xs space-y-1">
+                <span className="font-bold text-sky-300 flex items-center gap-1.5">
+                  <Info className="w-3.5 h-3.5 text-sky-400" />
+                  Generation Batches & Density:
+                </span>
+                <p className="text-slate-300 leading-relaxed text-[11px]">
+                  {selectedOre.batches}
+                </p>
+              </div>
+            )}
 
             {/* Optimal Mining Strategy Blueprint */}
             <div className="space-y-2 bg-[#040c17] border border-sky-500/20 rounded-xl p-4">

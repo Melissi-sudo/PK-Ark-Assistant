@@ -230,8 +230,46 @@ export function exportToSectionSigns(chars: CharacterColor[]): string {
   return result;
 }
 
+// Interpolate multi-stop gradient color at a specific fractional progress (0.0 to 1.0)
+export function interpolateColorAtProgress(progress: number, stops: string[]): string {
+  if (!stops || stops.length === 0) return '#ffffff';
+  if (stops.length === 1) return stops[0];
+  const clampedProgress = Math.max(0, Math.min(1, progress));
+  const numSegments = stops.length - 1;
+  const scaledProgress = clampedProgress * numSegments;
+  const segmentIndex = Math.min(Math.floor(scaledProgress), numSegments - 1);
+  const segmentProgress = scaledProgress - segmentIndex;
+
+  const startRgb = hexToRgb(stops[segmentIndex]);
+  const endRgb = hexToRgb(stops[segmentIndex + 1]);
+
+  const r = startRgb.r + segmentProgress * (endRgb.r - startRgb.r);
+  const g = startRgb.g + segmentProgress * (endRgb.g - startRgb.g);
+  const b = startRgb.b + segmentProgress * (endRgb.b - startRgb.b);
+
+  return rgbToHex(r, g, b);
+}
+
+// Convert JavaScript value/object into standard Minecraft SNBT (Stringified NBT) notation
+export function toSnbt(value: any): string {
+  if (value === null || value === undefined) return '""';
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  if (typeof value === 'number') return `${value}`;
+  if (typeof value === 'string') return JSON.stringify(value);
+  if (Array.isArray(value)) {
+    return `[${value.map(toSnbt).join(',')}]`;
+  }
+  if (typeof value === 'object') {
+    const entries = Object.entries(value)
+      .filter(([_, v]) => v !== undefined && v !== false)
+      .map(([k, v]) => `${k}:${toSnbt(v)}`);
+    return `{${entries.join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
 // Serialize formatted segments into strict Java 1.20.5+ / 1.21+ / 26.3 JSON Text Component
-// Uses {"text":"","extra":[...]} to ensure Minecraft never falls back to literal (text:...) string
+// Used for custom_name and single-component item attributes
 export function serializeToModernSnbtComponent(segments: FormattedSegment[]): string {
   if (!segments || segments.length === 0 || segments.every(s => !s.text)) {
     return '\'{"text":""}\'';
@@ -268,27 +306,63 @@ export function serializeToModernSnbtComponent(segments: FormattedSegment[]): st
   return `'${jsonStr.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
 }
 
-// Helper to serialize a line of segments into a strict Java JSON Text Component string
-function serializeSignLineToSnbtJson(lineSegs: FormattedSegment[]): string {
-  return serializeToModernSnbtComponent(lineSegs);
+// Serialize formatted segments into native SNBT compound tag without outer quotes
+// Outputs native SNBT compound `{text:"...",color:"...",bold:true}` or `{text:"",extra:[...]}`
+export function serializeToSnbtCompound(segments: FormattedSegment[]): string {
+  if (!segments || segments.length === 0 || segments.every(s => !s.text)) {
+    return '{text:""}';
+  }
+
+  if (segments.length === 1) {
+    const s = segments[0];
+    const obj: any = { text: s.text };
+    if (s.color) obj.color = s.color;
+    if (s.bold) obj.bold = true;
+    if (s.italic) obj.italic = true;
+    if (s.underlined) obj.underlined = true;
+    if (s.strikethrough) obj.strikethrough = true;
+    if (s.obfuscated) obj.obfuscated = true;
+    return toSnbt(obj);
+  }
+
+  const extraParts = segments.map(s => {
+    const obj: any = { text: s.text };
+    if (s.color) obj.color = s.color;
+    if (s.bold) obj.bold = true;
+    if (s.italic) obj.italic = true;
+    if (s.underlined) obj.underlined = true;
+    if (s.strikethrough) obj.strikethrough = true;
+    if (s.obfuscated) obj.obfuscated = true;
+    return obj;
+  });
+
+  const rootObj = {
+    text: '',
+    extra: extraParts
+  };
+
+  return toSnbt(rootObj);
 }
 
+export const serializeSignLineToSnbtCompound = serializeToSnbtCompound;
+
 // Generate Modern Java 1.20.5+ / 1.21+ / 26.3 Sign Give Command
+// Verified syntax: /give @p minecraft:oak_sign[block_entity_data={id:"minecraft:sign",is_waxed:1b,front_text:{color:"black",messages:[{text:"Welcome",color:"#ff512f",bold:true},...],has_glowing_text:1b}}] 1
 export function exportToJavaSignGiveCommand(
   lines: FormattedSegment[][],
   woodType: string = 'oak',
   isHanging: boolean = false,
-  isWaxed: boolean = false,
-  isGlowing: boolean = false
+  isWaxed: boolean = true,
+  isGlowing: boolean = true
 ): string {
   const itemType = isHanging ? `${woodType}_hanging_sign` : `${woodType}_sign`;
   const blockEntityId = isHanging ? 'minecraft:hanging_sign' : 'minecraft:sign';
 
-  const formattedLineStrings = [0, 1, 2, 3].map(i => serializeSignLineToSnbtJson(lines[i] || []));
-  const glowingFlag = isGlowing ? ',has_glowing_text:1b' : '';
+  const snbtLines = [0, 1, 2, 3].map(i => serializeSignLineToSnbtCompound(lines[i] || []));
+  const glowingFlag = `,has_glowing_text:${isGlowing ? '1b' : '0b'}`;
 
   // In 1.20.5+ item component format: [block_entity_data={...}]
-  return `/give @p minecraft:${itemType}[block_entity_data={id:"${blockEntityId}",is_waxed:${isWaxed ? '1b' : '0b'},front_text:{color:"black",messages:[${formattedLineStrings.join(',')}]${glowingFlag}}}] 1`;
+  return `/give @p minecraft:${itemType}[block_entity_data={id:"${blockEntityId}",is_waxed:${isWaxed ? '1b' : '0b'},front_text:{color:"black",messages:[${snbtLines.join(',')}]${glowingFlag}}}] 1`;
 }
 
 // Generate Legacy Java 1.20 - 1.20.4 Sign Give Command ({BlockEntityTag:{...}})
@@ -296,12 +370,37 @@ export function exportToJavaLegacySignGiveCommand(
   lines: FormattedSegment[][],
   woodType: string = 'oak',
   isHanging: boolean = false,
-  isWaxed: boolean = false,
-  isGlowing: boolean = false
+  isWaxed: boolean = true,
+  isGlowing: boolean = true
 ): string {
   const itemType = isHanging ? `${woodType}_hanging_sign` : `${woodType}_sign`;
-  const formattedLineStrings = [0, 1, 2, 3].map(i => serializeSignLineToSnbtJson(lines[i] || []));
-  const glowingFlag = isGlowing ? ',has_glowing_text:1b' : '';
+  const formattedLineStrings = [0, 1, 2, 3].map(i => {
+    const segs = lines[i] || [];
+    if (segs.length === 0 || segs.every(s => !s.text)) {
+      return '\'{"text":""}\'';
+    }
+    if (segs.length === 1) {
+      const s = segs[0];
+      const obj: any = { text: s.text, color: s.color };
+      if (s.bold) obj.bold = true;
+      if (s.italic) obj.italic = true;
+      if (s.underlined) obj.underlined = true;
+      if (s.strikethrough) obj.strikethrough = true;
+      if (s.obfuscated) obj.obfuscated = true;
+      return `'${JSON.stringify(obj).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+    }
+    const extraParts = segs.map(s => {
+      const obj: any = { text: s.text, color: s.color };
+      if (s.bold) obj.bold = true;
+      if (s.italic) obj.italic = true;
+      if (s.underlined) obj.underlined = true;
+      if (s.strikethrough) obj.strikethrough = true;
+      if (s.obfuscated) obj.obfuscated = true;
+      return obj;
+    });
+    return `'${JSON.stringify({ text: '', extra: extraParts }).replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`;
+  });
+  const glowingFlag = `,has_glowing_text:${isGlowing ? '1b' : '0b'}`;
 
   return `/give @p minecraft:${itemType}{BlockEntityTag:{is_waxed:${isWaxed ? '1b' : '0b'},front_text:{color:"black",messages:[${formattedLineStrings.join(',')}]${glowingFlag}}}} 1`;
 }
@@ -311,26 +410,26 @@ export function exportToJavaSetblockSignCommand(
   lines: FormattedSegment[][],
   woodType: string = 'oak',
   isHanging: boolean = false,
-  isWaxed: boolean = false,
-  isGlowing: boolean = false
+  isWaxed: boolean = true,
+  isGlowing: boolean = true
 ): string {
   const blockId = isHanging ? `minecraft:${woodType}_hanging_sign[rotation=0]` : `minecraft:${woodType}_sign[rotation=0]`;
-  const formattedLineStrings = [0, 1, 2, 3].map(i => serializeSignLineToSnbtJson(lines[i] || []));
-  const glowingFlag = isGlowing ? ',has_glowing_text:1b' : '';
+  const snbtLines = [0, 1, 2, 3].map(i => serializeSignLineToSnbtCompound(lines[i] || []));
+  const glowingFlag = `,has_glowing_text:${isGlowing ? '1b' : '0b'}`;
 
-  return `/setblock ~ ~1 ~ ${blockId}{is_waxed:${isWaxed ? '1b' : '0b'},front_text:{color:"black",messages:[${formattedLineStrings.join(',')}]${glowingFlag}}} replace`;
+  return `/setblock ~ ~1 ~ ${blockId}{is_waxed:${isWaxed ? '1b' : '0b'},front_text:{color:"black",messages:[${snbtLines.join(',')}]${glowingFlag}}} replace`;
 }
 
 // Generate Java /data merge command (Apply directly to an already placed sign in the world)
 export function exportToJavaDataMergeSignCommand(
   lines: FormattedSegment[][],
-  isWaxed: boolean = false,
-  isGlowing: boolean = false
+  isWaxed: boolean = true,
+  isGlowing: boolean = true
 ): string {
-  const formattedLineStrings = [0, 1, 2, 3].map(i => serializeSignLineToSnbtJson(lines[i] || []));
-  const glowingFlag = isGlowing ? ',has_glowing_text:1b' : '';
+  const snbtLines = [0, 1, 2, 3].map(i => serializeSignLineToSnbtCompound(lines[i] || []));
+  const glowingFlag = `,has_glowing_text:${isGlowing ? '1b' : '0b'}`;
 
-  return `/data merge block ~ ~ ~ {is_waxed:${isWaxed ? '1b' : '0b'},front_text:{color:"black",messages:[${formattedLineStrings.join(',')}]${glowingFlag}}}`;
+  return `/data merge block ~ ~ ~ {is_waxed:${isWaxed ? '1b' : '0b'},front_text:{color:"black",messages:[${snbtLines.join(',')}]${glowingFlag}}}`;
 }
 
 // Generate Bedrock Tellraw JSON command

@@ -61,20 +61,20 @@ const TOOLS_CONFIG: ToolItem[] = [
   {
     id: 'item_summon',
     title: 'Item & Enchant Summon Generator',
-    shortDesc: 'Summon items with custom names, lore, and enchants (Note: Currently in development, will start working in a while).',
+    shortDesc: 'Summon items with custom names, gradient colors, custom lore, 1.21 Mace & god enchantments, unbreakable tags, and custom attributes.',
     category: 'creative',
     categoryLabel: 'Creative / Command',
     icon: Wand2,
-    tag: 'In Development'
+    tag: 'Item Summon'
   },
   {
     id: 'text_generator',
     title: 'Command Block & Sign Gradient Generator',
-    shortDesc: 'Generate gradient hex color codes for Command Blocks (/tellraw, /title) and chat. Sign generator currently in development.',
+    shortDesc: 'Generate gradient hex color codes for in-game Signs (with glowing & waxed settings) and Command Blocks (/tellraw, /title).',
     category: 'creative',
     categoryLabel: 'Creative / Command',
     icon: Palette,
-    tag: 'Cmds Active · Sign Dev'
+    tag: 'Gradient & Signs'
   },
   // Survival
   {
@@ -319,15 +319,6 @@ export const MinecraftHub: React.FC = () => {
                     >
                       <Icon className="w-4 h-4 text-purple-300 shrink-0" />
                       <span className="tracking-wide">{tool.title}</span>
-                      {tool.id === 'item_summon' ? (
-                        <span className="text-[9px] px-1.5 py-0.5 bg-amber-950 text-amber-300 border border-amber-600/50 font-mono">
-                          IN DEV
-                        </span>
-                      ) : (
-                        <span className="text-[9px] px-1.5 py-0.5 bg-emerald-950 text-emerald-300 border border-emerald-600/50 font-mono">
-                          ACTIVE
-                        </span>
-                      )}
                     </button>
                   );
                 })}

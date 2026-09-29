@@ -19,26 +19,37 @@ const SEED_PRESETS = [
   {
     name: '5 Villages & 1.21 Trial Chamber',
     seed: '7392817491',
-    description: 'Spawn surrounded by Plains and Desert villages with a pristine Trial Chamber 150 blocks away.'
+    edition: 'java',
+    description: 'Spawn surrounded by Plains and Desert villages with a pristine Trial Chamber 150 blocks away (Java coordinates).'
   },
   {
     name: 'Cherry Grove Crater Ring',
     seed: '-4920194829',
-    description: 'Stunning circular mountain ring filled with pink cherry blossom trees and a protected valley.'
+    edition: 'both',
+    description: 'Stunning circular mountain ring filled with pink cherry blossom trees and a protected valley (Terrain identical in Java & Bedrock).'
   },
   {
     name: 'Triple Ancient City Underneath',
     seed: '867530942',
-    description: 'Gigantic mountain range concealing 3 interconnected Ancient Cities at Y=-51.'
+    edition: 'java',
+    description: 'Gigantic mountain range concealing 3 interconnected Ancient Cities at Y=-51 in Java Edition.'
   },
   {
     name: 'Mansion & Outpost Border War',
     seed: '1948274921',
+    edition: 'java',
     description: 'Dark Forest Woodland Mansion right next to an aggressive Pillager Outpost.'
+  },
+  {
+    name: 'Bedrock Double Village & Outpost',
+    seed: '1669320484',
+    edition: 'bedrock',
+    description: 'Verified Bedrock 1.21: Spawn directly facing two interconnected Desert villages with an Outpost on the horizon.'
   },
   {
     name: 'Survival Island & Ocean Monument',
     seed: '5501928471',
+    edition: 'both',
     description: 'Single oak tree island surrounded by deep warm ocean and an ancient Guardian monument.'
   }
 ];
@@ -46,20 +57,22 @@ const SEED_PRESETS = [
 export const MinecraftSeedMapViewer: React.FC = () => {
   const [seedInput, setSeedInput] = useState<string>('7392817491');
   const [activeSeed, setActiveSeed] = useState<string>('7392817491');
-  const [gameVersion, setGameVersion] = useState<string>('1.21');
+  const [gameVersion, setGameVersion] = useState<string>('java_1_21');
   const [dimension, setDimension] = useState<'overworld' | 'nether' | 'end'>('overworld');
   const [coordX, setCoordX] = useState<string>('0');
   const [coordZ, setCoordZ] = useState<string>('0');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  // Construct Chunkbase Direct URL
+  // Construct Chunkbase Direct URL using verified Chunkbase v3 parameter keys:
+  // platform: 'java_1_21', 'java_1_20', 'bedrock_1_21', 'bedrock_1_20'
+  // dimension: 'overworld', 'nether', 'end'
+  // center: x, z
+  // zoom: 0.5
   const chunkbaseUrl = useMemo(() => {
     const s = encodeURIComponent(activeSeed.trim());
     const x = parseInt(coordX) || 0;
     const z = parseInt(coordZ) || 0;
-    const v = gameVersion === 'bedrock' ? 'bedrock_1_21' : gameVersion === '1.20' ? '1.20' : '1.21';
-    const dim = dimension === 'nether' ? '-1' : dimension === 'end' ? '1' : '0';
-    return `https://www.chunkbase.com/apps/seed-map#seed=${s}&platform=${v}&dimension=${dim}&x=${x}&z=${z}&zoom=0.5`;
+    return `https://www.chunkbase.com/apps/seed-map#seed=${s}&platform=${gameVersion}&dimension=${dimension}&x=${x}&z=${z}&pinX=${x}&pinZ=${z}&zoom=0.5`;
   }, [activeSeed, gameVersion, dimension, coordX, coordZ]);
 
   const handleCopy = (key: string, text: string) => {
@@ -93,12 +106,12 @@ export const MinecraftSeedMapViewer: React.FC = () => {
               Chunkbase Seed Map Launcher
             </h1>
             <p className="text-xs text-[#ccebb0] max-w-2xl mt-1 leading-relaxed drop-shadow-[1px_1px_0px_#1e2f0d]">
-              Minecraft 1.18+ uses native C++ Multi-Noise terrain generation. Launch your exact seed directly into Chunkbase's native engine to view every single village, trial chamber, biome border, and structure with 100% precision.
+              Directly launches Chunkbase's native Cubiomes mapping engine. Note: In 1.18+, terrain and biome shapes are identical between Java and Bedrock, but structures (villages, trial chambers, ancient cities) generate at different coordinates on Bedrock Edition.
             </p>
           </div>
 
           <div className="flex items-center gap-1.5 self-start sm:self-auto">
-            <span className="text-[10px] text-[#ccebb0] uppercase">Famous Seeds:</span>
+            <span className="text-[10px] text-[#ccebb0] uppercase">Java Preset Seeds:</span>
             <select
               onChange={(e) => {
                 if (e.target.value) {
@@ -111,7 +124,7 @@ export const MinecraftSeedMapViewer: React.FC = () => {
               <option value="">Select Seed Preset...</option>
               {SEED_PRESETS.map(p => (
                 <option key={p.seed} value={p.seed}>
-                  {p.name}
+                  {p.name} (Java)
                 </option>
               ))}
             </select>
@@ -165,9 +178,10 @@ export const MinecraftSeedMapViewer: React.FC = () => {
               onChange={(e) => setGameVersion(e.target.value)}
               className="w-full bg-[#100b08] border-2 border-[#332216] px-3 py-2 text-xs text-white"
             >
-              <option value="1.21">Java 1.21+ (Tricky Trials)</option>
-              <option value="1.20">Java 1.20 (Trails & Tales)</option>
-              <option value="bedrock">Bedrock Edition 1.21+</option>
+              <option value="java_1_21">Java 1.21+ (Tricky Trials)</option>
+              <option value="java_1_20">Java 1.20 (Trails & Tales)</option>
+              <option value="bedrock_1_21">Bedrock 1.21+ (Tricky Trials)</option>
+              <option value="bedrock_1_20">Bedrock 1.20 (Trails & Tales)</option>
             </select>
           </div>
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   ShieldAlert, 
   Target, 
@@ -10,7 +11,10 @@ import {
   ChevronRight,
   Flame,
   Zap,
-  Activity
+  Activity,
+  Bomb,
+  Utensils,
+  ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TekImage } from './common/TekImage';
@@ -359,6 +363,55 @@ export const TurretSoakerGuide: React.FC = () => {
       )}
         </motion.div>
       </AnimatePresence>
+
+      {/* Helpful Companion Raid Tools */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+        <Link
+          to="/raiding"
+          className="group p-4 bg-[#0a1120] hover:bg-[#0d172c] border border-red-500/30 hover:border-red-400 rounded-2xl transition-all shadow-xl flex items-center justify-between"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-red-950/80 border border-red-500/40 flex items-center justify-center text-red-400 shrink-0">
+              <Bomb className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs font-bold font-hud text-slate-100 group-hover:text-red-300 transition-colors flex items-center gap-1.5">
+                <span>Raid &amp; Explosives Breaching Calculator</span>
+                <span className="text-[9px] px-1.5 py-0.2 bg-red-950 text-red-300 border border-red-600/50 rounded font-mono">
+                  C4 &amp; TEK
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Calculate exact C4, Rockets, and Flak armor wear to breach any base structure.
+              </p>
+            </div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-red-400 group-hover:translate-x-1 transition-all shrink-0 ml-2" />
+        </Link>
+
+        <Link
+          to="/kibble"
+          className="group p-4 bg-[#0a1120] hover:bg-[#0d172c] border border-emerald-500/30 hover:border-emerald-400 rounded-2xl transition-all shadow-xl flex items-center justify-between"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+              <Utensils className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-xs font-bold font-hud text-slate-100 group-hover:text-emerald-300 transition-colors flex items-center gap-1.5">
+                <span>Kibble &amp; Chef Recipe Matrix</span>
+                <span className="text-[9px] px-1.5 py-0.2 bg-emerald-950 text-emerald-300 border border-emerald-600/50 rounded font-mono">
+                  VEGGIE CAKES
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Craft Sweet Veggie Cakes, Mindwipe Tonics, Medical Brews, and all 6 Kibble tiers.
+              </p>
+            </div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all shrink-0 ml-2" />
+        </Link>
+      </div>
     </div>
   );
 };

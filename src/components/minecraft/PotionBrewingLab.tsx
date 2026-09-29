@@ -10,7 +10,8 @@ import {
   Check, 
   ArrowRight,
   Zap,
-  Info
+  Info,
+  RefreshCw
 } from 'lucide-react';
 import { MINECRAFT_POTIONS, MinecraftPotion } from '../../data/minecraftData';
 
@@ -37,6 +38,32 @@ export const PotionBrewingLab: React.FC = () => {
 
   const categories = ['All', '1.21 Trials', 'Combat', 'Survival', 'Utility', 'Negative'];
 
+  // Calculate dynamic duration based on modifiers and delivery type
+  const computeActiveDuration = (): string => {
+    if (selectedPotion.standardDuration === 'Instant') return 'Instant';
+
+    let baseDurationStr = selectedPotion.standardDuration;
+    if (isExtended && selectedPotion.extendedDuration) {
+      baseDurationStr = selectedPotion.extendedDuration;
+    } else if (isAmplified && selectedPotion.upgradedEffect) {
+      // Extract time from upgradedEffect like "Strength II (1:30)" or "Regeneration II (0:22)"
+      const match = selectedPotion.upgradedEffect.match(/\((\d+:\d+)/);
+      if (match) baseDurationStr = match[1];
+    }
+
+    if (potionDelivery === 'lingering') {
+      // Lingering cloud duration in Minecraft is 1/4 of drinkable/splash duration
+      const [m, s] = baseDurationStr.split(':').map(Number);
+      const totalSec = (m * 60) + s;
+      const lingeringSec = Math.max(1, Math.round(totalSec / 4));
+      const min = Math.floor(lingeringSec / 60);
+      const sec = lingeringSec % 60;
+      return `${min}:${sec < 10 ? '0' : ''}${sec} (Cloud)`;
+    }
+
+    return baseDurationStr;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header Banner */}
@@ -45,12 +72,12 @@ export const PotionBrewingLab: React.FC = () => {
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div>
-            <div className="flex items-center gap-2 text-emerald-400 font-tek text-xs tracking-wider uppercase mb-1">
+            <div className="flex flex-wrap items-center gap-2 text-emerald-400 font-tek text-xs tracking-wider uppercase mb-1">
               <span>Minecraft 1.21+ Alchemy</span>
               <span>·</span>
-              <span className="text-emerald-300">Tricky Trials Updated</span>
+              <span className="text-emerald-300">Tricky Trials Verified</span>
               <span>·</span>
-              <span className="text-cyan-400">Interactive Brewer</span>
+              <span className="text-cyan-400">Interactive Stand & 1/4 Lingering Math</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold font-hud text-slate-100 flex items-center gap-2.5">
               <span className="w-8 h-8 rounded-lg bg-emerald-900/60 border border-emerald-500/40 flex items-center justify-center text-emerald-300 shadow-md">
@@ -59,13 +86,13 @@ export const PotionBrewingLab: React.FC = () => {
               Potion Brewing Simulator & Recipe Tree
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 max-w-2xl mt-1.5 leading-relaxed">
-              Step-by-step brewing flowchart for every 1.21 Tricky Trials potion (Wind Charging, Oozing, Weaving, Infested) and classic PvP combat elixirs with Redstone and Glowstone modifiers.
+              Step-by-step brewing flowchart for all 1.21 Tricky Trials potions (Wind Charging, Oozing, Weaving, Infested) and complete vanilla combat elixirs with Redstone, Glowstone, and Fermented Spider Eye corruption pathways.
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             <span className="px-3 py-1.5 bg-emerald-900/40 border border-emerald-500/30 rounded-xl text-emerald-300 text-xs font-hud font-bold">
-              16 Complete Recipes
+              19 Verified Recipes
             </span>
           </div>
         </div>
@@ -81,7 +108,7 @@ export const PotionBrewingLab: React.FC = () => {
               <Search className="w-4 h-4 text-emerald-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Search potions by name, ingredient (Breeze Rod, Sugar), or effect..."
+                placeholder="Search potions by name, ingredient (Breeze Rod, Sugar, Slime Block), or effect..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-[#0a1a15] border border-emerald-500/30 focus:border-emerald-400 rounded-xl pl-9 pr-4 py-2 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none"
@@ -173,9 +200,14 @@ export const PotionBrewingLab: React.FC = () => {
                   {selectedPotion.name}
                 </h2>
               </div>
-              <span className="text-xs font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">
-                {selectedPotion.category}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">
+                  {computeActiveDuration()}
+                </span>
+                <span className="text-xs font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">
+                  {selectedPotion.category}
+                </span>
+              </div>
             </div>
 
             {/* Brewing Stand Visual Mockup */}
@@ -188,7 +220,7 @@ export const PotionBrewingLab: React.FC = () => {
 
               {/* Top Ingredient Slot */}
               <div className="mt-6 flex flex-col items-center">
-                <div className="w-14 h-14 rounded-xl bg-[#0d221c] border-2 border-emerald-400/60 flex flex-col items-center justify-center p-1 shadow-lg text-center">
+                <div className="w-16 h-14 rounded-xl bg-[#0d221c] border-2 border-emerald-400/60 flex flex-col items-center justify-center p-1 shadow-lg text-center">
                   <span className="text-[10px] font-mono text-emerald-300 font-bold leading-tight">
                     {selectedPotion.secondaryIngredient}
                   </span>
@@ -223,6 +255,16 @@ export const PotionBrewingLab: React.FC = () => {
               <span className="text-xs font-bold text-slate-200 block">
                 Alchemy Modifiers & Potency Upgrades
               </span>
+
+              {/* Notice for potions without Redstone/Glowstone support */}
+              {!selectedPotion.hasExtended && !selectedPotion.hasAmplified && (
+                <div className="p-2.5 bg-black/40 border border-white/10 rounded-lg text-xs text-slate-400 flex items-start gap-2">
+                  <Info className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Fixed Duration Notice:</strong> In vanilla Minecraft, this potion cannot have its duration extended with Redstone Dust or its potency amplified with Glowstone Dust.
+                  </span>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-2">
                 {selectedPotion.hasExtended && (
@@ -264,7 +306,7 @@ export const PotionBrewingLab: React.FC = () => {
                       Glowstone Dust
                     </div>
                     <div className="text-[10px] text-slate-400 mt-0.5">
-                      Level II Amplification
+                      {selectedPotion.upgradedEffect || 'Level II Amplification'}
                     </div>
                   </button>
                 )}
@@ -272,7 +314,12 @@ export const PotionBrewingLab: React.FC = () => {
 
               {/* Delivery Mechanism: Drinkable vs Splash vs Lingering */}
               <div className="pt-2 border-t border-emerald-500/20">
-                <span className="text-[11px] text-slate-400 mb-1.5 block">Delivery Type:</span>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[11px] text-slate-400">Delivery Type:</span>
+                  <span className="text-[10px] font-mono text-emerald-400">
+                    {potionDelivery === 'lingering' ? 'Lingering Cloud: 1/4 Duration' : 'Direct Target'}
+                  </span>
+                </div>
                 <div className="grid grid-cols-3 gap-1.5">
                   {(['drinkable', 'splash', 'lingering'] as const).map(type => (
                     <button
@@ -289,6 +336,23 @@ export const PotionBrewingLab: React.FC = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Fermented Spider Eye Corruption Quick-Switch */}
+              {selectedPotion.corruptionTarget && (
+                <div className="pt-2 border-t border-emerald-500/20">
+                  <button
+                    onClick={() => {
+                      setSelectedPotionId(selectedPotion.corruptionTarget!);
+                      setIsExtended(false);
+                      setIsAmplified(false);
+                    }}
+                    className="w-full py-1.5 px-3 bg-purple-950/40 hover:bg-purple-900/60 border border-purple-500/40 rounded-lg text-purple-300 text-xs font-hud flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Corrupt with Fermented Spider Eye ➔ {MINECRAFT_POTIONS.find(p => p.id === selectedPotion.corruptionTarget)?.name}</span>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Step-by-Step Recipe Guide */}

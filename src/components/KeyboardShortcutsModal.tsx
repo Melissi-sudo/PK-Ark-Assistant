@@ -8,6 +8,7 @@ interface KeyboardShortcutsModalProps {
 }
 
 const SHORTCUT_LIST = [
+  { key: '/ or Ctrl + K', description: 'Open Quick Jump Navigator (Instant search across all tools)' },
   { key: 'Alt + 1', description: 'Switch to Taming Calculator & Starve Engine' },
   { key: 'Alt + 2', description: 'Switch to Turret Soaker Hitbox Matrix' },
   { key: 'Alt + 3', description: 'Switch to Pyromane Taming Strategy' },

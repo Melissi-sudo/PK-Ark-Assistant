@@ -301,8 +301,25 @@ export const RedstoneTickGuide: React.FC = () => {
         </div>
 
         <p className="text-xs text-slate-300 leading-relaxed pt-1">
-          <strong>Why exactly 41 items?</strong> In a 5-slot hopper, 45 total items emit a comparator signal strength of exactly <strong>1</strong>. When a 46th matching item enters slot 1 (raising total to 46), signal strength increases to <strong>2</strong>, triggering the redstone dust line to unlock the bottom hopper until the count drains back to 41. If the sorter backs up, signal strength never reaches 3, which guarantees neighboring filter lines never bleed or break!
+          <strong>The Exact Comparator Math:</strong> In a 5-slot hopper (capacity 320 items), the output signal formula is <code className="bg-black/50 px-1 py-0.5 rounded text-red-300 font-mono">floor(1 + (Items / 320) * 14)</code>.
+          <br/>
+          • At <strong>45 total items</strong> (41 filter items + 4 renamed blockers): <code className="text-red-300 font-mono">floor(1 + 1.96875) = 2</code>. Signal strength is exactly <strong>2</strong>, powering 2 dust blocks and leaving the 3rd dust unpowered (repeater remains OFF, keeping the hopper locked).
+          <br/>
+          • When a <strong>46th matching item</strong> enters slot 1: <code className="text-red-300 font-mono">floor(1 + 2.0125) = 3</code>. Signal strength rises to <strong>3</strong>, reaching the 3rd redstone dust to activate the repeater and unlock the hopper until the count drains back to 41. Because signal strength never reaches 4 in normal operation, it can never bleed into neighboring filter columns!
         </p>
+
+        {/* Java vs Bedrock Redstone Divergence */}
+        <div className="mt-3 p-3 bg-red-950/20 border border-red-500/30 rounded-xl text-xs space-y-1 text-slate-300">
+          <span className="font-bold text-red-300 flex items-center gap-1.5">
+            <Info className="w-3.5 h-3.5 text-red-400" />
+            Java vs. Bedrock Redstone Engine Differences:
+          </span>
+          <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-300 pt-0.5 pl-1">
+            <li><strong>Quasi-Connectivity (Java Exclusive):</strong> Pistons and dispensers can be powered from diagonally or two blocks above as if they were a 2-block-tall door. Bedrock has zero quasi-connectivity.</li>
+            <li><strong>1-Tick Sticky Piston Block Dropping (Java Exclusive):</strong> A 1-tick pulse causes a Java sticky piston to spit out and leave behind its block. Bedrock pistons will always retract their block.</li>
+            <li><strong>Piston Extension Latency in Etho Clocks:</strong> In both editions, an Etho hopper clock takes an additional <strong>3 to 4 game ticks (0.15–0.2s)</strong> of piston push/pull latency per half-cycle on top of the 0.4s/item transfer time.</li>
+          </ul>
+        </div>
       </div>
     </div>
   );

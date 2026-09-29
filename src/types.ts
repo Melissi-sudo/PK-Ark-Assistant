@@ -12,7 +12,10 @@ export type PvPRole =
   | 'Support & Healer' 
   | 'Harvester'
   | 'Utility & Harvester'
-  | 'Mascot & Pet';
+  | 'Mascot & Pet'
+  | 'Breeding & Transport'
+  | 'Infiltration & Stun'
+  | 'Structure Breacher';
 
 export type DLCSource = 
   | 'The Island / Base' 

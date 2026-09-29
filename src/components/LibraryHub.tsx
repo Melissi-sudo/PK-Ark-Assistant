@@ -163,12 +163,12 @@ export const LibraryHub: React.FC = () => {
                 ARK War Room Assistant
               </h2>
               <p className="text-xs sm:text-sm text-slate-300 font-sans leading-relaxed">
-                Automated taming starve timers, turret soaker armor mitigation, Pyromane combat simulator, 5 high-res maps, and tribe ammo quotas.
+                Automated taming starve timers, turret soakers, C4 & rocket raid math, complete kibble & recipe matrix, Pyromane simulator, and 5 interactive resource maps.
               </p>
             </div>
 
             {/* Quick Jumps */}
-            <div className="grid grid-cols-3 gap-2 text-xs pt-1">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1">
               <Link
                 to="/taming"
                 className="p-2 bg-[#09182f] hover:bg-cyan-950 border border-cyan-500/30 rounded-xl text-cyan-300 text-center font-bold transition-colors"
@@ -182,10 +182,16 @@ export const LibraryHub: React.FC = () => {
                 Soaker Matrix
               </Link>
               <Link
-                to="/maps"
-                className="p-2 bg-[#09182f] hover:bg-cyan-950 border border-cyan-500/30 rounded-xl text-cyan-300 text-center font-bold transition-colors"
+                to="/raiding"
+                className="p-2 bg-[#09182f] hover:bg-red-950/80 border border-red-500/30 rounded-xl text-red-300 text-center font-bold transition-colors"
               >
-                5 Maps
+                Raid Math
+              </Link>
+              <Link
+                to="/kibble"
+                className="p-2 bg-[#09182f] hover:bg-emerald-950/80 border border-emerald-500/30 rounded-xl text-emerald-300 text-center font-bold transition-colors"
+              >
+                Kibble Matrix
               </Link>
             </div>
 

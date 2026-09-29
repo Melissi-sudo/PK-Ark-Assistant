@@ -19,7 +19,9 @@ import {
   Skull,
   Droplets,
   ShieldCheck,
-  Target
+  Target,
+  Egg,
+  Activity
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Creature, ServerRatePreset, ActiveTimer } from '../types';
@@ -47,6 +49,7 @@ export const TamingCalculator: React.FC<TamingCalculatorProps> = ({
   const urlDino = searchParams.get('dino');
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState<'all' | 'soakers' | 'dps' | 'breeding' | 'infiltration' | 'siege'>('all');
   const [selectedCreatureId, setSelectedCreatureId] = useState<string>(() => {
     if (urlDino && CREATURES_DATA.some(c => c.id === urlDino)) {
       return urlDino;
@@ -78,14 +81,27 @@ export const TamingCalculator: React.FC<TamingCalculatorProps> = ({
 
   // Filtered creatures
   const filteredCreatures = useMemo(() => {
-    if (!searchQuery.trim()) return CREATURES_DATA;
+    let list = CREATURES_DATA;
+    if (roleFilter === 'soakers') {
+      list = list.filter(c => c.pvpRole === 'Main Soaker' || c.pvpRole === 'Secondary Soaker');
+    } else if (roleFilter === 'dps') {
+      list = list.filter(c => c.pvpRole === 'High DPS' || c.pvpRole === 'Boss Fighter');
+    } else if (roleFilter === 'breeding') {
+      list = list.filter(c => c.pvpRole === 'Breeding & Transport' || c.id === 'maewing' || c.id === 'procoptodon' || c.id === 'oviraptor');
+    } else if (roleFilter === 'infiltration') {
+      list = list.filter(c => c.pvpRole === 'Infiltration & Stun' || c.id === 'bloodstalker' || c.id === 'noglin' || c.id === 'purlovia' || c.id === 'troodon');
+    } else if (roleFilter === 'siege') {
+      list = list.filter(c => c.pvpRole === 'Structure Breacher' || c.pvpRole === 'Air Siege / Transport' || c.id === 'arthropleura' || c.id === 'griffin' || c.id === 'astrodelphis');
+    }
+
+    if (!searchQuery.trim()) return list;
     const q = searchQuery.toLowerCase();
-    return CREATURES_DATA.filter(c => 
+    return list.filter(c => 
       c.name.toLowerCase().includes(q) || 
       c.dlc.toLowerCase().includes(q) || 
       c.pvpRole.toLowerCase().includes(q)
     );
-  }, [searchQuery]);
+  }, [searchQuery, roleFilter]);
 
   const selectedCreature = useMemo(() => {
     return CREATURES_DATA.find(c => c.id === selectedCreatureId) || CREATURES_DATA[0];
@@ -221,8 +237,72 @@ export const TamingCalculator: React.FC<TamingCalculatorProps> = ({
           </div>
         </div>
 
+        {/* Role Filter Chips */}
+        <div className="flex items-center gap-1.5 overflow-x-auto mt-3 pt-3 border-t border-slate-800/80 no-scrollbar pb-1 text-xs">
+          <button
+            onClick={() => setRoleFilter('all')}
+            className={`px-2.5 py-1 rounded-lg text-xs font-hud transition-colors cursor-pointer shrink-0 ${
+              roleFilter === 'all'
+                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/60 font-bold'
+                : 'bg-[#091220] text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            All Tames ({CREATURES_DATA.length})
+          </button>
+          <button
+            onClick={() => setRoleFilter('soakers')}
+            className={`px-2.5 py-1 rounded-lg text-xs font-hud transition-colors cursor-pointer shrink-0 ${
+              roleFilter === 'soakers'
+                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/60 font-bold'
+                : 'bg-[#091220] text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            🛡️ Turret Soakers
+          </button>
+          <button
+            onClick={() => setRoleFilter('dps')}
+            className={`px-2.5 py-1 rounded-lg text-xs font-hud transition-colors cursor-pointer shrink-0 ${
+              roleFilter === 'dps'
+                ? 'bg-red-500/20 text-red-300 border border-red-500/60 font-bold'
+                : 'bg-[#091220] text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            ⚔️ Apex DPS
+          </button>
+          <button
+            onClick={() => setRoleFilter('breeding')}
+            className={`px-2.5 py-1 rounded-lg text-xs font-hud transition-colors cursor-pointer shrink-0 ${
+              roleFilter === 'breeding'
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/60 font-bold'
+                : 'bg-[#091220] text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            🍼 Breeding &amp; Nursery
+          </button>
+          <button
+            onClick={() => setRoleFilter('infiltration')}
+            className={`px-2.5 py-1 rounded-lg text-xs font-hud transition-colors cursor-pointer shrink-0 ${
+              roleFilter === 'infiltration'
+                ? 'bg-purple-500/20 text-purple-300 border border-purple-500/60 font-bold'
+                : 'bg-[#091220] text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            🕸️ Infiltrators &amp; Stun
+          </button>
+          <button
+            onClick={() => setRoleFilter('siege')}
+            className={`px-2.5 py-1 rounded-lg text-xs font-hud transition-colors cursor-pointer shrink-0 ${
+              roleFilter === 'siege'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/60 font-bold'
+                : 'bg-[#091220] text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            💥 Siege &amp; Air
+          </button>
+        </div>
+
         {/* Horizontal Quick Creature Selector */}
-        <div className="flex items-center gap-2 overflow-x-auto mt-4 pt-4 border-t border-slate-800/80 no-scrollbar pb-1">
+        <div className="flex items-center gap-2 overflow-x-auto mt-2 pt-2 border-t border-slate-800/40 no-scrollbar pb-1">
           {filteredCreatures.map((c) => (
             <button
               key={c.id}
@@ -355,6 +435,94 @@ export const TamingCalculator: React.FC<TamingCalculatorProps> = ({
           >
             Hitbox Diagram
           </motion.button>
+        </motion.div>
+      )}
+
+      {/* SPECIAL NOTICE FOR MAEWING */}
+      {selectedCreature.id === 'maewing' && (
+        <motion.div 
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-emerald-950/70 via-[#071810] to-emerald-950/70 border-2 border-emerald-500/50 rounded-2xl p-4 shadow-xl flex items-start gap-3"
+        >
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-emerald-300 shrink-0">
+            <Egg className="w-5 h-5" />
+          </div>
+          <div className="text-xs text-slate-200 leading-relaxed">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="font-hud font-bold text-emerald-300 uppercase">MAEWING NURSERY &amp; GLIDE PROTOCOL:</span>
+              <span className="text-[10px] px-1.5 py-0.2 bg-emerald-500/20 text-emerald-300 rounded font-tek">BREEDING META</span>
+            </div>
+            <p>
+              When knocked down, Maewing will attempt to slide away at extreme speed if hit — <strong>use a Net Projectile / Harpoon Launcher</strong> to immobilize it before shooting tranqs. Once tamed, activate its <strong>Nursing Mode</strong>: it acts as a universal baby feeding trough for any species and automatically feeds babies from its inventory.
+            </p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* SPECIAL NOTICE FOR BLOODSTALKER */}
+      {selectedCreature.id === 'bloodstalker' && (
+        <motion.div 
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-purple-950/70 via-[#180922] to-purple-950/70 border-2 border-purple-500/50 rounded-2xl p-4 shadow-xl flex items-start gap-3"
+        >
+          <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/50 flex items-center justify-center text-purple-300 shrink-0">
+            <Activity className="w-5 h-5" />
+          </div>
+          <div className="text-xs text-slate-200 leading-relaxed">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="font-hud font-bold text-purple-300 uppercase">BLOODSTALKER PASSIVE SACRIFICE TAMING:</span>
+              <span className="text-[10px] px-1.5 py-0.2 bg-purple-500/20 text-purple-300 rounded font-tek">NO WEAPONS REQUIRED</span>
+            </div>
+            <p>
+              Do NOT shoot or damage it! Place <strong>1,000–1,200 Blood Packs</strong> into your inventory. Walk underneath where it hangs from high bog trees; it will web and reel you in to suck blood packs directly from your inventory. To boost taming effectiveness to 100%, sacrifice low-tier tamed creatures (like Moschops or Dodos) to it first.
+            </p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* SPECIAL NOTICE FOR ARTHROPLEURA */}
+      {selectedCreature.id === 'arthropleura' && (
+        <motion.div 
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-red-950/70 via-[#1a0808] to-red-950/70 border-2 border-red-500/50 rounded-2xl p-4 shadow-xl flex items-start gap-3"
+        >
+          <div className="w-10 h-10 rounded-xl bg-red-500/20 border border-red-500/50 flex items-center justify-center text-red-300 shrink-0">
+            <ShieldAlert className="w-5 h-5" />
+          </div>
+          <div className="text-xs text-slate-200 leading-relaxed">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="font-hud font-bold text-red-300 uppercase">BASE RAIDING SIEGE ARTILLERY:</span>
+              <span className="text-[10px] px-1.5 py-0.2 bg-red-950 text-red-300 border border-red-600/50 rounded font-tek">STRUCTURE MELTER</span>
+            </div>
+            <p>
+              Tamed passively inside artifact caves using <strong>Bug Repellant + Spoiled Meat or Broth of Enlightenment</strong>. In PvP raids, its spit destroys <strong>Metal and Tek structures</strong> directly without requiring C4, and any player attacking it in melee will have their Flak armor instantly shattered by its acid blood!
+            </p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* SPECIAL NOTICE FOR PROCOPTODON */}
+      {selectedCreature.id === 'procoptodon' && (
+        <motion.div 
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-amber-950/70 via-[#181107] to-amber-950/70 border-2 border-amber-500/50 rounded-2xl p-4 shadow-xl flex items-start gap-3"
+        >
+          <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-300 shrink-0">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <div className="text-xs text-slate-200 leading-relaxed">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="font-hud font-bold text-amber-300 uppercase">2X IMPRINTING ACCELERATOR:</span>
+              <span className="text-[10px] px-1.5 py-0.2 bg-amber-500/20 text-amber-300 rounded font-tek">ESSENTIAL BREEDING PET</span>
+            </div>
+            <p>
+              Female Procoptodon carrying a mate boost can hold baby dinos inside its pouch. Doing so gives <strong>200% Imprinting Affinity per cuddle</strong> (cutting required imprints in half) and provides full hypothermic and hyperthermic insulation so babies never take environmental damage.
+            </p>
+          </div>
         </motion.div>
       )}
 

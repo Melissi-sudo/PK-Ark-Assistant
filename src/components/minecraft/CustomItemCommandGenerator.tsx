@@ -25,6 +25,8 @@ import {
   generateGradientColors, 
   groupFormattedCharacters, 
   serializeToModernSnbtComponent,
+  serializeToSnbtCompound,
+  toSnbt,
   GRADIENT_PRESETS, 
   MINECRAFT_CLASSIC_COLORS,
   CharacterColor,
@@ -128,16 +130,16 @@ const POPULAR_ITEMS: PopularItem[] = [
 
 export const CustomItemCommandGenerator: React.FC = () => {
   // Selected Base Item
-  const [selectedItemId, setSelectedItemId] = useState<string>('netherite_sword');
+  const [selectedItemId, setSelectedItemId] = useState<string>('diamond_sword');
   const [customItemId, setCustomItemId] = useState<string>('');
   const [itemCount, setItemCount] = useState<number>(1);
   const [targetSelector, setTargetSelector] = useState<string>('@p');
 
   // Custom Item Name
-  const [customName, setCustomName] = useState<string>('Pitsoni Annihilator');
-  const [nameColorMode, setNameColorMode] = useState<'gradient' | 'solid'>('gradient');
-  const [nameGradientStops, setNameGradientStops] = useState<string[]>(['#ff0000', '#ffaa00']);
-  const [nameSolidColor, setNameSolidColor] = useState<string>('#ffaa00');
+  const [customName, setCustomName] = useState<string>('Example Sword');
+  const [nameColorMode, setNameColorMode] = useState<'gradient' | 'solid'>('solid');
+  const [nameGradientStops, setNameGradientStops] = useState<string[]>(['#ff512f', '#dd2476']);
+  const [nameSolidColor, setNameSolidColor] = useState<string>('#ff0000');
   const [nameEffects, setNameEffects] = useState<TextEffectOptions>({
     bold: true,
     italic: false,
@@ -148,24 +150,22 @@ export const CustomItemCommandGenerator: React.FC = () => {
 
   // Custom Lore Lines
   const [loreLines, setLoreLines] = useState<{ id: string; text: string; color: string; italic: boolean }[]>([
-    { id: '1', text: 'Forged in the depths of The Pitsoni War Room', color: '#ffaa00', italic: true },
-    { id: '2', text: 'Unleashes devastating shockwaves on strike', color: '#55ffff', italic: true }
+    { id: '1', text: 'Example lore', color: '#ffaa00', italic: true },
+    { id: '2', text: 'Another line', color: '#55ffff', italic: true }
   ]);
 
   // Selected Enchantments (ID -> Level)
   const [selectedEnchants, setSelectedEnchants] = useState<Record<string, number>>({
-    sharpness: 255,
-    fire_aspect: 10,
-    looting: 10,
-    unbreaking: 255,
+    sharpness: 5,
+    unbreaking: 3,
     mending: 1
   });
 
   // Additional Item Properties
   const [isUnbreakable, setIsUnbreakable] = useState<boolean>(true);
   const [hideFlags, setHideFlags] = useState<boolean>(false);
-  const [bonusAttackDamage, setBonusAttackDamage] = useState<number>(100);
-  const [includeBonusAttack, setIncludeBonusAttack] = useState<boolean>(false);
+  const [bonusAttackDamage, setBonusAttackDamage] = useState<number>(5);
+  const [includeBonusAttack, setIncludeBonusAttack] = useState<boolean>(true);
 
   // Active Category filter for enchantments
   const [activeCategory, setActiveCategory] = useState<string>('All');
@@ -192,14 +192,33 @@ export const CustomItemCommandGenerator: React.FC = () => {
   // Execute Pipeline toggle
   const [useExecutePipeline, setUseExecutePipeline] = useState<boolean>(false);
 
-  // Helper to format segments into strict JSON text component string for SNBT
-  const snbtNameJson = useMemo(() => {
+  // Native SNBT compound for modern Java (1.20.5+ / 1.21+ / 26.3): custom_name={text:"Example Sword",color:"#ff0000",bold:true} (no outer quotes)
+  const snbtNameCompound = useMemo(() => {
+    if (!customName.trim()) return '';
+    return serializeToSnbtCompound(nameSegments);
+  }, [customName, nameSegments]);
+
+  // Single-quoted JSON string for legacy Java (1.13 - 1.20.4)
+  const legacySnbtNameJson = useMemo(() => {
     if (!customName.trim()) return '';
     return serializeToModernSnbtComponent(nameSegments);
   }, [customName, nameSegments]);
 
-  // Format lore lines
+  // Native SNBT compound array for modern Java: lore=[{text:"Example lore",color:"#ffaa00",italic:true},...] (no quotes around objects)
   const snbtLoreArray = useMemo(() => {
+    const validLines = loreLines.filter(l => l.text.trim());
+    if (validLines.length === 0) return '';
+    const items = validLines.map(line => {
+      const obj: any = { text: line.text };
+      if (line.color) obj.color = line.color;
+      if (line.italic) obj.italic = true;
+      return toSnbt(obj);
+    });
+    return `[${items.join(',')}]`;
+  }, [loreLines]);
+
+  // Single-quoted JSON array for legacy Java (1.13 - 1.20.4)
+  const legacySnbtLoreArray = useMemo(() => {
     const validLines = loreLines.filter(l => l.text.trim());
     if (validLines.length === 0) return '';
     const items = validLines.map(line => {
@@ -215,33 +234,33 @@ export const CustomItemCommandGenerator: React.FC = () => {
   const modernJavaCommand = useMemo(() => {
     const components: string[] = [];
 
-    // Custom Name
-    if (snbtNameJson) {
-      components.push(`custom_name=${snbtNameJson}`);
+    // Custom Name: custom_name={text:"Example Sword",color:"#ff0000",bold:true}
+    if (snbtNameCompound) {
+      components.push(`custom_name=${snbtNameCompound}`);
     }
 
-    // Lore
+    // Lore: lore=[{text:"Example lore",color:"#ffaa00",italic:true},{text:"Another line",color:"#55ffff",italic:true}]
     if (snbtLoreArray) {
       components.push(`lore=${snbtLoreArray}`);
     }
 
-    // Enchantments (Modern 1.20.5+ unquoted identifier levels mapping: {levels:{sharpness:5,unbreaking:3}})
+    // Enchantments: enchantments={sharpness:5,unbreaking:3,mending:1}
     const activeEntries = Object.entries(selectedEnchants).filter(([, lvl]) => Number(lvl) > 0);
     if (activeEntries.length > 0) {
-      const levelsStr = activeEntries
+      const enchStr = activeEntries
         .map(([id, lvl]) => `${id}:${lvl}`)
         .join(',');
-      components.push(`enchantments={levels:{${levelsStr}}}`);
+      components.push(`enchantments={${enchStr}}`);
     }
 
-    // Unbreakable
+    // Unbreakable: unbreakable={}
     if (isUnbreakable) {
       components.push('unbreakable={}');
     }
 
-    // Bonus Attack Attribute
+    // Attribute Modifiers: attribute_modifiers=[{type:"minecraft:attack_damage",id:"example:bonus_damage",amount:5,operation:"add_value",slot:"mainhand"}]
     if (includeBonusAttack && bonusAttackDamage > 0) {
-      components.push(`attribute_modifiers=[{type:"generic.attack_damage",name:"generic.attack_damage",amount:${bonusAttackDamage},operation:"add_value",slot:"mainhand",id:"minecraft:weapon_damage"}]`);
+      components.push(`attribute_modifiers=[{type:"minecraft:attack_damage",id:"example:bonus_damage",amount:${bonusAttackDamage},operation:"add_value",slot:"mainhand"}]`);
     }
 
     const componentSuffix = components.length > 0 ? `[${components.join(',')}]` : '';
@@ -253,7 +272,7 @@ export const CustomItemCommandGenerator: React.FC = () => {
     return `/give ${targetSelector} minecraft:${activeItemId}${componentSuffix} ${itemCount}`;
   }, [
     activeItemId,
-    snbtNameJson,
+    snbtNameCompound,
     snbtLoreArray,
     selectedEnchants,
     isUnbreakable,
@@ -270,11 +289,11 @@ export const CustomItemCommandGenerator: React.FC = () => {
 
     // Display tag (Name, Lore)
     const displayParts: string[] = [];
-    if (snbtNameJson) {
-      displayParts.push(`Name:${snbtNameJson}`);
+    if (legacySnbtNameJson) {
+      displayParts.push(`Name:${legacySnbtNameJson}`);
     }
-    if (snbtLoreArray) {
-      displayParts.push(`Lore:${snbtLoreArray}`);
+    if (legacySnbtLoreArray) {
+      displayParts.push(`Lore:${legacySnbtLoreArray}`);
     }
     if (displayParts.length > 0) {
       nbtParts.push(`display:{${displayParts.join(',')}}`);
@@ -298,8 +317,8 @@ export const CustomItemCommandGenerator: React.FC = () => {
     return `/give ${targetSelector} minecraft:${activeItemId}${nbtSuffix} ${itemCount}`;
   }, [
     activeItemId,
-    snbtNameJson,
-    snbtLoreArray,
+    legacySnbtNameJson,
+    legacySnbtLoreArray,
     selectedEnchants,
     isUnbreakable,
     targetSelector,
@@ -319,9 +338,36 @@ export const CustomItemCommandGenerator: React.FC = () => {
 
   // Preset Loadouts
   const applyPreset = (presetName: string) => {
-    if (presetName === 'god_sword') {
+    if (presetName === 'example_sword') {
+      setSelectedItemId('diamond_sword');
+      setCustomItemId('');
+      setCustomName('Example Sword');
+      setNameColorMode('solid');
+      setNameSolidColor('#ff0000');
+      setNameEffects({
+        bold: true,
+        italic: false,
+        underlined: false,
+        strikethrough: false,
+        obfuscated: false
+      });
+      setLoreLines([
+        { id: '1', text: 'Example lore', color: '#ffaa00', italic: true },
+        { id: '2', text: 'Another line', color: '#55ffff', italic: true }
+      ]);
+      setSelectedEnchants({
+        sharpness: 5,
+        unbreaking: 3,
+        mending: 1
+      });
+      setIsUnbreakable(true);
+      setIncludeBonusAttack(true);
+      setBonusAttackDamage(5);
+    } else if (presetName === 'god_sword') {
       setSelectedItemId('netherite_sword');
+      setCustomItemId('');
       setCustomName('Oblivion God Sword');
+      setNameColorMode('gradient');
       setNameGradientStops(['#ff0000', '#ff7700', '#ffff00']);
       setSelectedEnchants({
         sharpness: 255,
@@ -336,7 +382,9 @@ export const CustomItemCommandGenerator: React.FC = () => {
       setBonusAttackDamage(150);
     } else if (presetName === 'mace_god') {
       setSelectedItemId('mace');
+      setCustomItemId('');
       setCustomName('Olympus Thunder Mace');
+      setNameColorMode('gradient');
       setNameGradientStops(['#00f2fe', '#4facfe', '#0000ff']);
       setSelectedEnchants({
         density: 5,
@@ -350,16 +398,21 @@ export const CustomItemCommandGenerator: React.FC = () => {
       setIncludeBonusAttack(false);
     } else if (presetName === 'knockback_stick') {
       setSelectedItemId('stick');
+      setCustomItemId('');
       setCustomName('Yeet 9000 Stick');
+      setNameColorMode('gradient');
       setNameGradientStops(['#ff512f', '#dd2476']);
       setSelectedEnchants({
         knockback: 255,
         fire_aspect: 5
       });
       setIsUnbreakable(true);
+      setIncludeBonusAttack(false);
     } else if (presetName === 'god_pickaxe') {
       setSelectedItemId('netherite_pickaxe');
+      setCustomItemId('');
       setCustomName('Bedrock Breaker');
+      setNameColorMode('gradient');
       setNameGradientStops(['#ffe259', '#ffa751']);
       setSelectedEnchants({
         efficiency: 255,
@@ -368,9 +421,12 @@ export const CustomItemCommandGenerator: React.FC = () => {
         mending: 1
       });
       setIsUnbreakable(true);
+      setIncludeBonusAttack(false);
     } else if (presetName === 'vanilla_max') {
       setSelectedItemId('netherite_sword');
+      setCustomItemId('');
       setCustomName('Excalibur');
+      setNameColorMode('gradient');
       setNameGradientStops(['#00b09b', '#96c93d']);
       setSelectedEnchants({
         sharpness: 5,
@@ -417,6 +473,12 @@ export const CustomItemCommandGenerator: React.FC = () => {
           {/* Quick Presets */}
           <div className="flex items-center gap-1.5 flex-wrap self-start sm:self-auto">
             <button
+              onClick={() => applyPreset('example_sword')}
+              className="px-2.5 py-1 text-[11px] uppercase bg-[#1e4620] hover:bg-[#28602b] text-yellow-300 border border-[#4caf50] cursor-pointer shadow-md font-bold"
+            >
+              Example Sword
+            </button>
+            <button
               onClick={() => applyPreset('god_sword')}
               className="px-2.5 py-1 text-[11px] uppercase bg-[#8a1414] hover:bg-[#a81c1c] text-white border border-[#d32f2f] cursor-pointer shadow-md"
             >
@@ -441,24 +503,6 @@ export const CustomItemCommandGenerator: React.FC = () => {
               God Pickaxe
             </button>
           </div>
-        </div>
-      </div>
-
-      {/* In Development Notice Banner */}
-      <div className="p-4 bg-[#2b1808] border-4 border-[#ffaa00] text-[#ffe2a8] shadow-2xl flex items-start gap-3">
-        <AlertTriangle className="w-6 h-6 text-yellow-400 shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="px-2 py-0.5 bg-[#5e3810] border border-yellow-500 text-yellow-300 text-[10px] font-bold uppercase tracking-wider">
-              IN ACTIVE DEVELOPMENT
-            </span>
-            <span className="text-yellow-400 text-xs font-bold uppercase tracking-wide">
-              Command Component Syntax Under Maintenance
-            </span>
-          </div>
-          <p className="text-xs text-[#ffe2a8] leading-relaxed">
-            Please note: This item generator is currently in development while we fine-tune compatibility with the latest Minecraft Java (1.20.5+, 1.21+, 26.3) and Bedrock data components. It will start working in a while. Thank you for your patience!
-          </p>
         </div>
       </div>
 
@@ -1104,7 +1148,7 @@ export const CustomItemCommandGenerator: React.FC = () => {
                     className="accent-[#8e24aa] w-4 h-4 cursor-pointer"
                   />
                   <span className={`text-[11px] font-bold uppercase ${useExecutePipeline ? 'text-purple-300' : 'text-[#776655]'}`}>
-                    {useExecutePipeline ? 'Active' : 'Off'}
+                    {useExecutePipeline ? 'Enabled' : 'Disabled'}
                   </span>
                 </label>
               </div>
@@ -1117,7 +1161,7 @@ export const CustomItemCommandGenerator: React.FC = () => {
                       Java 1.20.5+ / 1.21+ / 26.3 Modern Syntax
                     </span>
                     <span className="text-[10px] text-[#9c8979]">
-                      Enforces item_id[enchantments={'{...}'},custom_name='{'{...}'}']
+                      Item Components: item_id[custom_name={'{...}'},lore=[...],enchantments={'{...}'},unbreakable={'{'}{'}'},attribute_modifiers=[...]]
                     </span>
                   </div>
                   <button

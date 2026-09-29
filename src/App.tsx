@@ -14,6 +14,8 @@ import { PkStoreModal } from './components/PkStoreModal';
 import { TamingCalculator } from './components/TamingCalculator';
 import { TurretSoakerGuide } from './components/TurretSoakerGuide';
 import { PyromaneTamingGuide } from './components/PyromaneTamingGuide';
+import { RaidExplosivesCalculator } from './components/RaidExplosivesCalculator';
+import { ArkRecipeMatrix } from './components/ArkRecipeMatrix';
 import { MatingCalculator } from './components/MatingCalculator';
 import { TribeResourceHub } from './components/TribeResourceHub';
 import { ResourceMaps } from './components/ResourceMaps';
@@ -23,6 +25,7 @@ import { PkStoreCatalog } from './components/PkStoreCatalog';
 import { ArkLoadingIntro } from './components/ArkLoadingIntro';
 import { DailyArkTip } from './components/DailyArkTip';
 import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal';
+import { QuickJumpModal } from './components/QuickJumpModal';
 import { NotFoundPage } from './components/NotFoundPage';
 import { PageMetaSync } from './components/common/PageMetaSync';
 import { LibraryHub } from './components/LibraryHub';
@@ -66,6 +69,7 @@ function MainAppContent() {
   const [isStoreModalOpen, setIsStoreModalOpen] = useState<boolean>(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState<boolean>(false);
+  const [isQuickJumpOpen, setIsQuickJumpOpen] = useState<boolean>(false);
   
   // Holographic Boot Intro Sequence
   const [showIntro, setShowIntro] = useState<boolean>(true);
@@ -228,6 +232,13 @@ function MainAppContent() {
         setIsStoreModalOpen(false);
         setIsAuthModalOpen(false);
         setIsShortcutsModalOpen(false);
+        setIsQuickJumpOpen(false);
+        return;
+      }
+
+      if ((e.key === '/' || ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K'))) && !isInputActive) {
+        e.preventDefault();
+        setIsQuickJumpOpen(prev => !prev);
         return;
       }
 
@@ -293,6 +304,7 @@ function MainAppContent() {
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onReplayIntro={() => setShowIntro(true)}
         onOpenKeyboardShortcuts={() => setIsShortcutsModalOpen(true)}
+        onOpenQuickJump={() => setIsQuickJumpOpen(true)}
       />
 
       {/* Main Container */}
@@ -336,6 +348,10 @@ function MainAppContent() {
               />
 
               <Route path="/soakers" element={<TurretSoakerGuide />} />
+
+              <Route path="/raiding" element={<RaidExplosivesCalculator />} />
+
+              <Route path="/kibble" element={<ArkRecipeMatrix />} />
 
               <Route path="/pyromane" element={<PyromaneTamingGuide />} />
 
@@ -537,6 +553,11 @@ function MainAppContent() {
       <KeyboardShortcutsModal
         isOpen={isShortcutsModalOpen}
         onClose={() => setIsShortcutsModalOpen(false)}
+      />
+
+      <QuickJumpModal
+        isOpen={isQuickJumpOpen}
+        onClose={() => setIsQuickJumpOpen(false)}
       />
     </div>
   );

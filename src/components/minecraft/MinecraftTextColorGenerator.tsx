@@ -13,12 +13,15 @@ import {
   HelpCircle,
   Flame,
   Info,
-  AlertTriangle
+  AlertTriangle,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { 
   TextEffectOptions, 
   generateGradientColors, 
   groupFormattedCharacters, 
+  interpolateColorAtProgress,
   exportToJavaTellraw, 
   exportToJavaSignGiveCommand, 
   exportToJavaLegacySignGiveCommand,
@@ -37,12 +40,15 @@ import {
 const GLITCH_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?';
 
 export const MinecraftTextColorGenerator: React.FC = () => {
-  // Mode: 'command' or 'sign' (Command block gradient is fully active; sign generator is in development)
-  const [generatorMode, setGeneratorMode] = useState<'sign' | 'command'>('command');
+  // Mode: 'sign' or 'command'
+  const [generatorMode, setGeneratorMode] = useState<'sign' | 'command'>('sign');
+
+  // Sign Flow: 'line' (Clean 1-color per line gradient) or 'letter' (Individual character gradient)
+  const [signFlow, setSignFlow] = useState<'line' | 'letter'>('line');
 
   // Sign State (4 lines)
   const [signLines, setSignLines] = useState<string[]>([
-    'Welcome to',
+    'Welcome',
     'PK Ultimate Guide',
     'Minecraft Hub',
     '[Click to Enter]'
@@ -89,8 +95,23 @@ export const MinecraftTextColorGenerator: React.FC = () => {
 
   // Compute character colors for sign lines
   const computedSignLines = useMemo(() => {
-    return signLines.map(line => generateGradientColors(line, activeStops, effects));
-  }, [signLines, activeStops, effects]);
+    return signLines.map((line, lineIdx) => {
+      if (!line) return [];
+      if (signFlow === 'line') {
+        const lineColor = colorMode === 'solid'
+          ? solidColor
+          : (activeStops.length > 1
+              ? interpolateColorAtProgress(lineIdx / 3, activeStops)
+              : (activeStops[0] || '#ffffff'));
+        return line.split('').map(char => ({
+          char,
+          hex: lineColor,
+          ...effects
+        }));
+      }
+      return generateGradientColors(line, activeStops, effects);
+    });
+  }, [signLines, signFlow, colorMode, solidColor, activeStops, effects]);
 
   // Compute character colors for command text
   const computedCommandChars = useMemo(() => {
@@ -140,8 +161,8 @@ export const MinecraftTextColorGenerator: React.FC = () => {
         c.strikethrough ? 'line-through' : ''
       ].filter(Boolean).join(' ') || undefined,
       textShadow: isGlowing
-        ? `0 0 8px ${c.hex}, 2px 2px 0px rgba(0,0,0,0.85)`
-        : '2px 2px 0px rgba(0,0,0,0.85)'
+        ? `0 0 10px ${c.hex}, 0 0 20px ${c.hex}88, 2px 2px 0px rgba(0,0,0,0.95)`
+        : '2px 2px 0px rgba(0,0,0,0.9)'
     };
 
     return (
@@ -237,69 +258,28 @@ export const MinecraftTextColorGenerator: React.FC = () => {
           {/* Mode Switcher */}
           <div className="flex items-center gap-1.5 self-start sm:self-auto bg-[#1a2b0d] p-1 border-2 border-[#41681a]">
             <button
-              onClick={() => setGeneratorMode('command')}
-              className={`px-3 py-1.5 text-xs uppercase cursor-pointer transition-colors flex items-center gap-1.5 ${
-                generatorMode === 'command'
-                  ? 'bg-[#5b8731] text-yellow-300 font-bold border border-[#7cb342]'
-                  : 'text-[#ccebb0] hover:text-white'
-              }`}
-            >
-              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-              <span>Command Block & Chat</span>
-            </button>
-            <button
               onClick={() => setGeneratorMode('sign')}
-              className={`px-3 py-1.5 text-xs uppercase cursor-pointer transition-colors flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 text-xs uppercase cursor-pointer transition-colors ${
                 generatorMode === 'sign'
                   ? 'bg-[#5b8731] text-yellow-300 font-bold border border-[#7cb342]'
                   : 'text-[#ccebb0] hover:text-white'
               }`}
             >
-              <span>Sign Generator</span>
-              <span className="text-[9px] px-1 py-0.5 bg-amber-950 text-amber-300 border border-amber-600/50 font-mono font-bold">
-                IN DEV
-              </span>
+              Sign Generator
+            </button>
+            <button
+              onClick={() => setGeneratorMode('command')}
+              className={`px-3 py-1.5 text-xs uppercase cursor-pointer transition-colors ${
+                generatorMode === 'command'
+                  ? 'bg-[#5b8731] text-yellow-300 font-bold border border-[#7cb342]'
+                  : 'text-[#ccebb0] hover:text-white'
+              }`}
+            >
+              Command Block & Chat
             </button>
           </div>
         </div>
       </div>
-
-      {/* Conditional Status Banners */}
-      {generatorMode === 'sign' ? (
-        /* Sign Generator Under Maintenance Notice */
-        <div className="p-4 bg-[#2b1808] border-4 border-[#ffaa00] text-[#ffe2a8] shadow-2xl flex items-start gap-3">
-          <AlertTriangle className="w-6 h-6 text-yellow-400 shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-2 py-0.5 bg-[#5e3810] border border-yellow-500 text-yellow-300 text-[10px] font-bold uppercase tracking-wider">
-                IN ACTIVE DEVELOPMENT
-              </span>
-              <span className="text-yellow-400 text-xs font-bold uppercase tracking-wide">
-                Sign Generator Under Maintenance
-              </span>
-            </div>
-            <p className="text-xs text-[#ffe2a8] leading-relaxed">
-              Please note: The in-game Sign text generator is currently in active development to update sign NBT block states for newer Minecraft versions. It will start working in a while. In the meantime, the <strong>Command Block (/tellraw & /title) Gradient Text Generator</strong> is fully operational — switch back via the button above!
-            </p>
-          </div>
-        </div>
-      ) : (
-        /* Command Block Generator Active Confirmation */
-        <div className="p-3 bg-[#11240c] border-2 border-[#5b8731] text-[#ccebb0] shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-            <span className="text-xs font-bold uppercase text-emerald-300">
-              Command Block Gradient Serializer: Fully Operational
-            </span>
-            <span className="text-xs text-[#a0c885] hidden md:inline">
-              — Multi-stop hex gradients for /tellraw, /title, /actionbar & MiniMessage.
-            </span>
-          </div>
-          <span className="text-[10px] text-yellow-300/80 font-mono">
-            Note: Sign generator tab is currently in development
-          </span>
-        </div>
-      )}
 
       {/* Main Grid: Controls (Left) & Live Previews / Output (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -314,7 +294,7 @@ export const MinecraftTextColorGenerator: React.FC = () => {
               <button
                 onClick={() => {
                   if (generatorMode === 'sign') {
-                    setSignLines(['Line 1', 'Line 2', 'Line 3', 'Line 4']);
+                    setSignLines(['Welcome', 'PK Ultimate Guide', 'Minecraft Hub', '[Click to Enter]']);
                   } else {
                     setCommandText('Your Custom Gradient Text Here');
                   }
@@ -328,6 +308,40 @@ export const MinecraftTextColorGenerator: React.FC = () => {
             {/* Sign Mode Inputs */}
             {generatorMode === 'sign' ? (
               <div className="space-y-2.5">
+                {/* Gradient Flow Mode (Line vs Letter) */}
+                <div className="p-2 bg-[#120d09] border border-[#382618] flex items-center justify-between flex-wrap gap-2 text-xs">
+                  <div className="flex items-center gap-1.5">
+                    <Sliders className="w-3.5 h-3.5 text-yellow-400" />
+                    <span className="text-[11px] text-[#c2b09e] uppercase font-bold">Sign Gradient Mode:</span>
+                  </div>
+                  <div className="flex items-center gap-1 bg-[#0b0805] p-0.5 border border-[#2b1c13]">
+                    <button
+                      type="button"
+                      onClick={() => setSignFlow('line')}
+                      className={`px-2.5 py-1 text-[10px] uppercase font-bold cursor-pointer transition-colors ${
+                        signFlow === 'line'
+                          ? 'bg-[#3b591b] text-yellow-300 border border-[#7cb342]'
+                          : 'text-[#9c8979] hover:text-white'
+                      }`}
+                      title="1 color per sign line. Compact SNBT command, guaranteed to work in chat and command blocks."
+                    >
+                      Line-by-Line (Clean SNBT · 100% In-Game)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSignFlow('letter')}
+                      className={`px-2.5 py-1 text-[10px] uppercase font-bold cursor-pointer transition-colors ${
+                        signFlow === 'letter'
+                          ? 'bg-[#3b591b] text-yellow-300 border border-[#7cb342]'
+                          : 'text-[#9c8979] hover:text-white'
+                      }`}
+                      title="Each character gets its own gradient color."
+                    >
+                      Per-Letter
+                    </button>
+                  </div>
+                </div>
+
                 {[0, 1, 2, 3].map((lineIndex) => (
                   <div key={lineIndex} className="flex items-center gap-2">
                     <span className="w-12 text-right text-[11px] text-[#9c8979] uppercase">
@@ -347,6 +361,87 @@ export const MinecraftTextColorGenerator: React.FC = () => {
                     />
                   </div>
                 ))}
+
+                {/* Dedicated Sign Text Illumination Option: Glowing vs Non-Glowing */}
+                <div className="mt-3 p-3 bg-[#130d08] border-2 border-[#382618] space-y-2">
+                  <div className="flex items-center justify-between flex-wrap gap-1">
+                    <div className="flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                      <span className="text-[11px] text-[#f2e6d9] uppercase font-bold tracking-wide">
+                        Text Illumination:
+                      </span>
+                    </div>
+                    <span className={`text-[10px] font-mono px-2 py-0.5 border ${
+                      isGlowing 
+                        ? 'bg-cyan-950/80 text-cyan-300 border-cyan-500/60 shadow-[0_0_8px_rgba(6,182,212,0.3)]' 
+                        : 'bg-stone-900 text-stone-400 border-stone-700'
+                    }`}>
+                      {isGlowing ? 'has_glowing_text: 1b' : 'has_glowing_text: 0b'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                    {/* Glowing Option */}
+                    <button
+                      type="button"
+                      onClick={() => setIsGlowing(true)}
+                      className={`p-2.5 border-2 text-left cursor-pointer transition-all flex items-start gap-2.5 ${
+                        isGlowing
+                          ? 'bg-[#0f2e2e] border-cyan-400 text-cyan-100 shadow-[0_0_12px_rgba(6,182,212,0.25)]'
+                          : 'bg-[#18110b] border-[#382618] text-[#8e7e70] hover:text-white hover:border-[#523924]'
+                      }`}
+                    >
+                      <div className={`mt-0.5 w-3.5 h-3.5 rounded-full border shrink-0 flex items-center justify-center ${
+                        isGlowing 
+                          ? 'bg-cyan-400 border-cyan-200 shadow-[0_0_8px_#22d3ee]' 
+                          : 'border-stone-600 bg-stone-900'
+                      }`}>
+                        {isGlowing && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                          <span className={isGlowing ? 'text-cyan-300' : 'text-stone-300'}>Glowing Text</span>
+                          <span className="text-[9px] px-1 py-0.2 bg-cyan-950 text-cyan-400 border border-cyan-600/40 font-mono">
+                            1b
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-[#9c8979] leading-tight mt-0.5">
+                          High-contrast luminous outline (Glow Ink Sac effect)
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Non-Glowing Option */}
+                    <button
+                      type="button"
+                      onClick={() => setIsGlowing(false)}
+                      className={`p-2.5 border-2 text-left cursor-pointer transition-all flex items-start gap-2.5 ${
+                        !isGlowing
+                          ? 'bg-[#291e14] border-amber-500 text-amber-100 shadow-[0_0_12px_rgba(245,158,11,0.2)]'
+                          : 'bg-[#18110b] border-[#382618] text-[#8e7e70] hover:text-white hover:border-[#523924]'
+                      }`}
+                    >
+                      <div className={`mt-0.5 w-3.5 h-3.5 rounded-full border shrink-0 flex items-center justify-center ${
+                        !isGlowing 
+                          ? 'bg-amber-400 border-amber-200 shadow-[0_0_8px_#fbbf24]' 
+                          : 'border-stone-600 bg-stone-900'
+                      }`}>
+                        {!isGlowing && <div className="w-1.5 h-1.5 rounded-full bg-black" />}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                          <span className={!isGlowing ? 'text-amber-300' : 'text-stone-300'}>Non-Glowing</span>
+                          <span className="text-[9px] px-1 py-0.2 bg-stone-900 text-stone-400 border border-stone-700 font-mono">
+                            0b
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-[#9c8979] leading-tight mt-0.5">
+                          Classic standard text without glow outline
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
               <div>
@@ -599,25 +694,57 @@ export const MinecraftTextColorGenerator: React.FC = () => {
               </span>
 
               {generatorMode === 'sign' && (
-                <div className="flex items-center gap-2 text-[11px]">
-                  <label className="flex items-center gap-1 text-[#c2b09e] cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isGlowing}
-                      onChange={(e) => setIsGlowing(e.target.checked)}
-                      className="accent-[#5b8731]"
-                    />
-                    <span>Glow Sac</span>
-                  </label>
-                  <label className="flex items-center gap-1 text-[#c2b09e] cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isHangingSign}
-                      onChange={(e) => setIsHangingSign(e.target.checked)}
-                      className="accent-[#5b8731]"
-                    />
-                    <span>Hanging</span>
-                  </label>
+                <div className="flex items-center gap-1.5 flex-wrap text-[11px]">
+                  {/* Glowing / Non-Glowing Toggle Button */}
+                  <button
+                    type="button"
+                    onClick={() => setIsGlowing(!isGlowing)}
+                    className={`px-2.5 py-1 text-[10px] uppercase font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${
+                      isGlowing
+                        ? 'bg-cyan-950 text-cyan-300 border-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.35)]'
+                        : 'bg-[#18110b] text-[#c2b09e] border-[#553b26] hover:text-white'
+                    }`}
+                    title={isGlowing ? 'Glowing text enabled (has_glowing_text: 1b). Click to switch to Non-Glowing.' : 'Non-glowing text (has_glowing_text: 0b). Click to switch to Glowing.'}
+                  >
+                    {isGlowing ? (
+                      <>
+                        <Sparkles className="w-3 h-3 text-cyan-400" />
+                        <span>Glowing (1b)</span>
+                      </>
+                    ) : (
+                      <>
+                        <Moon className="w-3 h-3 text-amber-400" />
+                        <span>Non-Glowing (0b)</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Waxed Toggle Button */}
+                  <button
+                    type="button"
+                    onClick={() => setIsWaxed(!isWaxed)}
+                    className={`px-2 py-1 text-[10px] uppercase font-bold border transition-colors cursor-pointer ${
+                      isWaxed
+                        ? 'bg-[#3b591b] text-yellow-300 border-[#7cb342]'
+                        : 'bg-[#18110b] text-[#8e7e70] border-[#382618] hover:text-white'
+                    }`}
+                    title={isWaxed ? 'Waxed (cannot be edited in-game)' : 'Unwaxed (can be edited in survival)'}
+                  >
+                    {isWaxed ? 'Waxed (1b)' : 'Unwaxed (0b)'}
+                  </button>
+
+                  {/* Hanging vs Standing Toggle Button */}
+                  <button
+                    type="button"
+                    onClick={() => setIsHangingSign(!isHangingSign)}
+                    className={`px-2 py-1 text-[10px] uppercase font-bold border transition-colors cursor-pointer ${
+                      isHangingSign
+                        ? 'bg-[#3b591b] text-yellow-300 border-[#7cb342]'
+                        : 'bg-[#18110b] text-[#8e7e70] border-[#382618] hover:text-white'
+                    }`}
+                  >
+                    {isHangingSign ? 'Hanging' : 'Standing'}
+                  </button>
                 </div>
               )}
             </div>
@@ -656,15 +783,31 @@ export const MinecraftTextColorGenerator: React.FC = () => {
 
                   {/* Sign Plaque */}
                   <div
-                    className="w-full max-w-sm min-h-[160px] p-4 flex flex-col justify-center items-center text-center shadow-2xl relative border-4"
+                    className="w-full max-w-sm min-h-[170px] p-4 flex flex-col justify-center items-center text-center shadow-2xl relative border-4"
                     style={{
                       backgroundColor: currentWood.bg,
                       borderColor: currentWood.border
                     }}
                   >
                     <div className="absolute inset-1 border border-black/20 pointer-events-none" />
+
+                    {/* Live status badge on wooden board */}
+                    <div className="absolute top-2 left-3 right-3 flex items-center justify-between pointer-events-none z-20 text-[9px] font-mono">
+                      <span className={`px-1.5 py-0.5 border ${
+                        isGlowing
+                          ? 'bg-cyan-950/90 text-cyan-300 border-cyan-400/60 shadow-[0_0_8px_rgba(6,182,212,0.4)]'
+                          : 'bg-black/70 text-stone-300 border-black/40'
+                      }`}>
+                        {isGlowing ? '✨ Glowing Text (1b)' : '🌑 Non-Glowing Text (0b)'}
+                      </span>
+                      {isWaxed && (
+                        <span className="bg-amber-950/90 text-amber-300 border border-amber-500/50 px-1.5 py-0.5">
+                          🔒 Waxed (1b)
+                        </span>
+                      )}
+                    </div>
                     
-                    <div className="space-y-1.5 relative z-10 w-full">
+                    <div className="space-y-1.5 relative z-10 w-full pt-4">
                       {computedSignLines.map((lineChars, lineIdx) => (
                         <div key={lineIdx} className="text-xs sm:text-sm tracking-wide min-h-[18px]">
                           {lineChars.length > 0 ? (
@@ -716,11 +859,20 @@ export const MinecraftTextColorGenerator: React.FC = () => {
                   <div className="p-3 bg-[#100b08] border-2 border-[#291c13] space-y-1.5">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-yellow-300 font-bold text-[11px] uppercase block">
-                          Java 1.20.5+ / 1.21+ / 26.3 Sign (/give)
-                        </span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-yellow-300 font-bold text-[11px] uppercase">
+                            Java 1.20.5+ / 1.21+ / 26.3 Sign (/give)
+                          </span>
+                          <span className={`text-[9px] font-mono px-1.5 py-0.2 border ${
+                            isGlowing 
+                              ? 'bg-cyan-950 text-cyan-300 border-cyan-500/60' 
+                              : 'bg-stone-900 text-stone-400 border-stone-700'
+                          }`}>
+                            {isGlowing ? '✨ Glowing (1b)' : '🌑 Non-Glowing (0b)'}
+                          </span>
+                        </div>
                         <span className="text-[10px] text-[#9c8979]">
-                          Item Component format. Gives an item you can place in Creative mode.
+                          Item Component format with native SNBT compound tags. Guaranteed working in chat and command blocks.
                         </span>
                       </div>
                       <button
@@ -740,10 +892,19 @@ export const MinecraftTextColorGenerator: React.FC = () => {
                   <div className="p-3 bg-[#100b08] border-2 border-emerald-900/60 space-y-1.5">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-emerald-400 font-bold text-[11px] uppercase block flex items-center gap-1">
-                          <Sparkles className="w-3 h-3" />
-                          Java /data merge (Recommended · Apply to Existing Sign)
-                        </span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-emerald-400 font-bold text-[11px] uppercase flex items-center gap-1">
+                            <Sparkles className="w-3 h-3" />
+                            Java /data merge (Apply to Existing Sign)
+                          </span>
+                          <span className={`text-[9px] font-mono px-1.5 py-0.2 border ${
+                            isGlowing 
+                              ? 'bg-cyan-950 text-cyan-300 border-cyan-500/60' 
+                              : 'bg-stone-900 text-stone-400 border-stone-700'
+                          }`}>
+                            {isGlowing ? '✨ Glowing (1b)' : '🌑 Non-Glowing (0b)'}
+                          </span>
+                        </div>
                         <span className="text-[10px] text-[#9c8979]">
                           Place any sign in your world, stand looking at it, and run this command!
                         </span>
@@ -765,9 +926,18 @@ export const MinecraftTextColorGenerator: React.FC = () => {
                   <div className="p-3 bg-[#100b08] border-2 border-[#291c13] space-y-1.5">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-[#c2b09e] font-bold text-[11px] uppercase block">
-                          Java /setblock Sign Command (Instantly Spawns Sign)
-                        </span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[#c2b09e] font-bold text-[11px] uppercase">
+                            Java /setblock Sign Command (Spawns Sign)
+                          </span>
+                          <span className={`text-[9px] font-mono px-1.5 py-0.2 border ${
+                            isGlowing 
+                              ? 'bg-cyan-950 text-cyan-300 border-cyan-500/60' 
+                              : 'bg-stone-900 text-stone-400 border-stone-700'
+                          }`}>
+                            {isGlowing ? '✨ Glowing (1b)' : '🌑 Non-Glowing (0b)'}
+                          </span>
+                        </div>
                         <span className="text-[10px] text-[#9c8979]">
                           Places the sign block at ~ ~1 ~ with the exact colored text and rotation.
                         </span>

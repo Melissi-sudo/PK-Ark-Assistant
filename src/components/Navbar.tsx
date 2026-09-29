@@ -28,7 +28,9 @@ import {
   Cpu,
   Hammer,
   Skull,
-  Layers
+  Layers,
+  Bomb,
+  Utensils
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ServerRatePreset } from '../types';
@@ -44,6 +46,8 @@ export type NavTab =
   | 'breeding' 
   | 'maps' 
   | 'resources' 
+  | 'raiding'
+  | 'kibble'
   | 'stats' 
   | 'timers' 
   | 'store'
@@ -66,7 +70,94 @@ interface NavbarProps {
   onOpenAuthModal: () => void;
   onReplayIntro?: () => void;
   onOpenKeyboardShortcuts?: () => void;
+  onOpenQuickJump?: () => void;
 }
+
+export interface ArkCategoryItem {
+  id: string;
+  path: string;
+  label: string;
+  shortLabel: string;
+  icon: React.ComponentType<{ className?: string }>;
+  desc: string;
+  badge?: string;
+  accent?: 'cyan' | 'amber' | 'emerald' | 'purple' | 'red';
+}
+
+export interface ArkCategory {
+  id: string;
+  label: string;
+  shortLabel: string;
+  defaultPath: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: string;
+  accent?: 'cyan' | 'amber' | 'emerald' | 'purple' | 'red';
+  items: ArkCategoryItem[];
+}
+
+export const ARK_CATEGORIES: ArkCategory[] = [
+  {
+    id: 'taming',
+    label: 'Taming Hub',
+    shortLabel: 'Taming',
+    defaultPath: '/taming',
+    icon: Crosshair,
+    badge: '2 TOOLS',
+    items: [
+      { id: 'taming', path: '/taming', label: 'Taming Calculator', shortLabel: 'Knockout & Food', icon: Crosshair, desc: 'Torpor decay, food quotas & starve alerts', badge: 'CORE', accent: 'cyan' },
+      { id: 'pyromane', path: '/pyromane', label: 'Pyromane Guide', shortLabel: 'Pyromane 30s', icon: Flame, desc: 'Water extinguishing strategy & 30s ride simulator', badge: "BOB'S TALES", accent: 'amber' },
+    ]
+  },
+  {
+    id: 'combat',
+    label: 'Raiding & Combat',
+    shortLabel: 'Raiding & Combat',
+    defaultPath: '/soakers',
+    icon: ShieldAlert,
+    badge: 'PVP META',
+    accent: 'cyan',
+    items: [
+      { id: 'soakers', path: '/soakers', label: 'Turret Soakers', shortLabel: 'Turret Soakers', icon: ShieldAlert, desc: 'Stego plates, Trike headshot armor & hitbox safety', badge: 'SOAKERS', accent: 'cyan' },
+      { id: 'raiding', path: '/raiding', label: 'Raid Explosives Math', shortLabel: 'Raid Math (C4)', icon: Bomb, desc: 'Structure HP vs C4, Rockets, Tek Rifle & armor', badge: 'C4 & TEK', accent: 'red' },
+      { id: 'resources', path: '/resources', label: 'Tribe Ammo Quota', shortLabel: 'Ammo Quotas', icon: ShieldCheck, desc: 'Heavy turret bullets & gunpowder batch quotas', badge: 'QUOTAS', accent: 'emerald' },
+    ]
+  },
+  {
+    id: 'breeding',
+    label: 'Breeding & Stats',
+    shortLabel: 'Breeding & Stats',
+    defaultPath: '/breeding',
+    icon: Egg,
+    badge: 'GENETICS',
+    items: [
+      { id: 'breeding', path: '/breeding', label: 'Breeding & Nursery', shortLabel: 'Breeding Hub', icon: Egg, desc: 'Incubation, gestation, imprint schedules & cuddle times', accent: 'purple' },
+      { id: 'stats', path: '/stats', label: 'Dino Stat Extractor', shortLabel: 'Dino Stats', icon: Search, desc: 'Extract wild level distribution & identify high-stat breeders', accent: 'cyan' },
+    ]
+  },
+  {
+    id: 'survival',
+    label: 'Maps & Recipes',
+    shortLabel: 'Maps & Recipes',
+    defaultPath: '/maps',
+    icon: Map,
+    badge: '5 MAPS',
+    accent: 'cyan',
+    items: [
+      { id: 'maps', path: '/maps', label: 'Resource Maps', shortLabel: 'Resource Maps', icon: Map, desc: 'Interactive coordinate pins for metal, silica, oil & obsidian', badge: '5 MAPS', accent: 'cyan' },
+      { id: 'kibble', path: '/kibble', label: 'Kibble & Chef Matrix', shortLabel: 'Kibble & Chef', icon: Utensils, desc: 'All kibble tiers, Sweet Veggie Cakes & Rockwell stews', badge: 'RECIPES', accent: 'emerald' },
+    ]
+  },
+  {
+    id: 'timers',
+    label: 'War Room Timers',
+    shortLabel: 'Alarms',
+    defaultPath: '/timers',
+    icon: Timer,
+    items: [
+      { id: 'timers', path: '/timers', label: 'War Room Alarms', shortLabel: 'Tek Timers', icon: Timer, desc: 'Custom starve & hatch timers with TEK alarm audio', accent: 'cyan' },
+    ]
+  },
+];
 
 interface TabItem {
   id: string;
@@ -81,6 +172,8 @@ interface TabItem {
 export const ARK_TABS: TabItem[] = [
   { id: 'taming', path: '/taming', label: 'Taming', icon: Crosshair, desc: 'Auto food quotas, torpor & starve alerts' },
   { id: 'soakers', path: '/soakers', label: 'Soakers', icon: ShieldAlert, badge: 'PVP META', accent: 'cyan', desc: 'Stego & Trike turret hitbox rules' },
+  { id: 'raiding', path: '/raiding', label: 'Raid Math', icon: Bomb, badge: 'C4 & TEK', accent: 'red', desc: 'Structure HP vs C4, Rockets & Flak durability' },
+  { id: 'kibble', path: '/kibble', label: 'Kibble & Chef', icon: Utensils, badge: 'ALL TIERS', accent: 'emerald', desc: 'Kibble matrix, Veggie Cakes & Mindwipe recipes' },
   { id: 'pyromane', path: '/pyromane', label: 'Pyromane Guide', icon: Flame, badge: '30s Ride', accent: 'amber', desc: 'Water luring & 30s simulator' },
   { id: 'maps', path: '/maps', label: 'Resource Maps', icon: Map, badge: '5 MAPS', accent: 'cyan', desc: 'Interactive metal, silica & oil nodes' },
   { id: 'breeding', path: '/breeding', label: 'Breeding', icon: Egg, desc: 'Incubation, gestation & imprint timers' },
@@ -110,7 +203,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenStoreModal,
   onOpenAuthModal,
   onReplayIntro,
-  onOpenKeyboardShortcuts
+  onOpenKeyboardShortcuts,
+  onOpenQuickJump
 }) => {
   const { currentUser, profile, accountName } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
@@ -125,6 +219,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   const isArk = !isMinecraft && !isLibrary;
 
   const activeTabsList = isMinecraft ? MINECRAFT_TABS : ARK_TABS;
+
+  // Find active ARK Category
+  const activeCategory = ARK_CATEGORIES.find(cat => 
+    cat.items.some(item => 
+      currentPath === item.path || 
+      (item.path === '/taming' && currentPath === '/') || 
+      currentPath.startsWith(item.path + '/')
+    )
+  ) || ARK_CATEGORIES[0];
 
   return (
     <header className="sticky top-0 z-40 bg-[#050914]/95 backdrop-blur-xl border-b border-white/[0.08] shadow-2xl">
@@ -313,84 +416,185 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Sub Navigation Bar for ARK Guides */}
       {isArk && (
-        <div className="relative border-t border-white/[0.06] bg-[#040711]/90 px-2 sm:px-6 py-1">
-          <nav 
-            role="tablist" 
-            aria-label="Game Guide Navigation" 
-            className="max-w-7xl mx-auto flex items-center gap-1 sm:gap-1.5 overflow-x-auto text-xs no-scrollbar py-0.5 touch-pan-x"
-          >
-            {/* Quick Back to Library Link */}
-            <Link
-              to="/library"
-              className="px-2 sm:px-2.5 py-1.5 text-slate-400 hover:text-cyan-300 flex items-center gap-1 font-hud text-xs shrink-0 mr-1"
-              title="Return to Multi-Game Library"
+        <div className="relative border-t border-white/[0.06] bg-[#040711]/95 px-2.5 sm:px-6 py-2 space-y-1.5">
+          {/* Row 1: 5 Consolidated Category Hubs + Quick Jump Palette */}
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+            <nav 
+              role="tablist" 
+              aria-label="ARK Guide Categories" 
+              className="flex items-center gap-1 sm:gap-2 overflow-x-auto text-xs no-scrollbar py-0.5 touch-pan-x"
             >
-              <BookOpen className="w-3.5 h-3.5 text-slate-500" />
-              <span className="hidden sm:inline">Library</span>
-            </Link>
+              {/* Quick Back to Library Link */}
+              <Link
+                to="/library"
+                className="px-2 sm:px-2.5 py-1.5 text-slate-400 hover:text-cyan-300 flex items-center gap-1 font-hud text-xs shrink-0 mr-1 rounded-xl hover:bg-white/[0.04] transition-colors"
+                title="Return to Multi-Game Library"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-slate-500" />
+                <span className="hidden sm:inline">Library</span>
+              </Link>
 
-            <span className="h-4 w-[1px] bg-white/10 shrink-0 mr-1" />
+              <span className="h-4 w-[1px] bg-white/10 shrink-0 mr-1" />
 
-            {ARK_TABS.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = currentPath === tab.path || (tab.path === '/taming' && currentPath === '/') || currentPath.startsWith(tab.path + '/');
+              {ARK_CATEGORIES.map((cat) => {
+                const Icon = cat.icon;
+                const isCatActive = activeCategory.id === cat.id;
 
-              return (
-                <Link
-                  key={tab.id}
-                  to={tab.path}
-                  role="tab"
-                  id={`tab-${tab.id}`}
-                  aria-selected={isActive}
-                  className={`relative px-2.5 sm:px-3 py-1.5 rounded-xl font-hud font-semibold text-xs tracking-wide transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 min-h-[38px] ${
-                    isActive
-                      ? 'text-white font-bold'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
-                  }`}
-                >
-                  {/* Animated active pill indicator */}
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeTabPill"
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                      className="absolute inset-0 rounded-xl border border-cyan-400/50 bg-gradient-to-r from-cyan-950/80 via-[#0c1f38] to-cyan-950/80 shadow-[0_0_15px_rgba(6,182,212,0.25)] -z-0"
-                    />
-                  )}
+                return (
+                  <div key={cat.id} className="relative group shrink-0">
+                    <Link
+                      to={cat.defaultPath}
+                      role="tab"
+                      id={`cat-tab-${cat.id}`}
+                      aria-selected={isCatActive}
+                      className={`relative px-3 sm:px-3.5 py-1.5 rounded-xl font-hud font-semibold text-xs tracking-wide transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 min-h-[36px] ${
+                        isCatActive
+                          ? 'text-white font-bold'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
+                      }`}
+                    >
+                      {/* Animated active pill indicator */}
+                      {isCatActive && (
+                        <motion.div
+                          layoutId="activeCategoryPill"
+                          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                          className="absolute inset-0 rounded-xl border border-cyan-400/50 bg-gradient-to-r from-cyan-950/85 via-[#0c1f38] to-cyan-950/85 shadow-[0_0_15px_rgba(6,182,212,0.25)] -z-0"
+                        />
+                      )}
 
-                  <span className="relative z-10 flex items-center gap-1.5">
-                    <Icon className={`w-3.5 h-3.5 ${
-                      isActive 
-                        ? 'text-cyan-400'
-                        : 'text-slate-400'
-                    }`} />
-                    <span>{tab.label}</span>
+                      <span className="relative z-10 flex items-center gap-1.5">
+                        <Icon className={`w-3.5 h-3.5 ${
+                          isCatActive 
+                            ? 'text-cyan-400' 
+                            : 'text-slate-400 group-hover:text-cyan-300'
+                        }`} />
+                        <span>{cat.shortLabel}</span>
 
-                    {/* Badge */}
-                    {tab.badge && (
-                      <span className={`text-[9px] px-1 py-0.2 rounded font-tek font-bold ${
-                        tab.accent === 'amber'
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                          : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                      }`}>
-                        {tab.badge}
+                        {/* Category Badge or Tool Count */}
+                        {cat.badge && (
+                          <span className="hidden lg:inline-block text-[9px] px-1 py-0.2 rounded font-tek font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                            {cat.badge}
+                          </span>
+                        )}
+
+                        {/* Timer Count Badge */}
+                        {cat.id === 'timers' && activeTimersCount > 0 && (
+                          <span className={`px-1.5 py-0.2 text-[10px] font-tek font-bold rounded-full ${
+                            hasExpiringTimers 
+                              ? 'bg-red-500 text-white animate-bounce' 
+                              : 'bg-cyan-500/30 text-cyan-300 border border-cyan-500/40'
+                          }`}>
+                            {activeTimersCount}
+                          </span>
+                        )}
+
+                        {cat.items.length > 1 && (
+                          <ChevronDown className="w-2.5 h-2.5 text-slate-500 group-hover:text-cyan-300 transition-transform group-hover:rotate-180 hidden sm:inline-block" />
+                        )}
+                      </span>
+                    </Link>
+
+                    {/* Desktop Hover Quick-Menu */}
+                    {cat.items.length > 1 && (
+                      <div className="absolute top-full left-0 mt-1 w-64 bg-[#070e1c] border border-cyan-500/30 rounded-2xl shadow-2xl p-1.5 hidden group-hover:block z-50 backdrop-blur-xl">
+                        <div className="text-[10px] font-tek font-bold text-cyan-400 px-2 py-1 uppercase tracking-wider border-b border-white/[0.06] mb-1 flex items-center justify-between">
+                          <span>{cat.label}</span>
+                          <span className="text-slate-500">{cat.items.length} Calculators</span>
+                        </div>
+                        {cat.items.map((sub) => {
+                          const SubIcon = sub.icon;
+                          const isSubActive = currentPath === sub.path;
+                          return (
+                            <Link
+                              key={sub.id}
+                              to={sub.path}
+                              className={`flex items-start gap-2.5 p-2 rounded-xl transition-all ${
+                                isSubActive
+                                  ? 'bg-cyan-950/70 border border-cyan-500/40 text-white'
+                                  : 'hover:bg-white/[0.06] text-slate-300 hover:text-white'
+                              }`}
+                            >
+                              <SubIcon className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${
+                                isSubActive ? 'text-cyan-400' : 'text-slate-400'
+                              }`} />
+                              <div className="overflow-hidden">
+                                <div className="text-xs font-hud font-bold leading-tight flex items-center gap-1.5">
+                                  <span>{sub.label}</span>
+                                  {sub.badge && (
+                                    <span className="text-[8px] px-1 py-0.2 rounded font-tek bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                                      {sub.badge}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-[10px] text-slate-400 truncate mt-0.5 font-sans">
+                                  {sub.desc}
+                                </div>
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </nav>
+
+            {/* Quick Jump Command Palette Trigger */}
+            {onOpenQuickJump && (
+              <button
+                onClick={onOpenQuickJump}
+                className="shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-cyan-950/40 hover:bg-cyan-900/60 border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 transition-all cursor-pointer text-xs font-hud font-semibold shadow-sm shadow-cyan-950/40"
+                title="Search and Jump to any tool (Press / or Ctrl+K)"
+              >
+                <Search className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="hidden md:inline">Quick Jump</span>
+                <kbd className="hidden sm:inline-block px-1.5 py-0.2 bg-black/40 border border-cyan-500/30 rounded text-[9px] font-mono text-cyan-200">
+                  /
+                </kbd>
+              </button>
+            )}
+          </div>
+
+          {/* Row 2: Contextual Subtool Strip (1-Click Switching between sibling tools) */}
+          <div className="max-w-7xl mx-auto flex items-center gap-2 pt-1 border-t border-white/[0.04]">
+            <span className="text-[10px] font-tek font-bold uppercase tracking-wider text-cyan-400/80 shrink-0 hidden sm:inline-block">
+              {activeCategory.shortLabel} Tools:
+            </span>
+
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 touch-pan-x flex-1">
+              {activeCategory.items.map((sub) => {
+                const SubIcon = sub.icon;
+                const isSubActive = currentPath === sub.path || (sub.path === '/taming' && currentPath === '/') || currentPath.startsWith(sub.path + '/');
+
+                return (
+                  <Link
+                    key={sub.id}
+                    to={sub.path}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-hud flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                      isSubActive
+                        ? 'bg-cyan-500/25 border border-cyan-400/60 text-cyan-200 font-bold shadow-sm shadow-cyan-500/10'
+                        : 'bg-white/[0.02] border border-white/[0.06] text-slate-400 hover:text-slate-200 hover:border-white/20 hover:bg-white/[0.04]'
+                    }`}
+                  >
+                    <SubIcon className={`w-3 h-3 ${isSubActive ? 'text-cyan-400' : 'text-slate-500'}`} />
+                    <span>{sub.label}</span>
+                    {sub.badge && (
+                      <span className="text-[8px] px-1 py-0.2 rounded font-tek bg-white/[0.06] text-slate-300">
+                        {sub.badge}
                       </span>
                     )}
+                  </Link>
+                );
+              })}
 
-                    {/* Timer Count Badge */}
-                    {tab.id === 'timers' && activeTimersCount > 0 && (
-                      <span className={`px-1.5 py-0.2 text-[10px] font-tek font-bold rounded-full ${
-                        hasExpiringTimers 
-                          ? 'bg-red-500 text-white animate-bounce' 
-                          : 'bg-cyan-500/30 text-cyan-300 border border-cyan-500/40'
-                      }`}>
-                        {activeTimersCount}
-                      </span>
-                    )}
-                  </span>
-                </Link>
-              );
-            })}
-          </nav>
+              {activeCategory.items.length === 1 && (
+                <span className="text-[11px] text-slate-500 font-sans italic hidden sm:inline">
+                  Audio starve & incubation alarms active in background
+                </span>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
@@ -428,6 +632,72 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="text-[10px] font-mono text-cyan-300">All Games ➔</span>
             </Link>
 
+            {/* Quick Search in Drawer */}
+            {onOpenQuickJump && (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenQuickJump();
+                }}
+                className="w-full p-2.5 rounded-xl bg-cyan-950/50 border border-cyan-500/40 text-cyan-300 flex items-center justify-between text-xs font-hud font-bold cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <Search className="w-4 h-4 text-cyan-400" />
+                  <span>Search All Calculators & Dinos...</span>
+                </div>
+                <span className="text-[10px] font-mono bg-cyan-500/20 px-1.5 py-0.5 rounded">Jump</span>
+              </button>
+            )}
+
+            {/* ARK Categorized Section */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-1.5 text-xs font-hud font-bold text-cyan-300">
+                <span className="font-tek text-cyan-400">◈</span>
+                <span>ARK SURVIVAL ASCENDED // 5 SECTIONS</span>
+              </div>
+
+              {ARK_CATEGORIES.map((cat) => (
+                <div key={cat.id} className="space-y-1.5 bg-[#081120] p-2.5 rounded-xl border border-white/[0.06]">
+                  <div className="text-[11px] font-tek font-bold text-cyan-400 flex items-center justify-between uppercase">
+                    <span>{cat.label}</span>
+                    <span className="text-[9px] text-slate-500">{cat.items.length} tools</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                    {cat.items.map((tab) => {
+                      const Icon = tab.icon;
+                      const isActive = currentPath === tab.path;
+
+                      return (
+                        <Link
+                          key={tab.id}
+                          to={tab.path}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={`p-2 rounded-lg border text-left flex items-start gap-2 transition-all ${
+                            isActive
+                              ? 'bg-cyan-950/80 border-cyan-400 text-cyan-200'
+                              : 'bg-[#0a1220] border-slate-800 text-slate-300 hover:border-slate-700'
+                          }`}
+                        >
+                          <Icon className="w-3.5 h-3.5 mt-0.5 shrink-0 text-cyan-400" />
+                          <div className="overflow-hidden">
+                            <div className="text-xs font-hud font-bold leading-tight truncate">
+                              {tab.label}
+                            </div>
+                            {tab.desc && (
+                              <div className="text-[9px] text-slate-400 font-sans truncate mt-0.5">
+                                {tab.desc}
+                              </div>
+                            )}
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
             {/* Minecraft Section */}
             <div className="space-y-2">
               <div className="flex items-center gap-1.5 text-xs font-hud font-bold text-purple-300">
@@ -459,46 +729,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                         {tab.badge && (
                           <div className="text-[9px] text-purple-300 font-mono mt-0.5 truncate">
                             {tab.badge}
-                          </div>
-                        )}
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* ARK Section */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-1.5 text-xs font-hud font-bold text-cyan-300">
-                <span className="font-tek text-cyan-400">◈</span>
-                <span>ARK SURVIVAL ASCENDED WAR ROOM</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                {ARK_TABS.map((tab) => {
-                  const Icon = tab.icon;
-                  const isActive = currentPath === tab.path;
-
-                  return (
-                    <Link
-                      key={tab.id}
-                      to={tab.path}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={`p-2 rounded-xl border text-left flex items-start gap-2 transition-all ${
-                        isActive
-                          ? 'bg-cyan-950/80 border-cyan-400 text-cyan-200'
-                          : 'bg-[#0a1220] border-slate-800 text-slate-300 hover:border-slate-700'
-                      }`}
-                    >
-                      <Icon className="w-4 h-4 mt-0.5 shrink-0 text-cyan-400" />
-                      <div className="overflow-hidden">
-                        <div className="text-xs font-hud font-bold leading-tight truncate">
-                          {tab.label}
-                        </div>
-                        {tab.desc && (
-                          <div className="text-[9px] text-slate-400 font-sans truncate mt-0.5">
-                            {tab.desc}
                           </div>
                         )}
                       </div>
