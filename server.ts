@@ -289,6 +289,34 @@ app.get('/sitemap.xml', (_req: Request, res: Response) => {
   res.sendFile(sitemapPath);
 });
 
+app.get('/ads.txt', (_req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  const adsPath = path.resolve(process.cwd(), 'public/ads.txt');
+  if (fs.existsSync(adsPath)) {
+    return res.sendFile(adsPath);
+  }
+  res.send("google.com, pub-8502614448189188, DIRECT, f08c47fec0942fa0\n");
+});
+
+app.get('/favicon.ico', (_req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'image/x-icon');
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  const favPath = path.resolve(process.cwd(), 'public/favicon.ico');
+  if (fs.existsSync(favPath)) {
+    return res.sendFile(favPath);
+  }
+  return res.status(404).send('Not found');
+});
+
+app.get('/site.webmanifest', (_req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
+  const manifestPath = path.resolve(process.cwd(), 'public/site.webmanifest');
+  if (fs.existsSync(manifestPath)) {
+    return res.sendFile(manifestPath);
+  }
+  return res.status(404).send('Not found');
+});
+
 // ==========================================
 // 4. VITE & STATIC SERVING INTEGRATION
 // ==========================================

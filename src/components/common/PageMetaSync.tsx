@@ -23,6 +23,14 @@ const ROUTE_META: Record<string, MetaData> = {
     title: 'ARK Turret Soaker Hitbox Matrix | PK Ultimate Guide',
     description: 'Master ARK: Survival Ascended turret soaking with exact hitbox damage reductions, saddle armor formulas, and optimal angles for Stegosaurus and Trikes.',
   },
+  '/raiding': {
+    title: 'ARK C4 & Raid Explosives Breaching Calculator | PK Ultimate Guide',
+    description: 'Calculate structure HP vs C4 charges, Rocket Propelled Grenades, Tek Rifle blasts, and Flak armor durability for ARK: Survival Ascended base raiding.',
+  },
+  '/kibble': {
+    title: 'ARK Kibble & Chef Recipe Matrix (Veggie Cakes) | PK Ultimate Guide',
+    description: 'Complete ARK: Survival Ascended kibble recipe tree, Sweet Vegetable Cakes, Mindwipe Tonics, Medical Brews, and Rockwell cooking recipes.',
+  },
   '/pyromane': {
     title: 'ARK Pyromane Taming & Combat Guide | PK Ultimate Guide',
     description: 'ARK: Survival Ascended Pyromane taming and combat guide. Simulate extinguishing flames, water luring, and the 30-second ride mechanic.',
@@ -91,6 +99,14 @@ const ROUTE_META: Record<string, MetaData> = {
     title: 'Minecraft Gradient & Command Block Generator | PK Ultimate Guide',
     description: 'Generate multi-stop gradient hex color codes for Minecraft /tellraw, /title, actionbar, and chat.',
   },
+  '/minecraft/commands': {
+    title: 'Minecraft RGB Gradient & Sign Command Generator | PK Ultimate Guide',
+    description: 'Generate rich multi-stop gradient hex color codes for Minecraft signs, /tellraw, /title, actionbar, and chat in Java and Bedrock.',
+  },
+  '/minecraft/item-summon': {
+    title: 'Minecraft 1.21 Item & Enchant /give Summon Generator | PK Ultimate Guide',
+    description: 'Build modern 1.20.5+ and 1.21+ /give commands with custom enchantments, item_name, lore, and unbreakable tags.',
+  },
 };
 
 export const PageMetaSync: React.FC = () => {
@@ -102,8 +118,8 @@ export const PageMetaSync: React.FC = () => {
 
     // Lookup metadata
     const meta = ROUTE_META[pathname] || {
-      title: 'PK Ultimate Guide // Tactical Multi-Game Hub',
-      description: 'PK Ultimate Guide - Premier multi-game tactical library featuring ARK: Survival Ascended calculators, maps, and Minecraft 1.21+ guides.',
+      title: 'PK Ultimate Guide – ARK Ascended & Minecraft 1.21 Tactical Calculators',
+      description: 'Premier tactical companion for ARK: Survival Ascended & Minecraft 1.21+. Automated taming starve calculator, turret soaker mechanics, C4 raid math, kibble recipes, 5 resource maps, 3D nether portal linker, and potion brewer.',
     };
 
     // Update document title
@@ -137,6 +153,11 @@ export const PageMetaSync: React.FC = () => {
     const ogUrl = document.querySelector('meta[property="og:url"]');
     if (ogUrl) {
       ogUrl.setAttribute('content', canonicalHref);
+    }
+
+    const ogImg = document.querySelector('meta[property="og:image"]');
+    if (ogImg) {
+      ogImg.setAttribute('content', 'https://pkguides.web.app/favicon-512x512.png');
     }
   }, [pathname]);
 
