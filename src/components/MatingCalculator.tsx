@@ -486,41 +486,6 @@ export const MatingCalculator: React.FC<MatingCalculatorProps> = ({
               </div>
             </div>
           </div>
-
-          {/* PK Store Sponsor Promotion for Breeding */}
-          <div className="bg-gradient-to-r from-[#1c1208] to-[#120a04] border border-amber-500/40 rounded-xl p-4 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
-                <Sparkles className="w-5 h-5 animate-pulse" />
-              </div>
-              <div>
-                <div className="text-xs font-bold text-amber-300 font-hud">
-                  SKIP WEEKS OF MUTATION STACKING WITH PK STORE
-                </div>
-                <p className="text-xs text-amber-200/80 mt-0.5">
-                  Don't wait 4 months to breed 254 melee and HP mutations. PK Store offers fully capped, sterile and clean breeding pairs ready for official PvP wars.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
-              <button
-                onClick={onOpenStoreModal}
-                className="flex-1 sm:flex-none px-3 py-1.5 bg-amber-950/60 hover:bg-amber-900 border border-amber-500/40 rounded-lg text-amber-200 text-xs font-hud font-semibold cursor-pointer"
-              >
-                Line Catalog
-              </button>
-              <a
-                href="https://discord.gg/C9pD2yduw9"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 sm:flex-none px-3.5 py-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-bold font-hud text-xs rounded-lg flex items-center justify-center gap-1 shadow-md shadow-amber-500/20"
-              >
-                <span>Discord</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            </div>
-          </div>
         </div>
       </div>
     </div>

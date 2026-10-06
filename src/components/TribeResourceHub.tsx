@@ -348,37 +348,6 @@ export const TribeResourceHub: React.FC<TribeResourceHubProps> = ({
                   Recommended: Run a line of <strong>4 Chemistry Benches simultaneously</strong> to finish in ~{Math.ceil(parseFloat(chemBenchHours) / 4)} hours.
                 </div>
               </div>
-
-              {/* PK Store Sponsor Callout */}
-              <div className="bg-gradient-to-r from-[#1c1208] to-[#120a04] border border-amber-500/40 rounded-xl p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div>
-                  <div className="text-xs font-bold text-amber-300 font-hud flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                    NEED {totalArbNeeded.toLocaleString()} ARB FAST BEFORE GETTING RAIDED?
-                  </div>
-                  <p className="text-[11px] text-amber-200/80 mt-0.5">
-                    Skip 20+ hours of metal and stone grinding. PK Store delivers 250k - 1,000,000+ ARB crates directly on Official PvP.
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={onOpenStoreModal}
-                    className="px-2.5 py-1 text-xs font-hud font-bold text-amber-200 bg-amber-950/80 hover:bg-amber-900 border border-amber-500/40 rounded cursor-pointer"
-                  >
-                    Check Price
-                  </button>
-                  <a
-                    href="https://discord.gg/C9pD2yduw9"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3 py-1 bg-amber-500 hover:bg-amber-400 text-black font-hud font-bold text-xs rounded flex items-center gap-1"
-                  >
-                    <span>Discord</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -459,23 +428,6 @@ export const TribeResourceHub: React.FC<TribeResourceHubProps> = ({
 
             <div className="bg-cyan-950/20 border border-cyan-500/30 rounded-lg p-3 text-xs text-slate-300">
               <strong>PvP Meta Tip:</strong> Tek Turrets shoot through enemy Stego hardened plates, dealing direct plasma splash damage to the rider! Always mix 1 Tek Turret for every 4 Heavy Auto Turrets on official PvP.
-            </div>
-
-            {/* PK Store Tek Sponsor */}
-            <div className="bg-[#140d06] border border-amber-500/40 rounded-xl p-3 flex items-center justify-between">
-              <div>
-                <div className="text-xs font-bold text-amber-300 font-hud">Need Element Shards or Tek Kits?</div>
-                <div className="text-[11px] text-slate-400">PK Store supplies pre-farmed Element & Shards on Official.</div>
-              </div>
-              <a
-                href="https://discord.gg/C9pD2yduw9"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-3 py-1.5 bg-amber-500 text-black text-xs font-hud font-bold rounded flex items-center gap-1"
-              >
-                <span>Discord</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
             </div>
           </div>
         </div>

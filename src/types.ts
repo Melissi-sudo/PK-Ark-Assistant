@@ -110,6 +110,8 @@ export interface ServerRatePreset {
   eggHatchMult: number;
   babyMatureMult: number;
   xpMult: number;
+  dinoFoodDrainMult?: number;
+  babyCuddleIntervalMult?: number;
 }
 
 export interface ActiveTimer {

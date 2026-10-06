@@ -9,9 +9,15 @@
   </url>
   <url>
     <loc>https://pkguides.web.app/library</loc>
-    <lastmod>2026-09-29</lastmod>
+    <lastmod>2026-10-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
+  </url>
+  <url>
+    <loc>https://pkguides.web.app/about</loc>
+    <lastmod>2026-10-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
   </url>
 
   <!-- ARK: Survival Ascended Tactical War Room Calculators & Guides -->

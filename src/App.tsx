@@ -9,7 +9,6 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Link 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthModal } from './components/AuthModal';
 import { Navbar } from './components/Navbar';
-import { PkStoreBanner } from './components/PkStoreBanner';
 import { PkStoreModal } from './components/PkStoreModal';
 import { TamingCalculator } from './components/TamingCalculator';
 import { TurretSoakerGuide } from './components/TurretSoakerGuide';
@@ -30,10 +29,15 @@ import { NotFoundPage } from './components/NotFoundPage';
 import { PageMetaSync } from './components/common/PageMetaSync';
 import { LibraryHub } from './components/LibraryHub';
 import { MinecraftHub } from './components/minecraft/MinecraftHub';
+import { CustomRatesModal } from './components/CustomRatesModal';
+import { SidebarNavigation } from './components/SidebarNavigation';
+import { Breadcrumbs } from './components/Breadcrumbs';
+import { AboutMethodologyModal } from './components/AboutMethodologyModal';
+import { AboutMethodologyPage } from './components/AboutMethodologyPage';
 import { ServerRatePreset, ActiveTimer } from './types';
-import { SERVER_PRESETS } from './data/presets';
+import { SERVER_PRESETS, getStoredCustomPreset } from './data/presets';
 import { sendBrowserNotification, playTekAlarmSound } from './utils/audioAlert';
-import { Shield, ExternalLink, Zap, Keyboard, BookOpen, Flame, Beaker, Pickaxe } from 'lucide-react';
+import { Shield, ExternalLink, Zap, Keyboard, BookOpen, Flame, Beaker, Pickaxe, Sliders, Compass, Info, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db, doc, setDoc, getDoc } from './lib/firebase';
 
@@ -50,11 +54,14 @@ function MainAppContent() {
   const isLibrary = location.pathname === '/' || location.pathname === '/library';
   const isArk = !isMinecraft && !isLibrary;
   
-  // Rate preset (default to Official Small Tribes)
+  // Rate preset (default to Official Small Tribes, restore custom if chosen)
   const [currentPreset, setCurrentPreset] = useState<ServerRatePreset>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(LOCAL_STORAGE_PRESET_KEY);
       if (saved) {
+        if (saved === 'custom') {
+          return getStoredCustomPreset();
+        }
         const found = SERVER_PRESETS.find(p => p.id === saved);
         if (found) return found;
       }
@@ -65,11 +72,14 @@ function MainAppContent() {
   // Sound enabled
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
 
-  // Modals
+  // Modals & Navigation Drawers
   const [isStoreModalOpen, setIsStoreModalOpen] = useState<boolean>(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState<boolean>(false);
   const [isQuickJumpOpen, setIsQuickJumpOpen] = useState<boolean>(false);
+  const [isCustomRatesOpen, setIsCustomRatesOpen] = useState<boolean>(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [isAboutModalOpen, setIsAboutModalOpen] = useState<boolean>(false);
   
   // Holographic Boot Intro Sequence
   const [showIntro, setShowIntro] = useState<boolean>(true);
@@ -233,12 +243,27 @@ function MainAppContent() {
         setIsAuthModalOpen(false);
         setIsShortcutsModalOpen(false);
         setIsQuickJumpOpen(false);
+        setIsCustomRatesOpen(false);
+        setIsSidebarOpen(false);
+        setIsAboutModalOpen(false);
         return;
       }
 
       if ((e.key === '/' || ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K'))) && !isInputActive) {
         e.preventDefault();
         setIsQuickJumpOpen(prev => !prev);
+        return;
+      }
+
+      if (e.altKey && (e.key === 'b' || e.key === 'B')) {
+        e.preventDefault();
+        setIsSidebarOpen(prev => !prev);
+        return;
+      }
+
+      if (e.altKey && (e.key === 'r' || e.key === 'R')) {
+        e.preventDefault();
+        setIsCustomRatesOpen(prev => !prev);
         return;
       }
 
@@ -289,9 +314,6 @@ function MainAppContent() {
         )}
       </AnimatePresence>
 
-      {/* PK Store Global Promotional Banner */}
-      <PkStoreBanner onOpenStoreModal={() => setIsStoreModalOpen(true)} />
-
       {/* HUD Top Header & Multi-Game Switcher */}
       <Navbar
         currentPreset={currentPreset}
@@ -305,6 +327,9 @@ function MainAppContent() {
         onReplayIntro={() => setShowIntro(true)}
         onOpenKeyboardShortcuts={() => setIsShortcutsModalOpen(true)}
         onOpenQuickJump={() => setIsQuickJumpOpen(true)}
+        onOpenCustomRates={() => setIsCustomRatesOpen(true)}
+        onOpenSidebar={() => setIsSidebarOpen(true)}
+        onOpenAbout={() => setIsAboutModalOpen(true)}
       />
 
       {/* Main Container */}
@@ -312,8 +337,11 @@ function MainAppContent() {
         id="main-content" 
         tabIndex={-1} 
         aria-label="PK Ultimate Guide Main Display"
-        className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-6 focus:outline-none"
+        className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 focus:outline-none"
       >
+        {/* Tactical Hierarchical Breadcrumbs */}
+        <Breadcrumbs />
+
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
@@ -326,6 +354,9 @@ function MainAppContent() {
               {/* Library Home Route */}
               <Route path="/" element={<LibraryHub />} />
               <Route path="/library" element={<LibraryHub />} />
+
+              {/* About & Methodology Route */}
+              <Route path="/about" element={<AboutMethodologyPage />} />
 
               {/* Minecraft Hub Routes */}
               <Route path="/minecraft" element={<MinecraftHub />} />
@@ -478,68 +509,157 @@ function MainAppContent() {
               </Link>
             )}
 
-            <Link
-              to="/store"
-              className="px-2.5 py-1.5 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-black font-bold rounded-lg text-[11px] sm:text-xs transition-all shadow-md shadow-amber-500/20 flex items-center gap-1.5 cursor-pointer min-h-[36px]"
+            <a
+              href="https://discord.gg/4ruEbqZSKT"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-2.5 py-1.5 bg-[#5865F2]/20 hover:bg-[#5865F2]/30 border border-[#5865F2]/50 text-[#8ea1e1] hover:text-white font-bold rounded-lg text-[11px] sm:text-xs transition-all shadow-md shadow-[#5865F2]/20 flex items-center gap-1.5 cursor-pointer min-h-[36px]"
+              title="Join Official Discord Server (discord.gg/4ruEbqZSKT)"
             >
-              <Zap className="w-3.5 h-3.5" />
-              <span>PK STORE</span>
-            </Link>
+              <svg className="w-3.5 h-3.5 fill-current text-[#5865F2]" viewBox="0 0 24 24">
+                <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+              </svg>
+              <span>DISCORD</span>
+            </a>
           </div>
         </div>
       </aside>
 
       {/* Footer */}
-      <footer className="border-t border-slate-800/80 bg-[#040810] py-8 text-xs text-slate-400">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3 text-center md:text-left">
-            <div className="w-8 h-8 rounded-lg bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-tek font-bold">
-              ◈
+      <footer className="border-t border-slate-800/80 bg-[#040810] py-10 text-xs text-slate-400">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
+          {/* Top Row: Brand & Verification Methodology Banner */}
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pb-6 border-b border-white/[0.06]">
+            <div className="flex items-start sm:items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-cyan-950/80 border border-cyan-500/40 flex items-center justify-center text-cyan-400 font-tek font-bold text-lg shrink-0 shadow-md shadow-cyan-500/20">
+                ◈
+              </div>
+              <div>
+                <div className="font-hud font-bold text-sm text-slate-100 tracking-wider flex items-center gap-2">
+                  <span>PK ULTIMATE GUIDE</span>
+                  <span className="text-[10px] font-tek font-bold px-1.5 py-0.2 rounded bg-emerald-500/20 border border-emerald-500/30 text-emerald-300">
+                    VERIFIED MECHANICS
+                  </span>
+                </div>
+                <div className="text-[11px] text-slate-400 font-tek mt-0.5">
+                  MULTI-GAME TACTICAL LIBRARY // DEVELOPED BY <strong className="text-cyan-300">THE PITSONI EMPIRE</strong>
+                </div>
+              </div>
             </div>
-            <div>
-              <div className="font-hud font-bold text-slate-200 tracking-wider">
-                PK ULTIMATE GUIDE // MULTI-GAME TACTICAL LIBRARY
-              </div>
-              <div className="text-[11px] text-slate-400 font-tek mt-0.5">
-                CRAFTED BY <strong className="text-cyan-300">THE PITSONI EMPIRE</strong> // ARK SURVIVAL ASCENDED & MINECRAFT 1.21+
-              </div>
+
+            {/* Methodology Explanatory Callout */}
+            <div className="max-w-xl text-left lg:text-right text-[11px] text-slate-400 leading-relaxed bg-[#070e1c] p-3 rounded-xl border border-cyan-500/20">
+              <span className="text-cyan-300 font-bold font-hud">HOW WE BUILD TOOLS:</span> PK Ultimate Guide develops tactical calculators from raw game engine mechanics (ASA DevKit parameters & Minecraft 1.21 tick rules) and empirically benchmarks every figure on live Official servers and verified sources. Zero guesswork.
             </div>
           </div>
 
-          {/* Links & Quick Nav */}
-          <div className="flex items-center gap-3 sm:gap-4 flex-wrap justify-center">
-            <Link
-              to="/library"
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#091322] hover:bg-cyan-950/60 border border-cyan-500/30 rounded-lg text-cyan-300 font-hud text-xs transition-colors cursor-pointer"
-            >
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>All Guides</span>
-            </Link>
+          {/* Bottom Row: Links, TikTok, Social & Tools */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 flex-wrap">
+            {/* Quick Links */}
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-center">
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#091322] hover:bg-cyan-950/60 border border-cyan-500/30 rounded-lg text-cyan-300 font-hud text-xs transition-colors cursor-pointer"
+                title="Open Tactical Navigation Sidebar"
+              >
+                <Compass className="w-3.5 h-3.5" />
+                <span>Sidebar</span>
+              </button>
 
-            <button
-              onClick={() => setIsShortcutsModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#091322] hover:bg-cyan-950/60 border border-cyan-500/30 rounded-lg text-cyan-300 font-hud text-xs transition-colors cursor-pointer"
-              title="Keyboard Shortcuts Guide (Press ?)"
-            >
-              <Keyboard className="w-3.5 h-3.5" />
-              <span>Shortcuts [?]</span>
-            </button>
+              <Link
+                to="/library"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#091322] hover:bg-cyan-950/60 border border-cyan-500/30 rounded-lg text-cyan-300 font-hud text-xs transition-colors cursor-pointer"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>All Guides</span>
+              </Link>
 
-            <a
-              href="https://discord.gg/C9pD2yduw9"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-lg text-amber-300 font-hud font-bold transition-colors"
-            >
-              <Zap className="w-3.5 h-3.5 text-amber-400" />
-              <span>PK Store Discord</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
+              <Link
+                to="/about"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#091322] hover:bg-cyan-950/60 border border-cyan-500/30 rounded-lg text-cyan-300 font-hud text-xs transition-colors cursor-pointer"
+                title="Read Our Methodology & Sources"
+              >
+                <Info className="w-3.5 h-3.5" />
+                <span>Methodology</span>
+              </Link>
+
+              <button
+                onClick={() => setIsCustomRatesOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#091322] hover:bg-cyan-950/60 border border-cyan-500/30 rounded-lg text-cyan-300 font-hud text-xs transition-colors cursor-pointer"
+                title="Configure ARK Server Rate Multipliers"
+              >
+                <Sliders className="w-3.5 h-3.5" />
+                <span>Rates ({currentPreset.badge})</span>
+              </button>
+
+              <button
+                onClick={() => setIsShortcutsModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#091322] hover:bg-cyan-950/60 border border-cyan-500/30 rounded-lg text-cyan-300 font-hud text-xs transition-colors cursor-pointer"
+                title="Keyboard Shortcuts Guide (Press ?)"
+              >
+                <Keyboard className="w-3.5 h-3.5" />
+                <span>Shortcuts [?]</span>
+              </button>
+            </div>
+
+            {/* Social Channels: TikTok & Discord */}
+            <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap justify-center">
+              {/* Official TikTok Link */}
+              <a
+                href="https://www.tiktok.com/@pkguides"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-pink-500/15 via-rose-500/15 to-purple-500/15 hover:from-pink-500/25 hover:to-purple-500/25 border border-pink-500/40 hover:border-pink-400 rounded-lg text-pink-300 font-hud font-bold text-xs transition-all shadow-md shadow-pink-500/10 cursor-pointer"
+                title="Follow PK Guides on TikTok (@pkguides)"
+              >
+                <span className="text-pink-400 font-bold text-sm leading-none">♪</span>
+                <span>TikTok @pkguides</span>
+                <ExternalLink className="w-3 h-3 text-pink-400/80" />
+              </a>
+
+              {/* Official Discord Server Link */}
+              <a
+                href="https://discord.gg/4ruEbqZSKT"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#5865F2]/15 hover:bg-[#5865F2]/25 border border-[#5865F2]/40 hover:border-[#5865F2] rounded-lg text-[#8ea1e1] hover:text-white font-hud font-bold text-xs transition-all shadow-md shadow-[#5865F2]/10 cursor-pointer"
+                title="Join the Official PK Guides Discord Server (discord.gg/4ruEbqZSKT)"
+              >
+                <svg className="w-4 h-4 fill-current text-[#5865F2]" viewBox="0 0 24 24">
+                  <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+                </svg>
+                <span>Official Discord Server</span>
+                <ExternalLink className="w-3 h-3 text-[#8ea1e1]" />
+              </a>
+            </div>
           </div>
         </div>
       </footer>
 
-      {/* Modals */}
+      {/* Modals & Navigation Drawers */}
+      <CustomRatesModal
+        isOpen={isCustomRatesOpen}
+        onClose={() => setIsCustomRatesOpen(false)}
+        currentPreset={currentPreset}
+        onApplyPreset={(newPreset) => setCurrentPreset(newPreset)}
+      />
+
+      <SidebarNavigation
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        currentPreset={currentPreset}
+        onOpenCustomRates={() => setIsCustomRatesOpen(true)}
+        onOpenStoreModal={() => setIsStoreModalOpen(true)}
+        onOpenShortcuts={() => setIsShortcutsModalOpen(true)}
+        onOpenQuickJump={() => setIsQuickJumpOpen(true)}
+        onOpenAbout={() => setIsAboutModalOpen(true)}
+      />
+
+      <AboutMethodologyModal
+        isOpen={isAboutModalOpen}
+        onClose={() => setIsAboutModalOpen(false)}
+      />
+
       <PkStoreModal
         isOpen={isStoreModalOpen}
         onClose={() => setIsStoreModalOpen(false)}

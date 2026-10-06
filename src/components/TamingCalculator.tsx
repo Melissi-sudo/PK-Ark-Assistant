@@ -865,46 +865,6 @@ export const TamingCalculator: React.FC<TamingCalculatorProps> = ({
               </div>
             </div>
           </div>
-
-          {/* PK Store Tactical Ad Box */}
-          <div className="bg-gradient-to-r from-[#170e06] to-[#0f0904] border border-amber-500/40 rounded-xl p-4 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
-                <Zap className="w-5 h-5 animate-pulse" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-amber-300 font-hud uppercase">
-                    PK STORE // OFFICIAL CLUSTER SHORTCUT
-                  </span>
-                  <span className="text-[10px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded font-tek font-bold">
-                    SKIP THE GRIND
-                  </span>
-                </div>
-                <p className="text-xs text-amber-200/80 mt-0.5">
-                  Don't risk getting knocked out or griefed by enemy tribes during a 2-hour tame. Get boss-ready {selectedCreature.name} lines delivered directly.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
-              <button
-                onClick={onOpenStoreModal}
-                className="flex-1 sm:flex-none px-3 py-1.5 bg-amber-950/60 hover:bg-amber-900 border border-amber-500/40 rounded-lg text-amber-200 text-xs font-hud font-semibold transition-all cursor-pointer"
-              >
-                View Stock
-              </button>
-              <a
-                href="https://discord.gg/C9pD2yduw9"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 sm:flex-none px-3.5 py-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-bold font-hud text-xs rounded-lg flex items-center justify-center gap-1 shadow-md shadow-amber-500/20 transition-transform active:scale-95"
-              >
-                <span>Discord</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            </div>
-          </div>
         </div>
       </div>
     </div>

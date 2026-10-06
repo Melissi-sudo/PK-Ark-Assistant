@@ -1,5 +1,49 @@
 import { ServerRatePreset } from '../types';
 
+export const LOCAL_STORAGE_CUSTOM_RATES_KEY = 'pk_custom_server_rates';
+
+export const DEFAULT_CUSTOM_PRESET: ServerRatePreset = {
+  id: 'custom',
+  name: 'Custom Unofficial Rates',
+  badge: '5.0x Custom',
+  description: 'Custom cluster multipliers configured for your specific private or unofficial server.',
+  tamingMult: 5.0,
+  harvestMult: 5.0,
+  matingIntervalMult: 5.0,
+  eggHatchMult: 5.0,
+  babyMatureMult: 5.0,
+  xpMult: 5.0,
+  dinoFoodDrainMult: 1.0,
+  babyCuddleIntervalMult: 1.0
+};
+
+export const getStoredCustomPreset = (): ServerRatePreset => {
+  if (typeof window === 'undefined') return DEFAULT_CUSTOM_PRESET;
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_CUSTOM_RATES_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        ...DEFAULT_CUSTOM_PRESET,
+        ...parsed,
+        id: 'custom'
+      };
+    }
+  } catch (e) {
+    console.warn('Failed to parse custom rates from localStorage', e);
+  }
+  return DEFAULT_CUSTOM_PRESET;
+};
+
+export const saveStoredCustomPreset = (preset: ServerRatePreset): void => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(LOCAL_STORAGE_CUSTOM_RATES_KEY, JSON.stringify(preset));
+  } catch (e) {
+    console.warn('Failed to save custom rates to localStorage', e);
+  }
+};
+
 export const SERVER_PRESETS: ServerRatePreset[] = [
   {
     id: 'official_small_tribes',
@@ -11,7 +55,9 @@ export const SERVER_PRESETS: ServerRatePreset[] = [
     matingIntervalMult: 2.0,
     eggHatchMult: 2.0,
     babyMatureMult: 2.0,
-    xpMult: 2.5
+    xpMult: 2.5,
+    dinoFoodDrainMult: 1.0,
+    babyCuddleIntervalMult: 1.0
   },
   {
     id: 'arkpocalypse',
@@ -23,7 +69,9 @@ export const SERVER_PRESETS: ServerRatePreset[] = [
     matingIntervalMult: 3.0,
     eggHatchMult: 3.0,
     babyMatureMult: 3.0,
-    xpMult: 3.0
+    xpMult: 3.0,
+    dinoFoodDrainMult: 1.0,
+    babyCuddleIntervalMult: 1.0
   },
   {
     id: 'official_1x',
@@ -35,7 +83,9 @@ export const SERVER_PRESETS: ServerRatePreset[] = [
     matingIntervalMult: 1.0,
     eggHatchMult: 1.0,
     babyMatureMult: 1.0,
-    xpMult: 1.0
+    xpMult: 1.0,
+    dinoFoodDrainMult: 1.0,
+    babyCuddleIntervalMult: 1.0
   },
   {
     id: 'official_2x_evo',
@@ -47,18 +97,10 @@ export const SERVER_PRESETS: ServerRatePreset[] = [
     matingIntervalMult: 1.5,
     eggHatchMult: 2.0,
     babyMatureMult: 2.0,
-    xpMult: 2.0
+    xpMult: 2.0,
+    dinoFoodDrainMult: 1.0,
+    babyCuddleIntervalMult: 1.0
   },
-  {
-    id: 'custom',
-    name: 'Custom Unofficial Rates',
-    badge: 'Custom',
-    description: 'Custom cluster multipliers configured for your specific private or unoffical server.',
-    tamingMult: 5.0,
-    harvestMult: 5.0,
-    matingIntervalMult: 5.0,
-    eggHatchMult: 5.0,
-    babyMatureMult: 5.0,
-    xpMult: 5.0
-  }
+  getStoredCustomPreset()
 ];
+

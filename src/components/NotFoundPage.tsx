@@ -57,13 +57,15 @@ export const NotFoundPage: React.FC = () => {
             <span>SOAKER HITBOX GUIDE</span>
           </Link>
 
-          <Link
-            to="/store"
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-[#0a1526] hover:bg-amber-950/60 border border-amber-500/40 text-amber-300 font-hud font-bold text-xs rounded-xl transition-all"
+          <a
+            href="https://discord.gg/4ruEbqZSKT"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 px-4 py-3 bg-[#0a1526] hover:bg-[#5865F2]/20 border border-[#5865F2]/40 text-[#8ea1e1] hover:text-white font-hud font-bold text-xs rounded-xl transition-all"
           >
-            <Zap className="w-4 h-4 text-amber-400" />
-            <span>PK STORE DISCORD</span>
-          </Link>
+            <Zap className="w-4 h-4 text-[#5865F2]" />
+            <span>OFFICIAL DISCORD</span>
+          </a>
         </div>
 
         <div className="pt-4 border-t border-slate-800 text-[11px] font-tek text-slate-500">

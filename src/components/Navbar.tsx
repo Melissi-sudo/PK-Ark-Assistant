@@ -30,7 +30,10 @@ import {
   Skull,
   Layers,
   Bomb,
-  Utensils
+  Utensils,
+  Sliders,
+  Compass,
+  Info
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ServerRatePreset } from '../types';
@@ -71,6 +74,9 @@ interface NavbarProps {
   onReplayIntro?: () => void;
   onOpenKeyboardShortcuts?: () => void;
   onOpenQuickJump?: () => void;
+  onOpenCustomRates: () => void;
+  onOpenSidebar: () => void;
+  onOpenAbout?: () => void;
 }
 
 export interface ArkCategoryItem {
@@ -204,7 +210,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAuthModal,
   onReplayIntro,
   onOpenKeyboardShortcuts,
-  onOpenQuickJump
+  onOpenQuickJump,
+  onOpenCustomRates,
+  onOpenSidebar,
+  onOpenAbout
 }) => {
   const { currentUser, profile, accountName } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
@@ -233,37 +242,48 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header className="sticky top-0 z-40 bg-[#050914]/95 backdrop-blur-xl border-b border-white/[0.08] shadow-2xl">
       {/* Top Bar: Brand, Game Switcher, Presets, Sound, Sync & PK Store */}
       <div className="max-w-7xl mx-auto px-2.5 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between gap-2">
-        {/* Left: Brand Identity */}
-        <Link 
-          to="/library"
-          className="flex items-center gap-2 sm:gap-3 shrink-0 group focus:outline-none focus:ring-1 focus:ring-cyan-400 rounded-xl p-0.5"
-          title="PK Ultimate Guide - Tactical Game Library"
-        >
-          <div className="relative flex items-center justify-center h-8 sm:h-9 w-auto min-w-[34px] max-w-[140px] rounded-xl bg-gradient-to-br from-[#06152a] to-[#040810] border border-cyan-400/50 shadow-md shadow-cyan-500/20 shrink-0 group-hover:border-cyan-300 transition-all px-1.5 py-0.5 overflow-hidden">
-            <img 
-              src="/logo.png?v=pk-v3" 
-              alt="PK Ultimate Guide Logo" 
-              className="h-full w-auto max-w-[120px] object-contain filter drop-shadow-[0_0_6px_rgba(6,182,212,0.6)] group-hover:scale-105 transition-transform duration-200" 
-            />
-          </div>
+        {/* Left: Sidebar Toggle + Brand Identity */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5">
+          <button
+            onClick={onOpenSidebar}
+            className="p-1.5 sm:p-2 rounded-xl bg-[#081222] hover:bg-cyan-950/70 border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 transition-all cursor-pointer flex items-center justify-center shrink-0 shadow-sm shadow-cyan-950/40"
+            title="Open Tactical Navigation Sidebar (Games, Guides & Tools)"
+            aria-label="Open Sidebar Navigation"
+          >
+            <Compass className="w-4 h-4 text-cyan-400 animate-pulse" />
+          </button>
 
-          <div>
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className="text-xs sm:text-base font-bold font-hud text-slate-100 tracking-wider flex items-center gap-1 group-hover:text-cyan-300 transition-colors">
-                PK ULTIMATE <span className="text-cyan-400">GUIDE</span>
-              </span>
-              <span className="hidden md:inline-block px-1.5 py-0.5 text-[9px] font-tek font-semibold uppercase tracking-wider bg-slate-800/80 text-slate-300 border border-slate-700/60 rounded">
-                Game Library
-              </span>
+          <Link 
+            to="/library"
+            className="flex items-center gap-2 sm:gap-3 shrink-0 group focus:outline-none focus:ring-1 focus:ring-cyan-400 rounded-xl p-0.5"
+            title="PK Ultimate Guide - Tactical Game Library"
+          >
+            <div className="relative flex items-center justify-center h-8 sm:h-9 w-auto min-w-[34px] max-w-[140px] rounded-xl bg-gradient-to-br from-[#06152a] to-[#040810] border border-cyan-400/50 shadow-md shadow-cyan-500/20 shrink-0 group-hover:border-cyan-300 transition-all px-1.5 py-0.5 overflow-hidden">
+              <img 
+                src="/logo.png?v=pk-v3" 
+                alt="PK Ultimate Guide Logo" 
+                className="h-full w-auto max-w-[120px] object-contain filter drop-shadow-[0_0_6px_rgba(6,182,212,0.6)] group-hover:scale-105 transition-transform duration-200" 
+              />
             </div>
-            <div className="flex items-center gap-1 text-[10px] sm:text-[11px] text-slate-400 font-hud">
-              <span className="text-slate-500 text-[9px]">BY</span>
-              <span className="text-cyan-400 font-semibold tracking-wide uppercase truncate max-w-[110px] sm:max-w-none">
-                The Pitsoni Empire
-              </span>
+
+            <div>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="text-xs sm:text-base font-bold font-hud text-slate-100 tracking-wider flex items-center gap-1 group-hover:text-cyan-300 transition-colors">
+                  PK ULTIMATE <span className="text-cyan-400">GUIDE</span>
+                </span>
+                <span className="hidden md:inline-block px-1.5 py-0.5 text-[9px] font-tek font-semibold uppercase tracking-wider bg-slate-800/80 text-slate-300 border border-slate-700/60 rounded">
+                  Game Library
+                </span>
+              </div>
+              <div className="flex items-center gap-1 text-[10px] sm:text-[11px] text-slate-400 font-hud">
+                <span className="text-slate-500 text-[9px]">BY</span>
+                <span className="text-cyan-400 font-semibold tracking-wide uppercase truncate max-w-[110px] sm:max-w-none">
+                  The Pitsoni Empire
+                </span>
+              </div>
             </div>
-          </div>
-        </Link>
+          </Link>
+        </div>
 
         {/* Center / Game Switcher Tabs (Desktop / Tablet) */}
         <div className="hidden md:flex items-center bg-[#070e1c] p-1 rounded-xl border border-white/10 text-xs font-hud font-bold">
@@ -306,26 +326,47 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right: Controls & Actions */}
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-end">
-          {/* Server Preset Dropdown (Shown on ARK pages) */}
+          {/* Server Preset Dropdown & Customizer (Shown on ARK pages) */}
           {isArk && (
-            <div className="relative flex items-center bg-[#09101d] hover:bg-[#0c1628] border border-white/[0.08] hover:border-cyan-500/40 rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs text-slate-200 transition-colors">
-              <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-cyan-400 mr-1 shrink-0" />
-              <select
-                value={currentPreset.id}
-                onChange={(e) => {
-                  const found = SERVER_PRESETS.find(p => p.id === e.target.value);
-                  if (found) setCurrentPreset(found);
-                }}
-                aria-label="Server Rate Preset"
-                className="bg-transparent font-tek font-bold text-cyan-300 text-[11px] sm:text-xs focus:outline-none cursor-pointer pr-3.5 max-w-[95px] xs:max-w-[130px] sm:max-w-none truncate"
+            <div className="flex items-center gap-1">
+              <div className="relative flex items-center bg-[#09101d] hover:bg-[#0c1628] border border-white/[0.08] hover:border-cyan-500/40 rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs text-slate-200 transition-colors">
+                <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-cyan-400 mr-1 shrink-0" />
+                <select
+                  value={currentPreset.id}
+                  onChange={(e) => {
+                    const found = SERVER_PRESETS.find(p => p.id === e.target.value);
+                    if (found) {
+                      setCurrentPreset(found);
+                      if (found.id === 'custom') {
+                        onOpenCustomRates();
+                      }
+                    }
+                  }}
+                  aria-label="Server Rate Preset"
+                  className="bg-transparent font-tek font-bold text-cyan-300 text-[11px] sm:text-xs focus:outline-none cursor-pointer pr-3.5 max-w-[95px] xs:max-w-[130px] sm:max-w-none truncate"
+                >
+                  {SERVER_PRESETS.map((preset) => (
+                    <option key={preset.id} value={preset.id} className="bg-[#0b1019] text-slate-100">
+                      {preset.name} ({preset.badge})
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-2.5 h-2.5 text-cyan-400 pointer-events-none absolute right-1.5" />
+              </div>
+
+              {/* Configure / Edit Rates Button */}
+              <button
+                onClick={onOpenCustomRates}
+                title={currentPreset.id === 'custom' ? 'Customize server multipliers (Active Custom Preset)' : 'Customize ARK server multipliers'}
+                className={`p-1.5 sm:px-2 sm:py-1.5 rounded-xl border transition-all cursor-pointer flex items-center gap-1 text-xs font-hud ${
+                  currentPreset.id === 'custom'
+                    ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-sm shadow-cyan-500/25 ring-1 ring-cyan-400/50'
+                    : 'bg-[#09101d] hover:bg-[#0c1628] border-white/[0.08] text-slate-400 hover:text-cyan-300'
+                }`}
               >
-                {SERVER_PRESETS.map((preset) => (
-                  <option key={preset.id} value={preset.id} className="bg-[#0b1019] text-slate-100">
-                    {preset.name} ({preset.badge})
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="w-2.5 h-2.5 text-cyan-400 pointer-events-none absolute right-1.5" />
+                <Sliders className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="hidden xl:inline text-[11px] font-bold">RATES</span>
+              </button>
             </div>
           )}
 
@@ -390,16 +431,21 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
           </motion.button>
 
-          {/* PK Store Button */}
-          <motion.button
+          {/* Official Discord Server Button */}
+          <motion.a
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            onClick={onOpenStoreModal}
-            className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-gradient-to-r from-amber-500/15 to-orange-500/15 hover:from-amber-500/25 hover:to-orange-500/25 border border-amber-500/40 rounded-xl text-amber-300 text-xs font-hud font-bold tracking-wide flex items-center gap-1 transition-all cursor-pointer shadow-sm shadow-amber-500/10"
+            href="https://discord.gg/4ruEbqZSKT"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-[#5865F2]/15 hover:bg-[#5865F2]/25 border border-[#5865F2]/40 hover:border-[#5865F2] rounded-xl text-[#8ea1e1] hover:text-white text-xs font-hud font-bold tracking-wide flex items-center gap-1.5 transition-all cursor-pointer shadow-sm shadow-[#5865F2]/10"
+            title="Join the Official PK Guides Discord Server"
           >
-            <Zap className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-            <span className="text-[10px] sm:text-xs">STORE</span>
-          </motion.button>
+            <svg className="w-3.5 h-3.5 fill-current text-[#5865F2]" viewBox="0 0 24 24">
+              <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+            </svg>
+            <span className="text-[10px] sm:text-xs">DISCORD</span>
+          </motion.a>
 
           {/* Mobile All-Tools Grid Drawer Button */}
           <motion.button
@@ -739,17 +785,45 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
 
             {/* Quick Actions Footer inside Mobile Drawer */}
-            <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs font-hud">
-              <button
-                onClick={() => {
-                  onOpenStoreModal();
-                  setMobileMenuOpen(false);
-                }}
-                className="px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold flex items-center gap-1.5 text-[11px]"
-              >
-                <Zap className="w-3.5 h-3.5 text-amber-400" />
-                <span>Open PK Store</span>
-              </button>
+            <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2 flex-wrap text-xs font-hud">
+              <div className="flex items-center gap-1.5">
+                <a
+                  href="https://discord.gg/4ruEbqZSKT"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-2.5 py-1.5 rounded-lg bg-[#5865F2]/20 border border-[#5865F2]/40 text-[#8ea1e1] font-bold flex items-center gap-1.5 text-[11px]"
+                >
+                  <svg className="w-3.5 h-3.5 fill-current text-[#5865F2]" viewBox="0 0 24 24">
+                    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+                  </svg>
+                  <span>Discord</span>
+                </a>
+
+                {onOpenAbout && (
+                  <button
+                    onClick={() => {
+                      onOpenAbout();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="px-2.5 py-1.5 rounded-lg bg-cyan-950/40 border border-cyan-500/30 text-cyan-300 flex items-center gap-1 text-[11px]"
+                  >
+                    <Info className="w-3 h-3" />
+                    <span>About</span>
+                  </button>
+                )}
+
+                <button
+                  onClick={() => {
+                    onOpenCustomRates();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="px-2.5 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-300 flex items-center gap-1 text-[11px]"
+                >
+                  <Sliders className="w-3 h-3 text-cyan-400" />
+                  <span>Rates</span>
+                </button>
+              </div>
 
               {onReplayIntro && (
                 <button
@@ -757,10 +831,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onReplayIntro();
                     setMobileMenuOpen(false);
                   }}
-                  className="px-3 py-1.5 rounded-lg bg-cyan-950/50 border border-cyan-500/30 text-cyan-300 font-tek text-[11px] flex items-center gap-1"
+                  className="px-2.5 py-1.5 rounded-lg bg-cyan-950/50 border border-cyan-500/30 text-cyan-300 font-tek text-[11px] flex items-center gap-1"
                 >
                   <Sparkles className="w-3 h-3 text-cyan-400" />
-                  <span>Replay Intro</span>
+                  <span>Intro</span>
                 </button>
               )}
             </div>
