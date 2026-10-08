@@ -3,7 +3,9 @@
 
 name: Deploy to Firebase Hosting on PR
 
-on: pull_request
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 permissions:
   checks: write
@@ -22,18 +24,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build
         run: npm run build
 
-	- uses: FirebaseExtended/action-hosting-deploy@v0
- 	 with:
-   	 repoToken: ${{ secrets.GITHUB_TOKEN }}
-   	 firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GEN_LANG_CLIENT_0117247761 }}
-   	 channelId: live
-   	 projectId: gen-lang-client-0117247761
-  	  target: pkguides
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_GEN_LANG_CLIENT_0117247761 }}
+          projectId: gen-lang-client-0117247761
+          target: pkguides

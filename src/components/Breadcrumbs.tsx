@@ -114,9 +114,6 @@ export const Breadcrumbs: React.FC = () => {
     } else if (path === '/timers') {
       crumbs.push({ label: 'Tactical War Room', path: '/timers' });
       crumbs.push({ label: 'Starve & Hatch Alarms', icon: Timer });
-    } else if (path === '/store') {
-      crumbs.push({ label: 'Official Small Tribes', path: '/store' });
-      crumbs.push({ label: 'PK Store Discord Vault', icon: ShoppingBag });
     }
   }
 

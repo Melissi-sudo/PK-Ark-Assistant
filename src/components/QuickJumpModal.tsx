@@ -156,17 +156,6 @@ export const ALL_JUMP_ITEMS: JumpItem[] = [
     keywords: ['timer', 'alarm', 'starve', 'sound', 'hatch', 'alert', 'tek alarm'],
     desc: 'Custom countdowns with browser notifications and TEK audio alerts'
   },
-  {
-    id: 'ark-store',
-    title: 'PK Store VIP Catalog',
-    game: 'ark',
-    category: 'Store',
-    path: '/store',
-    icon: ShoppingBag,
-    keywords: ['store', 'discord', 'buy', 'lines', 'vip', 'kits', 'small tribes'],
-    desc: 'Small Tribes breedlines, blueprints and raid kits',
-    badge: 'VIP'
-  },
   // MINECRAFT TOOLS
   {
     id: 'mc-portal',

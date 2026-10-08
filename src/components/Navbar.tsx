@@ -69,7 +69,7 @@ interface NavbarProps {
   hasExpiringTimers: boolean;
   soundEnabled: boolean;
   setSoundEnabled: (enabled: boolean) => void;
-  onOpenStoreModal: () => void;
+  onOpenStoreModal?: () => void;
   onOpenAuthModal: () => void;
   onReplayIntro?: () => void;
   onOpenKeyboardShortcuts?: () => void;
@@ -186,7 +186,6 @@ export const ARK_TABS: TabItem[] = [
   { id: 'resources', path: '/resources', label: 'Tribe Ammo', icon: ShieldCheck, desc: 'Heavy turret bullets & gunpowder quota' },
   { id: 'stats', path: '/stats', label: 'Dino Stats', icon: Search, desc: 'Extract wild levels & mutation points' },
   { id: 'timers', path: '/timers', label: 'Alarms', icon: Timer, desc: 'Starve & hatch TEK alarms' },
-  { id: 'store', path: '/store', label: 'PK Store', icon: ShoppingBag, badge: 'DISCORD', accent: 'amber', desc: 'Official Small Tribes lines & vault gear' },
 ];
 
 export const MINECRAFT_TABS: TabItem[] = [

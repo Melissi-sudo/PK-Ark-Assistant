@@ -38,7 +38,7 @@ interface SidebarNavigationProps {
   onClose: () => void;
   currentPreset: ServerRatePreset;
   onOpenCustomRates: () => void;
-  onOpenStoreModal: () => void;
+  onOpenStoreModal?: () => void;
   onOpenShortcuts: () => void;
   onOpenQuickJump: () => void;
   onOpenAbout: () => void;

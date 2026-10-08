@@ -9,7 +9,6 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Link 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthModal } from './components/AuthModal';
 import { Navbar } from './components/Navbar';
-import { PkStoreModal } from './components/PkStoreModal';
 import { TamingCalculator } from './components/TamingCalculator';
 import { TurretSoakerGuide } from './components/TurretSoakerGuide';
 import { PyromaneTamingGuide } from './components/PyromaneTamingGuide';
@@ -20,7 +19,6 @@ import { TribeResourceHub } from './components/TribeResourceHub';
 import { ResourceMaps } from './components/ResourceMaps';
 import { DinoStatLookup } from './components/DinoStatLookup';
 import { TimerManager } from './components/TimerManager';
-import { PkStoreCatalog } from './components/PkStoreCatalog';
 import { ArkLoadingIntro } from './components/ArkLoadingIntro';
 import { DailyArkTip } from './components/DailyArkTip';
 import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal';
@@ -73,7 +71,6 @@ function MainAppContent() {
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
 
   // Modals & Navigation Drawers
-  const [isStoreModalOpen, setIsStoreModalOpen] = useState<boolean>(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isShortcutsModalOpen, setIsShortcutsModalOpen] = useState<boolean>(false);
   const [isQuickJumpOpen, setIsQuickJumpOpen] = useState<boolean>(false);
@@ -239,7 +236,6 @@ function MainAppContent() {
       const isInputActive = activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select';
 
       if (e.key === 'Escape') {
-        setIsStoreModalOpen(false);
         setIsAuthModalOpen(false);
         setIsShortcutsModalOpen(false);
         setIsQuickJumpOpen(false);
@@ -276,12 +272,6 @@ function MainAppContent() {
       if (e.altKey && (e.key === 'm' || e.key === 'M')) {
         e.preventDefault();
         setSoundEnabled(prev => !prev);
-        return;
-      }
-
-      if (e.altKey && (e.key === 'p' || e.key === 'P')) {
-        e.preventDefault();
-        setIsStoreModalOpen(prev => !prev);
         return;
       }
 
@@ -322,7 +312,6 @@ function MainAppContent() {
         hasExpiringTimers={hasExpiringTimers}
         soundEnabled={soundEnabled}
         setSoundEnabled={setSoundEnabled}
-        onOpenStoreModal={() => setIsStoreModalOpen(true)}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onReplayIntro={() => setShowIntro(true)}
         onOpenKeyboardShortcuts={() => setIsShortcutsModalOpen(true)}
@@ -371,7 +360,6 @@ function MainAppContent() {
                   <TamingCalculator
                     currentPreset={currentPreset}
                     onAddTimer={handleAddTimer}
-                    onOpenStoreModal={() => setIsStoreModalOpen(true)}
                     onViewSoakerGuide={() => navigate('/soakers')}
                     onViewPyromaneGuide={() => navigate('/pyromane')}
                   />
@@ -392,27 +380,18 @@ function MainAppContent() {
                   <MatingCalculator
                     currentPreset={currentPreset}
                     onAddTimer={handleAddTimer}
-                    onOpenStoreModal={() => setIsStoreModalOpen(true)}
                   />
                 }
               />
 
               <Route
                 path="/maps"
-                element={
-                  <ResourceMaps
-                    onOpenStoreModal={() => setIsStoreModalOpen(true)}
-                  />
-                }
+                element={<ResourceMaps />}
               />
 
               <Route
                 path="/maps/:mapId"
-                element={
-                  <ResourceMaps
-                    onOpenStoreModal={() => setIsStoreModalOpen(true)}
-                  />
-                }
+                element={<ResourceMaps />}
               />
 
               <Route
@@ -420,7 +399,6 @@ function MainAppContent() {
                 element={
                   <TribeResourceHub
                     currentPreset={currentPreset}
-                    onOpenStoreModal={() => setIsStoreModalOpen(true)}
                   />
                 }
               />
@@ -455,7 +433,7 @@ function MainAppContent() {
                 }
               />
 
-              <Route path="/store" element={<PkStoreCatalog />} />
+              <Route path="/store" element={<Navigate to="/" replace />} />
 
               {/* 404 Not Found Page */}
               <Route path="*" element={<NotFoundPage />} />
@@ -649,7 +627,6 @@ function MainAppContent() {
         onClose={() => setIsSidebarOpen(false)}
         currentPreset={currentPreset}
         onOpenCustomRates={() => setIsCustomRatesOpen(true)}
-        onOpenStoreModal={() => setIsStoreModalOpen(true)}
         onOpenShortcuts={() => setIsShortcutsModalOpen(true)}
         onOpenQuickJump={() => setIsQuickJumpOpen(true)}
         onOpenAbout={() => setIsAboutModalOpen(true)}
@@ -658,11 +635,6 @@ function MainAppContent() {
       <AboutMethodologyModal
         isOpen={isAboutModalOpen}
         onClose={() => setIsAboutModalOpen(false)}
-      />
-
-      <PkStoreModal
-        isOpen={isStoreModalOpen}
-        onClose={() => setIsStoreModalOpen(false)}
       />
 
       <AuthModal
