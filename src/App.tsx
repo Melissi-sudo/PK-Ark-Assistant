@@ -27,6 +27,7 @@ import { NotFoundPage } from './components/NotFoundPage';
 import { PageMetaSync } from './components/common/PageMetaSync';
 import { LibraryHub } from './components/LibraryHub';
 import { MinecraftHub } from './components/minecraft/MinecraftHub';
+import { TerrariaHub } from './components/terraria/TerrariaHub';
 import { CustomRatesModal } from './components/CustomRatesModal';
 import { SidebarNavigation } from './components/SidebarNavigation';
 import { Breadcrumbs } from './components/Breadcrumbs';
@@ -49,8 +50,9 @@ function MainAppContent() {
   const location = useLocation();
 
   const isMinecraft = location.pathname.startsWith('/minecraft');
+  const isTerraria = location.pathname.startsWith('/terraria');
   const isLibrary = location.pathname === '/' || location.pathname === '/library';
-  const isArk = !isMinecraft && !isLibrary;
+  const isArk = !isMinecraft && !isTerraria && !isLibrary;
   
   // Rate preset (default to Official Small Tribes, restore custom if chosen)
   const [currentPreset, setCurrentPreset] = useState<ServerRatePreset>(() => {
@@ -351,6 +353,10 @@ function MainAppContent() {
               <Route path="/minecraft" element={<MinecraftHub />} />
               <Route path="/minecraft/:subtab" element={<MinecraftHub />} />
 
+              {/* Terraria Hub Routes */}
+              <Route path="/terraria" element={<TerrariaHub />} />
+              <Route path="/terraria/:subtab" element={<TerrariaHub />} />
+
               {/* ARK Canonical & Game Routes */}
               <Route path="/ark" element={<Navigate to="/taming" replace />} />
               
@@ -456,6 +462,10 @@ function MainAppContent() {
               {isMinecraft ? (
                 <>
                   <span className="text-emerald-400 font-bold font-minecraftia">MINECRAFT 1.21+</span> • BLOCKY COMPANION
+                </>
+              ) : isTerraria ? (
+                <>
+                  <span className="text-emerald-400 font-bold">TERRARIA 1.4.4+</span> • LABOR OF LOVE
                 </>
               ) : isLibrary ? (
                 <>

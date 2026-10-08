@@ -33,7 +33,8 @@ import {
   Utensils,
   Sliders,
   Compass,
-  Info
+  Info,
+  Swords
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ServerRatePreset } from '../types';
@@ -111,7 +112,7 @@ export const ARK_CATEGORIES: ArkCategory[] = [
     badge: '2 TOOLS',
     items: [
       { id: 'taming', path: '/taming', label: 'Taming Calculator', shortLabel: 'Knockout & Food', icon: Crosshair, desc: 'Torpor decay, food quotas & starve alerts', badge: 'CORE', accent: 'cyan' },
-      { id: 'pyromane', path: '/pyromane', label: 'Pyromane Guide', shortLabel: 'Pyromane 30s', icon: Flame, desc: 'Water extinguishing strategy & 30s ride simulator', badge: "BOB'S TALES", accent: 'amber' },
+      { id: 'pyromane', path: '/pyromane', label: 'Pyromane Guide', shortLabel: 'Pyromane 30s', icon: Flame, desc: 'Water extinguishing strategy & 30s ride simulator', badge: 'FANTASTIC TAMES', accent: 'amber' },
     ]
   },
   {
@@ -221,10 +222,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const currentPath = location.pathname;
   
-  // Game mode: 'library' | 'ark' | 'minecraft'
+  // Game mode: 'library' | 'ark' | 'minecraft' | 'terraria'
   const isMinecraft = currentPath.startsWith('/minecraft');
+  const isTerraria = currentPath.startsWith('/terraria');
   const isLibrary = currentPath === '/' || currentPath === '/library';
-  const isArk = !isMinecraft && !isLibrary;
+  const isArk = !isMinecraft && !isTerraria && !isLibrary;
 
   const activeTabsList = isMinecraft ? MINECRAFT_TABS : ARK_TABS;
 
@@ -320,6 +322,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Flame className="w-3.5 h-3.5 text-purple-300" />
             <span>Minecraft 1.21+</span>
+          </Link>
+
+          <Link
+            to="/terraria"
+            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+              isTerraria
+                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Swords className="w-3.5 h-3.5 text-emerald-300" />
+            <span>Terraria 1.4.4+</span>
           </Link>
         </div>
 

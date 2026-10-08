@@ -21,7 +21,8 @@ import {
   Skull, 
   BookOpen,
   ShoppingBag,
-  Info
+  Info,
+  Swords
 } from 'lucide-react';
 
 interface Crumb {
@@ -78,6 +79,9 @@ export const Breadcrumbs: React.FC = () => {
     } else {
       crumbs.push({ label: 'Tactical Hub' });
     }
+  } else if (path.startsWith('/terraria')) {
+    crumbs.push({ label: 'Terraria 1.4.4+', path: '/terraria', icon: Swords });
+    crumbs.push({ label: 'Master Companion & Boss Checklist', icon: Skull });
   } else if (path === '/about') {
     crumbs.push({ label: 'About & Methodology', icon: Info });
   } else {
@@ -118,6 +122,7 @@ export const Breadcrumbs: React.FC = () => {
   }
 
   const isMinecraft = path.startsWith('/minecraft');
+  const isTerraria = path.startsWith('/terraria');
 
   return (
     <nav 
@@ -147,9 +152,11 @@ export const Breadcrumbs: React.FC = () => {
                 <span 
                   className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-bold shadow-sm ${
                     isLast 
-                      ? isMinecraft 
-                        ? 'bg-purple-950/70 border border-purple-500/40 text-purple-200' 
-                        : 'bg-cyan-950/70 border border-cyan-500/40 text-cyan-200' 
+                      ? isTerraria
+                        ? 'bg-emerald-950/80 border border-emerald-500/50 text-emerald-200'
+                        : isMinecraft 
+                          ? 'bg-purple-950/70 border border-purple-500/40 text-purple-200' 
+                          : 'bg-cyan-950/70 border border-cyan-500/40 text-cyan-200' 
                       : 'text-slate-300'
                   }`}
                 >

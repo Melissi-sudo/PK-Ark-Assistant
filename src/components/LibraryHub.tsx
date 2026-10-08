@@ -31,13 +31,14 @@ import {
   Layers,
   ChevronRight,
   TrendingUp,
-  Cpu as EngineIcon
+  Cpu as EngineIcon,
+  Swords
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface HubTool {
   id: string;
-  game: 'ark' | 'minecraft';
+  game: 'ark' | 'minecraft' | 'terraria';
   title: string;
   category: string;
   path: string;
@@ -94,7 +95,7 @@ const ALL_HUB_TOOLS: HubTool[] = [
     path: '/pyromane',
     icon: Flame,
     description: 'Water extinguishing strategies, extinguish flame multipliers, and 30-second absorption simulator.',
-    tag: 'BOB\'S TALES',
+    tag: 'FANTASTIC TAMES',
     accent: 'amber',
     isPopular: true
   },
@@ -245,6 +246,68 @@ const ALL_HUB_TOOLS: HubTool[] = [
     description: 'Ominous bottle mechanics, Trial Spawner wave timers, and 24-128m despawn radius spheres.',
     tag: 'SPAWNERS',
     accent: 'cyan'
+  },
+
+  // TERRARIA
+  {
+    id: 'terraria-bosses',
+    game: 'terraria',
+    title: '18-Boss Progression & Arenas',
+    category: 'Progression & Bosses',
+    path: '/terraria',
+    icon: Swords,
+    description: 'Pre-Hardmode through Moon Lord summon recipes, health pools, arena blueprints, and class gear loadouts.',
+    tag: '18 BOSSES',
+    accent: 'emerald',
+    isPopular: true
+  },
+  {
+    id: 'terraria-biomes',
+    game: 'terraria',
+    title: 'Biomes & Surface Exploration',
+    category: 'World Biomes',
+    path: '/terraria',
+    icon: Map,
+    description: 'Surface Forest, Desert, Jungle, Snow, Ocean, and Sky Island chest loot, fishing crates, and NPC housing.',
+    tag: '8 BIOMES',
+    accent: 'cyan',
+    isPopular: true
+  },
+  {
+    id: 'terraria-ores',
+    game: 'terraria',
+    title: 'Ore Tiers & Pickaxe Power',
+    category: 'Mining & Smelting',
+    path: '/terraria',
+    icon: Pickaxe,
+    description: 'Pre-Hardmode and Hardmode ore depths, 35%-225% pickaxe power requirements, and Altar smashing mechanics.',
+    tag: '12 ORE TIERS',
+    accent: 'amber',
+    isPopular: true
+  },
+  {
+    id: 'terraria-underground',
+    game: 'terraria',
+    title: 'The Aether & Underground Caverns',
+    category: 'Subterranean',
+    path: '/terraria',
+    icon: Layers,
+    description: 'Find the secret Aether Shimmer liquid on the outer fifth of the world; Spider nests, Granite, Marble, and Hellstone.',
+    tag: 'SHIMMER MAP',
+    accent: 'purple',
+    isPopular: true
+  },
+  {
+    id: 'terraria-evil',
+    game: 'terraria',
+    title: 'Crimson vs Corruption Containment',
+    category: 'World Evils',
+    path: '/terraria',
+    icon: ShieldAlert,
+    description: '3-block quarantine hellevator rules, Eater of Worlds vs Brain of Cthulhu battle tactics, and Clentaminator cleansing.',
+    tag: 'PURIFICATION',
+    accent: 'rose',
+    isPopular: true
   }
 ];
 
@@ -252,7 +315,7 @@ export const LibraryHub: React.FC = () => {
   const navigate = useNavigate();
   const { accountName, profile } = useAuth();
   const [search, setSearch] = useState<string>('');
-  const [filterGame, setFilterGame] = useState<'all' | 'ark' | 'minecraft'>('all');
+  const [filterGame, setFilterGame] = useState<'all' | 'ark' | 'minecraft' | 'terraria'>('all');
 
   // Filtered tools list
   const filteredTools = useMemo(() => {
@@ -353,8 +416,8 @@ export const LibraryHub: React.FC = () => {
         </div>
       </div>
 
-      {/* Two Flagship Game Showcase Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+      {/* Three Flagship Game Showcase Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         {/* GAME 1: ARK: SURVIVAL ASCENDED */}
         <div className="group relative rounded-3xl overflow-hidden border-2 border-cyan-500/40 bg-gradient-to-b from-[#08162b] via-[#050f1d] to-[#030811] shadow-2xl flex flex-col justify-between hover:border-cyan-400 hover:shadow-cyan-500/10 transition-all duration-300">
           <div>
@@ -518,6 +581,88 @@ export const LibraryHub: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* GAME 3: TERRARIA 1.4.4+ LABOR OF LOVE */}
+        <div className="group relative rounded-3xl overflow-hidden border-2 border-emerald-500/40 bg-gradient-to-b from-[#08170e] via-[#05110a] to-[#020905] shadow-2xl flex flex-col justify-between hover:border-emerald-400 hover:shadow-emerald-500/10 transition-all duration-300">
+          <div>
+            {/* Header */}
+            <div className="bg-gradient-to-r from-emerald-950 via-[#0d2215] to-emerald-950 px-5 py-3.5 flex items-center justify-between border-b border-emerald-500/30">
+              <div className="flex items-center gap-2 text-emerald-300 font-hud font-bold text-sm tracking-wide">
+                <Swords className="w-4 h-4 text-emerald-400" />
+                <span>TERRARIA 1.4.4+ LABOR OF LOVE</span>
+              </div>
+              <span className="text-[10px] font-tek font-bold px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-400/40 text-emerald-300">
+                5 STRATEGY GUIDES
+              </span>
+            </div>
+
+            {/* Thumbnail */}
+            <div className="relative aspect-[16/9] overflow-hidden bg-black border-b border-emerald-500/20">
+              <img
+                src="/images/thumbnails/terraria_poster.jpg"
+                alt="Terraria Official Poster"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#05110a] via-transparent to-transparent opacity-80" />
+              <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between">
+                <span className="px-2.5 py-1 rounded-lg bg-black/80 border border-emerald-500/30 text-emerald-300 text-[11px] font-hud font-bold backdrop-blur-md">
+                  Official Key Art · Bosses & Biomes
+                </span>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="p-5 sm:p-6 space-y-4">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold font-hud text-white tracking-wide">
+                  Terraria Master Companion
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mt-1 font-sans">
+                  Complete 18-boss progression checklists, surface & underground biome discovery, ore tier pickaxe formulas, Aether Shimmer transmutation maps, and Crimson vs Corruption containment.
+                </p>
+              </div>
+
+              {/* Quick Launch Pills */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs font-hud">
+                <Link
+                  to="/terraria"
+                  className="p-2.5 rounded-xl bg-[#081a10] hover:bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-center font-bold transition-all hover:border-emerald-400/50"
+                >
+                  Bosses
+                </Link>
+                <Link
+                  to="/terraria"
+                  className="p-2.5 rounded-xl bg-[#081a10] hover:bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 text-center font-bold transition-all hover:border-cyan-400/50"
+                >
+                  Biomes
+                </Link>
+                <Link
+                  to="/terraria"
+                  className="p-2.5 rounded-xl bg-[#081a10] hover:bg-amber-950/80 border border-amber-500/30 text-amber-300 text-center font-bold transition-all hover:border-amber-400/50"
+                >
+                  Ores
+                </Link>
+                <Link
+                  to="/terraria"
+                  className="p-2.5 rounded-xl bg-[#081a10] hover:bg-purple-950/80 border border-purple-500/30 text-purple-300 text-center font-bold transition-all hover:border-purple-400/50"
+                >
+                  Aether
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Launch Button */}
+          <div className="p-5 sm:p-6 pt-0">
+            <button
+              onClick={() => navigate('/terraria')}
+              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-hud font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer group-hover:shadow-emerald-500/30"
+            >
+              <span>Launch Terraria Companion</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Interactive Tool Search & Filter Bar */}
@@ -529,7 +674,7 @@ export const LibraryHub: React.FC = () => {
               <span>Full Tactical Directory ({filteredTools.length} Tools)</span>
             </h3>
             <p className="text-xs text-slate-400 font-hud">
-              Filter across ARK: Survival Ascended and Minecraft 1.21+ calculators.
+              Filter across ARK: Survival Ascended, Minecraft 1.21+, and Terraria 1.4.4+ guides.
             </p>
           </div>
 
@@ -543,7 +688,7 @@ export const LibraryHub: React.FC = () => {
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              All (17)
+              All ({ALL_HUB_TOOLS.length})
             </button>
             <button
               onClick={() => setFilterGame('ark')}
@@ -563,7 +708,17 @@ export const LibraryHub: React.FC = () => {
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              🟩 Minecraft (7)
+              🔥 Minecraft (7)
+            </button>
+            <button
+              onClick={() => setFilterGame('terraria')}
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+                filterGame === 'terraria'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              ⚔️ Terraria (5)
             </button>
           </div>
         </div>

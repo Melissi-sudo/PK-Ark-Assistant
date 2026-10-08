@@ -65,6 +65,21 @@ app.get(['/logo.png', '/images/logo.png', '/images/pk_logo.png'], (_req: Request
   return res.status(404).send('Logo not found');
 });
 
+// Direct WebAssembly handler for Cubiomes seed engine
+app.get(['/seed_engine.wasm', '/assets/seed_engine.wasm', '*/seed_engine.wasm'], (_req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'application/wasm');
+  res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  const pubWasm = path.resolve(process.cwd(), 'public/seed_engine.wasm');
+  if (fs.existsSync(pubWasm)) {
+    return res.sendFile(pubWasm);
+  }
+  const nodeWasm = path.resolve(process.cwd(), 'node_modules/seedmaps-engine-wasm/dist/seed_engine.wasm');
+  if (fs.existsSync(nodeWasm)) {
+    return res.sendFile(nodeWasm);
+  }
+  return res.status(404).send('WASM binary not found');
+});
+
 // ==========================================
 // 2. ADVANCED DDOS PROTECTION & RATE LIMITING
 // ==========================================

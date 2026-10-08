@@ -65,7 +65,7 @@ export const ALL_JUMP_ITEMS: JumpItem[] = [
     icon: Flame,
     keywords: ['pyromane', 'fire', 'cat', 'water', 'lure', '30s', 'ride'],
     desc: 'Water extinguishing tactic & 30-second ride simulator',
-    badge: 'BOB\'S TALES'
+    badge: 'FANTASTIC TAMES'
   },
   // ARK - Combat & Raiding
   {

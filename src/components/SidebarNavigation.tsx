@@ -29,7 +29,9 @@ import {
   Sparkles,
   ExternalLink,
   Keyboard,
-  Compass
+  Compass,
+  Swords,
+  Layers
 } from 'lucide-react';
 import { ServerRatePreset } from '../types';
 
@@ -59,6 +61,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
 
   const [arkOpen, setArkOpen] = useState(true);
   const [mcOpen, setMcOpen] = useState(true);
+  const [terrariaOpen, setTerrariaOpen] = useState(true);
 
   if (!isOpen) return null;
 
@@ -266,7 +269,57 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
               )}
             </div>
 
-            {/* SECTION 3: UTILITIES & ENGINE CONFIG */}
+            {/* SECTION 3: TERRARIA 1.4.4+ */}
+            <div className="space-y-1">
+              <button
+                onClick={() => setTerrariaOpen(!terrariaOpen)}
+                className="w-full flex items-center justify-between px-2.5 py-1.5 text-[11px] font-hud font-bold uppercase tracking-wider text-emerald-400 hover:text-emerald-300 transition-colors"
+              >
+                <div className="flex items-center gap-1.5">
+                  <Swords className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Terraria 1.4.4+</span>
+                  <span className="px-1.5 py-0.2 rounded text-[9px] bg-emerald-500/20 border border-emerald-400/30 text-emerald-300">
+                    Companion
+                  </span>
+                </div>
+                {terrariaOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+              </button>
+
+              {terrariaOpen && (
+                <div className="space-y-0.5 pl-2 border-l border-emerald-500/20 ml-2 mt-1">
+                  {[
+                    { path: '/terraria', label: 'Master Boss & World Guide', icon: Swords, badge: '1.4.4+' }
+                  ].map((item) => {
+                    const active = isActive(item.path);
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={onClose}
+                        className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-hud transition-all ${
+                          active
+                            ? 'bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold'
+                            : 'text-slate-300 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <Icon className={`w-3.5 h-3.5 shrink-0 ${active ? 'text-emerald-400' : 'text-slate-400'}`} />
+                          <span className="truncate">{item.label}</span>
+                        </div>
+                        {item.badge && (
+                          <span className="text-[9px] font-tek font-bold px-1 py-0.2 rounded bg-emerald-950 border border-emerald-500/30 text-emerald-400">
+                            {item.badge}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* SECTION 4: UTILITIES & ENGINE CONFIG */}
             <div className="pt-2 border-t border-white/[0.08] space-y-1">
               <div className="px-2.5 py-1 text-[10px] font-hud font-bold text-slate-400 uppercase tracking-wider">
                 Tactical Utilities & Engine

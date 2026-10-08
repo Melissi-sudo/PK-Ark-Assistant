@@ -79,12 +79,12 @@ const TOOLS_CONFIG: ToolItem[] = [
   // Survival
   {
     id: 'seed_map',
-    title: 'Chunkbase Seed Map',
-    shortDesc: 'Official 100% accurate biome and structure map via Chunkbase Seed Map launcher.',
+    title: 'Seed Map (Experimental)',
+    shortDesc: 'In-browser Cubiomes WASM cartography. Experimental — not 100% accurate; local terrain height and structure placement may vary in-game.',
     category: 'survival',
     categoryLabel: 'Survival Mode',
     icon: Map,
-    tag: 'Chunkbase'
+    tag: 'Experimental'
   },
   {
     id: 'portal',

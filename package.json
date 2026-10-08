@@ -9,7 +9,7 @@
     "start": "node dist/server.cjs",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
-    "test": "tsx tests/arkMechanics.test.ts"
+    "test": "tsx tests/arkMechanics.test.ts && tsx tests/cubiomesEngine.test.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -23,6 +23,7 @@
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "react-router-dom": "^7.18.4",
+    "seedmaps-engine-wasm": "^0.1.0",
     "vite": "^6.2.3"
   },
   "devDependencies": {
