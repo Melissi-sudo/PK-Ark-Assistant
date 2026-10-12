@@ -107,6 +107,30 @@ const ROUTE_META: Record<string, MetaData> = {
     title: 'Minecraft 1.21 Item & Enchant /give Summon Generator | PK Ultimate Guide',
     description: 'Build modern 1.20.5+ and 1.21+ /give commands with custom enchantments, item_name, lore, and unbreakable tags.',
   },
+  '/rust': {
+    title: 'Rust Tactical Operations Suite | PK Ultimate Guide',
+    description: 'Comprehensive competitive companion for Rust: explosive raid & raw sulfur calculator, base upkeep & TC decay simulator, weapon TTK ballistics, and scrap tech trees.',
+  },
+  '/rust/raid': {
+    title: 'Rust Raid & Raw Sulfur Ore Calculator | PK Ultimate Guide',
+    description: 'Calculate exact C4, Rocket, and Satchel requirements, multi-target compound shopping lists, and raw sulfur ore quantities in Rust.',
+  },
+  '/rust/upkeep': {
+    title: 'Rust Base Upkeep & TC Decay Simulator | PK Ultimate Guide',
+    description: 'Official Facepunch 4-bracket progressive tax curve calculator, 24h resource consumption, and Tool Cupboard protection countdown timers.',
+  },
+  '/rust/combat': {
+    title: 'Rust Combat TTK & Ballistics Matrix | PK Ultimate Guide',
+    description: 'Analyze weapon time-to-kill (TTK), 1-tap headshot thresholds, and distance damage falloff vs Full Metal, Roadsign, and Coffee Can armor.',
+  },
+  '/rust/techtree': {
+    title: 'Rust Workbench Tech Tree & Scrap Planner | PK Ultimate Guide',
+    description: 'Wipe day workbench scrap paths for Tier 1, 2, and 3 workbenches to calculate total scrap needed for essential blueprints.',
+  },
+  '/rust/monuments': {
+    title: 'Rust Monuments Keycards & Recycler Calculator | PK Ultimate Guide',
+    description: 'Green, Blue, and Red keycard puzzle guides, radiation suit requirements, and instant component recycling yield calculator.',
+  },
 };
 
 export const PageMetaSync: React.FC = () => {

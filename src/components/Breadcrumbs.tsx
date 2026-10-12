@@ -22,7 +22,9 @@ import {
   BookOpen,
   ShoppingBag,
   Info,
-  Swords
+  Swords,
+  Heart,
+  Layers
 } from 'lucide-react';
 
 interface Crumb {
@@ -79,9 +81,40 @@ export const Breadcrumbs: React.FC = () => {
     } else {
       crumbs.push({ label: 'Tactical Hub' });
     }
-  } else if (path.startsWith('/terraria')) {
+  } else if (path.startsWith('/terraria') || path.startsWith('/bosses') || path.startsWith('/evil') || path.startsWith('/terraria-guide')) {
     crumbs.push({ label: 'Terraria 1.4.4+', path: '/terraria', icon: Swords });
-    crumbs.push({ label: 'Master Companion & Boss Checklist', icon: Skull });
+
+    if (path.includes('/bosses')) {
+      crumbs.push({ label: 'Boss Progression & Arenas', icon: Skull });
+    } else if (path.includes('/matrix') || path.includes('/table') || path.includes('/health')) {
+      crumbs.push({ label: '18-Boss Health Matrix', icon: Heart });
+    } else if (path.includes('/biomes')) {
+      crumbs.push({ label: 'Biomes, Fishing & NPC Housing', icon: Map });
+    } else if (path.includes('/ores')) {
+      crumbs.push({ label: 'Ore Tiers & Pickaxe Progression', icon: Pickaxe });
+    } else if (path.includes('/underground')) {
+      crumbs.push({ label: 'Caverns & The Aether Shimmer', icon: Layers });
+    } else if (path.includes('/evil')) {
+      crumbs.push({ label: 'World Evils & Quarantine (Crimson / Corruption)', icon: ShieldAlert });
+    } else {
+      crumbs.push({ label: 'Master Strategy Companion & Boss Checklist', icon: Skull });
+    }
+  } else if (path.startsWith('/rust')) {
+    crumbs.push({ label: 'Rust Tactical', path: '/rust', icon: Bomb });
+
+    if (path.includes('/raid')) {
+      crumbs.push({ label: 'Raid Cost & Raw Sulfur Math', icon: Bomb });
+    } else if (path.includes('/upkeep') || path.includes('/decay')) {
+      crumbs.push({ label: 'Base Upkeep & TC Decay Simulator', icon: Layers });
+    } else if (path.includes('/combat') || path.includes('/ttk')) {
+      crumbs.push({ label: 'Combat TTK & Ballistics Matrix', icon: Crosshair });
+    } else if (path.includes('/techtree') || path.includes('/scrap')) {
+      crumbs.push({ label: 'Tech Tree & Scrap Blueprint Planner', icon: Cpu });
+    } else if (path.includes('/monuments') || path.includes('/recycler')) {
+      crumbs.push({ label: 'Monuments Keycards & Recycler Yields', icon: Map });
+    } else {
+      crumbs.push({ label: 'Operations Suite', icon: Bomb });
+    }
   } else if (path === '/about') {
     crumbs.push({ label: 'About & Methodology', icon: Info });
   } else {
@@ -122,12 +155,19 @@ export const Breadcrumbs: React.FC = () => {
   }
 
   const isMinecraft = path.startsWith('/minecraft');
-  const isTerraria = path.startsWith('/terraria');
+  const isTerraria = path.startsWith('/terraria') || path.startsWith('/bosses') || path.startsWith('/evil') || path.startsWith('/terraria-guide');
+  const isRust = path.startsWith('/rust');
 
   return (
     <nav 
       aria-label="Breadcrumb navigation"
-      className="mb-5 px-3 py-2 rounded-2xl bg-[#060c18]/80 backdrop-blur-md border border-white/[0.07] shadow-lg flex items-center justify-between gap-2 flex-wrap text-[11px] sm:text-xs font-hud"
+      className={`mb-5 px-3 py-2 rounded-2xl backdrop-blur-md shadow-lg flex items-center justify-between gap-2 flex-wrap text-[11px] sm:text-xs font-hud transition-colors ${
+        isTerraria
+          ? 'bg-[#14182b]/95 border-2 border-[#3b476e] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]'
+          : isRust
+          ? 'bg-[#140f0c]/90 border border-orange-500/30'
+          : 'bg-[#060c18]/80 border border-white/[0.07]'
+      }`}
     >
       <div className="flex items-center flex-wrap gap-1">
         {crumbs.map((crumb, idx) => {
@@ -137,15 +177,21 @@ export const Breadcrumbs: React.FC = () => {
           return (
             <div key={idx} className="flex items-center gap-1">
               {idx > 0 && (
-                <ChevronRight className="w-3 h-3 text-slate-500 shrink-0" />
+                <ChevronRight className={`w-3 h-3 shrink-0 ${isTerraria ? 'text-[#e5d5b7]' : isRust ? 'text-orange-500/50' : 'text-slate-500'}`} />
               )}
               
               {crumb.path && !isLast ? (
                 <Link
                   to={crumb.path}
-                  className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-slate-400 hover:text-cyan-300 hover:bg-cyan-950/40 transition-colors"
+                  className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors ${
+                    isTerraria 
+                      ? 'text-[#e2d5b7] hover:text-[#fde047] hover:bg-[#2b3558]' 
+                      : isRust
+                      ? 'text-slate-400 hover:text-orange-300 hover:bg-orange-950/40'
+                      : 'text-slate-400 hover:text-cyan-300 hover:bg-cyan-950/40'
+                  }`}
                 >
-                  {Icon && <Icon className="w-3.5 h-3.5 shrink-0 text-slate-400" />}
+                  {Icon && <Icon className={`w-3.5 h-3.5 shrink-0 ${isTerraria ? 'text-[#facc15]' : isRust ? 'text-orange-400' : 'text-slate-400'}`} />}
                   <span>{crumb.label}</span>
                 </Link>
               ) : (
@@ -153,14 +199,16 @@ export const Breadcrumbs: React.FC = () => {
                   className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-bold shadow-sm ${
                     isLast 
                       ? isTerraria
-                        ? 'bg-emerald-950/80 border border-emerald-500/50 text-emerald-200'
+                        ? 'bg-[#252e4e] border-2 border-[#c89f46] text-[#fef08a] shadow-[0_0_10px_rgba(200,159,70,0.3)]'
                         : isMinecraft 
                           ? 'bg-purple-950/70 border border-purple-500/40 text-purple-200' 
-                          : 'bg-cyan-950/70 border border-cyan-500/40 text-cyan-200' 
-                      : 'text-slate-300'
+                          : isRust
+                            ? 'bg-orange-950/70 border border-orange-500/40 text-orange-200'
+                            : 'bg-cyan-950/70 border border-cyan-500/40 text-cyan-200' 
+                      : isTerraria ? 'text-[#e2d5b7]' : 'text-slate-300'
                   }`}
                 >
-                  {Icon && <Icon className="w-3.5 h-3.5 shrink-0" />}
+                  {Icon && <Icon className={`w-3.5 h-3.5 shrink-0 ${isTerraria ? 'text-[#facc15]' : isRust ? 'text-orange-400' : ''}`} />}
                   <span>{crumb.label}</span>
                 </span>
               )}

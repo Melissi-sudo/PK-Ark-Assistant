@@ -35,10 +35,11 @@ import {
   Swords
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { SkeletonBlock } from './skeletons/SkeletonBlock';
 
 interface HubTool {
   id: string;
-  game: 'ark' | 'minecraft' | 'terraria';
+  game: 'ark' | 'minecraft' | 'terraria' | 'rust';
   title: string;
   category: string;
   path: string;
@@ -254,7 +255,7 @@ const ALL_HUB_TOOLS: HubTool[] = [
     game: 'terraria',
     title: '18-Boss Progression & Arenas',
     category: 'Progression & Bosses',
-    path: '/terraria',
+    path: '/terraria/bosses',
     icon: Swords,
     description: 'Pre-Hardmode through Moon Lord summon recipes, health pools, arena blueprints, and class gear loadouts.',
     tag: '18 BOSSES',
@@ -266,7 +267,7 @@ const ALL_HUB_TOOLS: HubTool[] = [
     game: 'terraria',
     title: 'Biomes & Surface Exploration',
     category: 'World Biomes',
-    path: '/terraria',
+    path: '/terraria/biomes',
     icon: Map,
     description: 'Surface Forest, Desert, Jungle, Snow, Ocean, and Sky Island chest loot, fishing crates, and NPC housing.',
     tag: '8 BIOMES',
@@ -278,7 +279,7 @@ const ALL_HUB_TOOLS: HubTool[] = [
     game: 'terraria',
     title: 'Ore Tiers & Pickaxe Power',
     category: 'Mining & Smelting',
-    path: '/terraria',
+    path: '/terraria/ores',
     icon: Pickaxe,
     description: 'Pre-Hardmode and Hardmode ore depths, 35%-225% pickaxe power requirements, and Altar smashing mechanics.',
     tag: '12 ORE TIERS',
@@ -290,7 +291,7 @@ const ALL_HUB_TOOLS: HubTool[] = [
     game: 'terraria',
     title: 'The Aether & Underground Caverns',
     category: 'Subterranean',
-    path: '/terraria',
+    path: '/terraria/underground',
     icon: Layers,
     description: 'Find the secret Aether Shimmer liquid on the outer fifth of the world; Spider nests, Granite, Marble, and Hellstone.',
     tag: 'SHIMMER MAP',
@@ -302,12 +303,72 @@ const ALL_HUB_TOOLS: HubTool[] = [
     game: 'terraria',
     title: 'Crimson vs Corruption Containment',
     category: 'World Evils',
-    path: '/terraria',
+    path: '/terraria/evil',
     icon: ShieldAlert,
     description: '3-block quarantine hellevator rules, Eater of Worlds vs Brain of Cthulhu battle tactics, and Clentaminator cleansing.',
     tag: 'PURIFICATION',
     accent: 'rose',
     isPopular: true
+  },
+
+  // RUST
+  {
+    id: 'rust-raid',
+    game: 'rust',
+    title: 'Raid Cost & Raw Sulfur Engine',
+    category: 'Raid Operations',
+    path: '/rust/raid',
+    icon: Bomb,
+    description: 'Multi-target compound raid shopping cart, optimal explosive combinations (C4/Rockets), and raw sulfur ore breakdowns.',
+    tag: 'SULFUR & C4',
+    accent: 'amber',
+    isPopular: true
+  },
+  {
+    id: 'rust-upkeep',
+    game: 'rust',
+    title: 'Base Upkeep & TC Decay Simulator',
+    category: 'Base Architecture',
+    path: '/rust/upkeep',
+    icon: Layers,
+    description: 'Official Facepunch 4-tier progressive tax rate brackets, 24-hour resource consumption, and TC depletion countdowns.',
+    tag: 'TAX CURVES',
+    accent: 'amber',
+    isPopular: true
+  },
+  {
+    id: 'rust-combat',
+    game: 'rust',
+    title: 'Combat TTK & Ballistics Matrix',
+    category: 'PvP Ballistics',
+    path: '/rust/combat',
+    icon: Crosshair,
+    description: 'AK-47, SAR & Bolty damage falloff vs Full Metal, Roadsign and Coffee Can kits with 1-tap headshot markers.',
+    tag: '1-TAP TTK',
+    accent: 'rose',
+    isPopular: true
+  },
+  {
+    id: 'rust-techtree',
+    game: 'rust',
+    title: 'Workbench Tech Tree & Scrap Planner',
+    category: 'Wipe Progression',
+    path: '/rust/techtree',
+    icon: Cpu,
+    description: 'Workbench Tier 1-3 blueprint tree paths, scrap milestones, and essential raid/roam unlock tracks.',
+    tag: 'WB 1-3',
+    accent: 'cyan'
+  },
+  {
+    id: 'rust-monuments',
+    game: 'rust',
+    title: 'Monuments Keycards & Recycler',
+    category: 'Monuments & Scrap',
+    path: '/rust/monuments',
+    icon: Map,
+    description: 'Green/Blue/Red puzzle walkthroughs, rad suit requirements, and instant component recycling yield calculator.',
+    tag: 'PUZZLES',
+    accent: 'emerald'
   }
 ];
 
@@ -315,7 +376,17 @@ export const LibraryHub: React.FC = () => {
   const navigate = useNavigate();
   const { accountName, profile } = useAuth();
   const [search, setSearch] = useState<string>('');
-  const [filterGame, setFilterGame] = useState<'all' | 'ark' | 'minecraft' | 'terraria'>('all');
+  const [filterGame, setFilterGame] = useState<'all' | 'ark' | 'minecraft' | 'terraria' | 'rust'>('all');
+  const [isFiltering, setIsFiltering] = useState<boolean>(false);
+
+  const handleSelectGameFilter = (game: 'all' | 'ark' | 'minecraft' | 'terraria' | 'rust') => {
+    if (game === filterGame) return;
+    setIsFiltering(true);
+    setFilterGame(game);
+    setTimeout(() => {
+      setIsFiltering(false);
+    }, 130);
+  };
 
   // Filtered tools list
   const filteredTools = useMemo(() => {
@@ -416,71 +487,71 @@ export const LibraryHub: React.FC = () => {
         </div>
       </div>
 
-      {/* Three Flagship Game Showcase Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+      {/* Four Flagship Game Showcase Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         {/* GAME 1: ARK: SURVIVAL ASCENDED */}
         <div className="group relative rounded-3xl overflow-hidden border-2 border-cyan-500/40 bg-gradient-to-b from-[#08162b] via-[#050f1d] to-[#030811] shadow-2xl flex flex-col justify-between hover:border-cyan-400 hover:shadow-cyan-500/10 transition-all duration-300">
           <div>
             {/* Header */}
-            <div className="bg-gradient-to-r from-cyan-950 via-[#0a1b32] to-cyan-950 px-5 py-3.5 flex items-center justify-between border-b border-cyan-500/30">
-              <div className="flex items-center gap-2 text-cyan-300 font-hud font-bold text-sm tracking-wide">
-                <span className="font-tek text-cyan-400 font-bold text-base">◈</span>
-                <span>ARK: SURVIVAL ASCENDED</span>
+            <div className="bg-gradient-to-r from-cyan-950 via-[#0a1b32] to-cyan-950 px-4 py-3 flex items-center justify-between border-b border-cyan-500/30">
+              <div className="flex items-center gap-1.5 text-cyan-300 font-hud font-bold text-xs tracking-wide truncate">
+                <span className="font-tek text-cyan-400 font-bold text-sm">◈</span>
+                <span className="truncate">ARK: ASCENDED</span>
               </div>
-              <span className="text-[10px] font-tek font-bold px-2 py-0.5 rounded bg-cyan-500/20 border border-cyan-400/40 text-cyan-300">
-                10 TACTICAL TOOLS
+              <span className="text-[9px] font-tek font-bold px-1.5 py-0.2 rounded bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 shrink-0">
+                10 TOOLS
               </span>
             </div>
 
-            {/* Thumbnail */}
-            <div className="relative aspect-[16/9] overflow-hidden bg-black border-b border-cyan-500/20">
+            {/* Thumbnail with Shimmer Mask Background */}
+            <div className="relative aspect-[16/9] overflow-hidden bg-[#06101d] border-b border-cyan-500/20 shimmer-mask shimmer-mask-cyan">
               <img
                 src="/images/thumbnails/ark_official.jpg?v=asa_official_keyart"
                 alt="ARK Survival Ascended"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 relative z-10"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#050f1d] via-transparent to-transparent opacity-80" />
-              <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between">
-                <span className="px-2.5 py-1 rounded-lg bg-black/80 border border-cyan-500/30 text-cyan-300 text-[11px] font-hud font-bold backdrop-blur-md">
-                  PvP War Room & Raiding
+              <div className="absolute inset-0 bg-gradient-to-t from-[#050f1d] via-transparent to-transparent opacity-80 z-20" />
+              <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between">
+                <span className="px-2 py-0.5 rounded-lg bg-black/80 border border-cyan-500/30 text-cyan-300 text-[10px] font-hud font-bold backdrop-blur-md">
+                  War Room & Raiding
                 </span>
               </div>
             </div>
 
             {/* Body */}
-            <div className="p-5 sm:p-6 space-y-4">
+            <div className="p-4 sm:p-5 space-y-3">
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold font-hud text-white tracking-wide">
-                  ARK War Room Assistant
+                <h2 className="text-lg font-bold font-hud text-white tracking-wide">
+                  ARK War Room
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mt-1 font-sans">
-                  Automated starve & food calculations, turret soaker hitbox metrics, structure HP vs C4/rockets, Pyromane ride simulator, 5 resource maps, and custom server multiplier config.
+                <p className="text-xs text-slate-300 leading-relaxed mt-1 font-sans line-clamp-3">
+                  Automated starve & food calculations, turret soaker hitbox metrics, structure HP vs C4/rockets, and custom server rates.
                 </p>
               </div>
 
               {/* Quick Launch Pills */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs font-hud">
+              <div className="grid grid-cols-2 gap-1.5 pt-1 text-[11px] font-hud">
                 <Link
                   to="/taming"
-                  className="p-2.5 rounded-xl bg-[#081528] hover:bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 text-center font-bold transition-all hover:border-cyan-400/50"
+                  className="p-2 rounded-lg bg-[#081528] hover:bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 text-center font-bold transition-all"
                 >
                   Taming
                 </Link>
                 <Link
                   to="/soakers"
-                  className="p-2.5 rounded-xl bg-[#081528] hover:bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 text-center font-bold transition-all hover:border-cyan-400/50"
+                  className="p-2 rounded-lg bg-[#081528] hover:bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 text-center font-bold transition-all"
                 >
                   Soakers
                 </Link>
                 <Link
                   to="/raiding"
-                  className="p-2.5 rounded-xl bg-[#081528] hover:bg-rose-950/80 border border-rose-500/30 text-rose-300 text-center font-bold transition-all hover:border-rose-400/50"
+                  className="p-2 rounded-lg bg-[#081528] hover:bg-rose-950/80 border border-rose-500/30 text-rose-300 text-center font-bold transition-all"
                 >
                   Raid Math
                 </Link>
                 <Link
                   to="/maps"
-                  className="p-2.5 rounded-xl bg-[#081528] hover:bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 text-center font-bold transition-all hover:border-cyan-400/50"
+                  className="p-2 rounded-lg bg-[#081528] hover:bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 text-center font-bold transition-all"
                 >
                   5 Maps
                 </Link>
@@ -489,13 +560,13 @@ export const LibraryHub: React.FC = () => {
           </div>
 
           {/* Launch Button */}
-          <div className="p-5 sm:p-6 pt-0">
+          <div className="p-4 sm:p-5 pt-0">
             <button
               onClick={() => navigate('/taming')}
-              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-hud font-bold text-xs sm:text-sm shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer group-hover:shadow-cyan-500/30"
+              className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-hud font-bold text-xs shadow-md shadow-cyan-500/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
             >
-              <span>Launch ARK War Room</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <span>Launch ARK</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         </div>
@@ -504,65 +575,65 @@ export const LibraryHub: React.FC = () => {
         <div className="group relative rounded-3xl overflow-hidden border-2 border-purple-500/40 bg-gradient-to-b from-[#150a28] via-[#0f071e] to-[#07030e] shadow-2xl flex flex-col justify-between hover:border-purple-400 hover:shadow-purple-500/10 transition-all duration-300">
           <div>
             {/* Header */}
-            <div className="bg-gradient-to-r from-purple-950 via-[#1e0d38] to-purple-950 px-5 py-3.5 flex items-center justify-between border-b border-purple-500/30">
-              <div className="flex items-center gap-2 text-purple-300 font-hud font-bold text-sm tracking-wide">
-                <Flame className="w-4 h-4 text-purple-400" />
-                <span>MINECRAFT 1.21+ TRICKY TRIALS</span>
+            <div className="bg-gradient-to-r from-purple-950 via-[#1e0d38] to-purple-950 px-4 py-3 flex items-center justify-between border-b border-purple-500/30">
+              <div className="flex items-center gap-1.5 text-purple-300 font-hud font-bold text-xs tracking-wide truncate">
+                <Flame className="w-3.5 h-3.5 text-purple-400" />
+                <span className="truncate">MINECRAFT 1.21+</span>
               </div>
-              <span className="text-[10px] font-tek font-bold px-2 py-0.5 rounded bg-purple-500/20 border border-purple-400/40 text-purple-300">
-                7 TACTICAL TOOLS
+              <span className="text-[9px] font-tek font-bold px-1.5 py-0.2 rounded bg-purple-500/20 border border-purple-400/40 text-purple-300 shrink-0">
+                7 TOOLS
               </span>
             </div>
 
-            {/* Thumbnail */}
-            <div className="relative aspect-[16/9] overflow-hidden bg-black border-b border-purple-500/20">
+            {/* Thumbnail with Shimmer Mask Background */}
+            <div className="relative aspect-[16/9] overflow-hidden bg-[#120822] border-b border-purple-500/20 shimmer-mask shimmer-mask-purple">
               <img
                 src="/images/thumbnails/minecraft.png"
                 alt="Minecraft 1.21"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 relative z-10"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0f071e] via-transparent to-transparent opacity-80" />
-              <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between">
-                <span className="px-2.5 py-1 rounded-lg bg-black/80 border border-purple-500/30 text-purple-300 text-[11px] font-hud font-bold backdrop-blur-md">
-                  Dimensions, Alchemy & Anvils
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0f071e] via-transparent to-transparent opacity-80 z-20" />
+              <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between">
+                <span className="px-2 py-0.5 rounded-lg bg-black/80 border border-purple-500/30 text-purple-300 text-[10px] font-hud font-bold backdrop-blur-md">
+                  Portal & Alchemy Lab
                 </span>
               </div>
             </div>
 
             {/* Body */}
-            <div className="p-5 sm:p-6 space-y-4">
+            <div className="p-4 sm:p-5 space-y-3">
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold font-hud text-white tracking-wide">
-                  Minecraft Tactical Suite
+                <h2 className="text-lg font-bold font-hud text-white tracking-wide">
+                  Minecraft Suite
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mt-1 font-sans">
-                  3D Nether Portal coordinate translation with collision testing, 1.21 Tricky Trials potion brewing lab, diamond ore elevation at Y = -58, 1-emerald villager trade routes, and anvil prior-work optimizers.
+                <p className="text-xs text-slate-300 leading-relaxed mt-1 font-sans line-clamp-3">
+                  3D Nether Portal translation, 1.21 potion brewing lab, diamond ore elevation at Y=-58, and anvil binary trees.
                 </p>
               </div>
 
               {/* Quick Launch Pills */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs font-hud">
+              <div className="grid grid-cols-2 gap-1.5 pt-1 text-[11px] font-hud">
                 <Link
                   to="/minecraft/portal"
-                  className="p-2.5 rounded-xl bg-[#1a0c33] hover:bg-purple-950/80 border border-purple-500/30 text-purple-300 text-center font-bold transition-all hover:border-purple-400/50"
+                  className="p-2 rounded-lg bg-[#1a0c33] hover:bg-purple-950/80 border border-purple-500/30 text-purple-300 text-center font-bold transition-all"
                 >
                   3D Portal
                 </Link>
                 <Link
                   to="/minecraft/potions"
-                  className="p-2.5 rounded-xl bg-[#1a0c33] hover:bg-purple-950/80 border border-purple-500/30 text-purple-300 text-center font-bold transition-all hover:border-purple-400/50"
+                  className="p-2 rounded-lg bg-[#1a0c33] hover:bg-purple-950/80 border border-purple-500/30 text-purple-300 text-center font-bold transition-all"
                 >
-                  1.21 Potions
+                  Potions
                 </Link>
                 <Link
                   to="/minecraft/ores"
-                  className="p-2.5 rounded-xl bg-[#1a0c33] hover:bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 text-center font-bold transition-all hover:border-cyan-400/50"
+                  className="p-2 rounded-lg bg-[#1a0c33] hover:bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 text-center font-bold transition-all"
                 >
-                  Ores (Y-58)
+                  Ores Y-58
                 </Link>
                 <Link
                   to="/minecraft/villagers"
-                  className="p-2.5 rounded-xl bg-[#1a0c33] hover:bg-amber-950/80 border border-amber-500/30 text-amber-300 text-center font-bold transition-all hover:border-amber-400/50"
+                  className="p-2 rounded-lg bg-[#1a0c33] hover:bg-amber-950/80 border border-amber-500/30 text-amber-300 text-center font-bold transition-all"
                 >
                   1-Emerald
                 </Link>
@@ -571,95 +642,177 @@ export const LibraryHub: React.FC = () => {
           </div>
 
           {/* Launch Button */}
-          <div className="p-5 sm:p-6 pt-0">
+          <div className="p-4 sm:p-5 pt-0">
             <button
               onClick={() => navigate('/minecraft')}
-              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-hud font-bold text-xs sm:text-sm shadow-lg shadow-purple-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer group-hover:shadow-purple-500/30"
+              className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-hud font-bold text-xs shadow-md shadow-purple-500/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
             >
-              <span>Launch Minecraft Suite</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <span>Launch Minecraft</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         </div>
 
-        {/* GAME 3: TERRARIA 1.4.4+ LABOR OF LOVE */}
+        {/* GAME 3: TERRARIA 1.4.4+ */}
         <div className="group relative rounded-3xl overflow-hidden border-2 border-emerald-500/40 bg-gradient-to-b from-[#08170e] via-[#05110a] to-[#020905] shadow-2xl flex flex-col justify-between hover:border-emerald-400 hover:shadow-emerald-500/10 transition-all duration-300">
           <div>
             {/* Header */}
-            <div className="bg-gradient-to-r from-emerald-950 via-[#0d2215] to-emerald-950 px-5 py-3.5 flex items-center justify-between border-b border-emerald-500/30">
-              <div className="flex items-center gap-2 text-emerald-300 font-hud font-bold text-sm tracking-wide">
-                <Swords className="w-4 h-4 text-emerald-400" />
-                <span>TERRARIA 1.4.4+ LABOR OF LOVE</span>
+            <div className="bg-gradient-to-r from-emerald-950 via-[#0d2215] to-emerald-950 px-4 py-3 flex items-center justify-between border-b border-emerald-500/30">
+              <div className="flex items-center gap-1.5 text-emerald-300 font-hud font-bold text-xs tracking-wide truncate">
+                <Swords className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="truncate">TERRARIA 1.4.4+</span>
               </div>
-              <span className="text-[10px] font-tek font-bold px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-400/40 text-emerald-300">
-                5 STRATEGY GUIDES
+              <span className="text-[9px] font-tek font-bold px-1.5 py-0.2 rounded bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 shrink-0">
+                5 GUIDES
               </span>
             </div>
 
-            {/* Thumbnail */}
-            <div className="relative aspect-[16/9] overflow-hidden bg-black border-b border-emerald-500/20">
+            {/* Thumbnail with Shimmer Mask Background */}
+            <div className="relative aspect-[16/9] overflow-hidden bg-[#07140d] border-b border-emerald-500/20 shimmer-mask shimmer-mask-emerald">
               <img
                 src="/images/thumbnails/terraria_poster.jpg"
                 alt="Terraria Official Poster"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 relative z-10"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#05110a] via-transparent to-transparent opacity-80" />
-              <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between">
-                <span className="px-2.5 py-1 rounded-lg bg-black/80 border border-emerald-500/30 text-emerald-300 text-[11px] font-hud font-bold backdrop-blur-md">
-                  Official Key Art · Bosses & Biomes
+              <div className="absolute inset-0 bg-gradient-to-t from-[#05110a] via-transparent to-transparent opacity-80 z-20" />
+              <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between">
+                <span className="px-2 py-0.5 rounded-lg bg-black/80 border border-emerald-500/30 text-emerald-300 text-[10px] font-hud font-bold backdrop-blur-md">
+                  18 Bosses & Shimmer
                 </span>
               </div>
             </div>
 
             {/* Body */}
-            <div className="p-5 sm:p-6 space-y-4">
+            <div className="p-4 sm:p-5 space-y-3">
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold font-hud text-white tracking-wide">
-                  Terraria Master Companion
+                <h2 className="text-lg font-bold font-hud text-white tracking-wide">
+                  Terraria Companion
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mt-1 font-sans">
-                  Complete 18-boss progression checklists, surface & underground biome discovery, ore tier pickaxe formulas, Aether Shimmer transmutation maps, and Crimson vs Corruption containment.
+                <p className="text-xs text-slate-300 leading-relaxed mt-1 font-sans line-clamp-3">
+                  18-boss progression checklists, health matrices, biome discovery, and Crimson vs Corruption quarantine tunnels.
                 </p>
               </div>
 
               {/* Quick Launch Pills */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs font-hud">
+              <div className="grid grid-cols-2 gap-1.5 pt-1 text-[11px] font-hud">
                 <Link
-                  to="/terraria"
-                  className="p-2.5 rounded-xl bg-[#081a10] hover:bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-center font-bold transition-all hover:border-emerald-400/50"
+                  to="/terraria/matrix"
+                  className="p-2 rounded-lg bg-[#081a10] hover:bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-center font-bold transition-all"
                 >
-                  Bosses
+                  18-Boss
                 </Link>
                 <Link
-                  to="/terraria"
-                  className="p-2.5 rounded-xl bg-[#081a10] hover:bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 text-center font-bold transition-all hover:border-cyan-400/50"
+                  to="/terraria/bosses"
+                  className="p-2 rounded-lg bg-[#081a10] hover:bg-cyan-950/80 border border-cyan-500/30 text-cyan-300 text-center font-bold transition-all"
                 >
-                  Biomes
+                  Arenas
                 </Link>
                 <Link
-                  to="/terraria"
-                  className="p-2.5 rounded-xl bg-[#081a10] hover:bg-amber-950/80 border border-amber-500/30 text-amber-300 text-center font-bold transition-all hover:border-amber-400/50"
+                  to="/terraria/evil"
+                  className="p-2 rounded-lg bg-[#081a10] hover:bg-rose-950/80 border border-rose-500/30 text-rose-300 text-center font-bold transition-all"
                 >
-                  Ores
+                  Quarantine
                 </Link>
                 <Link
-                  to="/terraria"
-                  className="p-2.5 rounded-xl bg-[#081a10] hover:bg-purple-950/80 border border-purple-500/30 text-purple-300 text-center font-bold transition-all hover:border-purple-400/50"
+                  to="/terraria/ores"
+                  className="p-2 rounded-lg bg-[#081a10] hover:bg-amber-950/80 border border-amber-500/30 text-amber-300 text-center font-bold transition-all"
                 >
-                  Aether
+                  Shimmer
                 </Link>
               </div>
             </div>
           </div>
 
           {/* Launch Button */}
-          <div className="p-5 sm:p-6 pt-0">
+          <div className="p-4 sm:p-5 pt-0">
             <button
               onClick={() => navigate('/terraria')}
-              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-hud font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer group-hover:shadow-emerald-500/30"
+              className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-hud font-bold text-xs shadow-md shadow-emerald-500/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
             >
-              <span>Launch Terraria Companion</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <span>Launch Terraria</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        </div>
+
+        {/* GAME 4: RUST TACTICAL SUITE */}
+        <div className="group relative rounded-3xl overflow-hidden border-2 border-orange-500/40 bg-gradient-to-b from-[#191008] via-[#0f0c08] to-[#070503] shadow-2xl flex flex-col justify-between hover:border-orange-400 hover:shadow-orange-500/10 transition-all duration-300">
+          <div>
+            {/* Header */}
+            <div className="bg-gradient-to-r from-orange-950 via-[#261408] to-orange-950 px-4 py-3 flex items-center justify-between border-b border-orange-500/30">
+              <div className="flex items-center gap-1.5 text-orange-300 font-hud font-bold text-xs tracking-wide truncate">
+                <Bomb className="w-3.5 h-3.5 text-orange-400" />
+                <span className="truncate">RUST TACTICAL</span>
+              </div>
+              <span className="text-[9px] font-tek font-bold px-1.5 py-0.2 rounded bg-orange-500/20 border border-orange-400/40 text-orange-300 shrink-0">
+                5 TOOLS
+              </span>
+            </div>
+
+            {/* Thumbnail with Shimmer Mask Background */}
+            <div className="relative aspect-[16/9] overflow-hidden bg-[#140c06] border-b border-orange-500/20 shimmer-mask shimmer-mask-orange">
+              <img
+                src="/images/thumbnails/rust_official.jpg"
+                alt="Rust Tactical Operations"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 relative z-10"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0f0c08] via-transparent to-transparent opacity-80 z-20" />
+              <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between">
+                <span className="px-2 py-0.5 rounded-lg bg-black/80 border border-orange-500/30 text-orange-300 text-[10px] font-hud font-bold backdrop-blur-md">
+                  Raid Math & TC Upkeep
+                </span>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="p-4 sm:p-5 space-y-3">
+              <div>
+                <h2 className="text-lg font-bold font-hud text-white tracking-wide">
+                  Rust Tactical Suite
+                </h2>
+                <p className="text-xs text-slate-300 leading-relaxed mt-1 font-sans line-clamp-3">
+                  Zero-waste explosive raid math (C4, rockets, explo 5.56), Facepunch progressive TC upkeep tax curve, 1-tap combat TTK, and scrap trees.
+                </p>
+              </div>
+
+              {/* Quick Launch Pills */}
+              <div className="grid grid-cols-2 gap-1.5 pt-1 text-[11px] font-hud">
+                <Link
+                  to="/rust/raid"
+                  className="p-2 rounded-lg bg-[#1f1008] hover:bg-orange-950/80 border border-orange-500/30 text-orange-300 text-center font-bold transition-all"
+                >
+                  Raid Math
+                </Link>
+                <Link
+                  to="/rust/upkeep"
+                  className="p-2 rounded-lg bg-[#1f1008] hover:bg-amber-950/80 border border-amber-500/30 text-amber-300 text-center font-bold transition-all"
+                >
+                  TC Upkeep
+                </Link>
+                <Link
+                  to="/rust/combat"
+                  className="p-2 rounded-lg bg-[#1f1008] hover:bg-red-950/80 border border-red-500/30 text-red-300 text-center font-bold transition-all"
+                >
+                  Combat TTK
+                </Link>
+                <Link
+                  to="/rust/techtree"
+                  className="p-2 rounded-lg bg-[#1f1008] hover:bg-yellow-950/80 border border-yellow-500/30 text-yellow-300 text-center font-bold transition-all"
+                >
+                  Scrap Tree
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Launch Button */}
+          <div className="p-4 sm:p-5 pt-0">
+            <button
+              onClick={() => navigate('/rust')}
+              className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-hud font-bold text-xs shadow-md shadow-orange-500/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+            >
+              <span>Launch Rust Suite</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         </div>
@@ -681,8 +834,8 @@ export const LibraryHub: React.FC = () => {
           {/* Filter Pills */}
           <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[#060e1c] border border-white/10 text-xs font-hud">
             <button
-              onClick={() => setFilterGame('all')}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+              onClick={() => handleSelectGameFilter('all')}
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
                 filterGame === 'all'
                   ? 'bg-cyan-600 text-white shadow-sm'
                   : 'text-slate-400 hover:text-white'
@@ -691,8 +844,8 @@ export const LibraryHub: React.FC = () => {
               All ({ALL_HUB_TOOLS.length})
             </button>
             <button
-              onClick={() => setFilterGame('ark')}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+              onClick={() => handleSelectGameFilter('ark')}
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
                 filterGame === 'ark'
                   ? 'bg-cyan-600 text-white shadow-sm'
                   : 'text-slate-400 hover:text-white'
@@ -701,8 +854,8 @@ export const LibraryHub: React.FC = () => {
               ◈ ARK (10)
             </button>
             <button
-              onClick={() => setFilterGame('minecraft')}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+              onClick={() => handleSelectGameFilter('minecraft')}
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
                 filterGame === 'minecraft'
                   ? 'bg-purple-600 text-white shadow-sm'
                   : 'text-slate-400 hover:text-white'
@@ -711,14 +864,24 @@ export const LibraryHub: React.FC = () => {
               🔥 Minecraft (7)
             </button>
             <button
-              onClick={() => setFilterGame('terraria')}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+              onClick={() => handleSelectGameFilter('terraria')}
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
                 filterGame === 'terraria'
                   ? 'bg-emerald-600 text-white shadow-sm'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
               ⚔️ Terraria (5)
+            </button>
+            <button
+              onClick={() => handleSelectGameFilter('rust')}
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                filterGame === 'rust'
+                  ? 'bg-orange-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              💥 Rust (5)
             </button>
           </div>
         </div>
@@ -736,18 +899,49 @@ export const LibraryHub: React.FC = () => {
           {search && (
             <button
               onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-tek text-slate-400 hover:text-white px-2 py-0.5 rounded bg-white/5"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-tek text-slate-400 hover:text-white px-2 py-0.5 rounded bg-white/5 cursor-pointer"
             >
               CLEAR
             </button>
           )}
         </div>
 
-        {/* Directory Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-2">
-          {filteredTools.map((tool) => {
+        {/* Directory Grid with Shimmer Skeleton on Filtering Transition */}
+        {isFiltering ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-2" aria-busy="true">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="p-4 rounded-2xl border border-white/[0.08] bg-[#070e1c]/80 flex flex-col justify-between space-y-4"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <SkeletonBlock 
+                      className="w-8 h-8" 
+                      theme={filterGame === 'minecraft' ? 'purple' : filterGame === 'terraria' ? 'emerald' : 'cyan'} 
+                      rounded="rounded-lg" 
+                    />
+                    <SkeletonBlock className="h-4 w-16" rounded="rounded-full" />
+                  </div>
+                  <SkeletonBlock className="h-5 w-3/4" rounded="rounded" />
+                  <div className="space-y-1.5 pt-1">
+                    <SkeletonBlock className="h-3.5 w-full" rounded="rounded" />
+                    <SkeletonBlock className="h-3.5 w-4/5" rounded="rounded" />
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between">
+                  <SkeletonBlock className="h-3 w-20" rounded="rounded" />
+                  <SkeletonBlock className="h-3 w-12" rounded="rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-2">
+            {filteredTools.map((tool) => {
             const Icon = tool.icon;
             const isArk = tool.game === 'ark';
+            const isTerraria = tool.game === 'terraria';
 
             return (
               <Link
@@ -756,6 +950,8 @@ export const LibraryHub: React.FC = () => {
                 className={`group p-4 rounded-2xl border transition-all duration-200 flex flex-col justify-between hover:scale-[1.01] ${
                   isArk
                     ? 'bg-[#050e1b] hover:bg-[#071324] border-cyan-500/20 hover:border-cyan-400/50 shadow-sm'
+                    : isTerraria
+                    ? 'bg-[#0d1624] hover:bg-[#121f33] border-emerald-500/30 hover:border-emerald-400/60 shadow-sm'
                     : 'bg-[#0c0618] hover:bg-[#120924] border-purple-500/20 hover:border-purple-400/50 shadow-sm'
                 }`}
               >
@@ -763,7 +959,11 @@ export const LibraryHub: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                        isArk ? 'bg-cyan-500/20 text-cyan-300' : 'bg-purple-500/20 text-purple-300'
+                        isArk 
+                          ? 'bg-cyan-500/20 text-cyan-300' 
+                          : isTerraria 
+                          ? 'bg-emerald-500/20 text-emerald-300' 
+                          : 'bg-purple-500/20 text-purple-300'
                       }`}>
                         <Icon className="w-4 h-4" />
                       </div>
@@ -775,6 +975,8 @@ export const LibraryHub: React.FC = () => {
                     <span className={`text-[9px] font-tek font-bold px-1.5 py-0.5 rounded ${
                       isArk 
                         ? 'bg-cyan-950 border border-cyan-500/30 text-cyan-300' 
+                        : isTerraria
+                        ? 'bg-emerald-950 border border-emerald-500/40 text-emerald-300'
                         : 'bg-purple-950 border border-purple-500/30 text-purple-300'
                     }`}>
                       {tool.tag}
@@ -782,7 +984,9 @@ export const LibraryHub: React.FC = () => {
                   </div>
 
                   <div>
-                    <h4 className="font-hud font-bold text-sm text-white group-hover:text-cyan-300 transition-colors">
+                    <h4 className={`font-hud font-bold text-sm text-white transition-colors ${
+                      isTerraria ? 'group-hover:text-emerald-300' : 'group-hover:text-cyan-300'
+                    }`}>
                       {tool.title}
                     </h4>
                     <p className="text-xs text-slate-400 font-sans leading-relaxed line-clamp-2 mt-1">
@@ -792,8 +996,10 @@ export const LibraryHub: React.FC = () => {
                 </div>
 
                 <div className="pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs font-hud text-slate-400 group-hover:text-white transition-colors mt-2">
-                  <span className="text-[11px] font-tek text-slate-500">
-                    {isArk ? 'ARK ASCENDED' : 'MINECRAFT 1.21+'}
+                  <span className={`text-[11px] font-tek ${
+                    isTerraria ? 'text-emerald-400 font-bold' : 'text-slate-500'
+                  }`}>
+                    {isArk ? 'ARK ASCENDED' : isTerraria ? 'TERRARIA 1.4.4+' : 'MINECRAFT 1.21+'}
                   </span>
                   <div className="flex items-center gap-1">
                     <span className="text-xs font-bold">Open Tool</span>
@@ -804,6 +1010,7 @@ export const LibraryHub: React.FC = () => {
             );
           })}
         </div>
+      )}
 
         {filteredTools.length === 0 && (
           <div className="p-12 text-center bg-[#050a14] border border-cyan-500/20 rounded-2xl space-y-2">

@@ -34,7 +34,7 @@ interface QuickJumpModalProps {
 interface JumpItem {
   id: string;
   title: string;
-  game: 'ark' | 'minecraft' | 'library';
+  game: 'ark' | 'minecraft' | 'terraria' | 'rust' | 'library';
   category: string;
   path: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -250,6 +250,63 @@ export const ALL_JUMP_ITEMS: JumpItem[] = [
     icon: Sparkles,
     keywords: ['summon', 'item', 'give', 'enchantment', 'custom name', 'lore', 'unbreakable', 'nbt'],
     desc: 'Modern 1.20.5+ item_components /give command builder'
+  },
+
+  // RUST TACTICAL SUITE
+  {
+    id: 'rust-raid',
+    title: 'Rust Raid & Raw Sulfur Calculator',
+    game: 'rust',
+    category: 'Rust Tactical',
+    path: '/rust/raid',
+    icon: Bomb,
+    keywords: ['rust', 'raid', 'sulfur', 'c4', 'rocket', 'satchel', 'explo 5.56', 'garage door', 'sheet metal door', 'armored door'],
+    desc: 'Multi-target compound raid shopping cart & raw sulfur ore math',
+    badge: 'ZERO-WASTE'
+  },
+  {
+    id: 'rust-upkeep',
+    title: 'Rust Base Upkeep & TC Decay Simulator',
+    game: 'rust',
+    category: 'Rust Tactical',
+    path: '/rust/upkeep',
+    icon: Cpu,
+    keywords: ['rust', 'upkeep', 'decay', 'tc', 'tool cupboard', 'tax', 'wood', 'stone', 'metal', 'hqm', 'hours remaining'],
+    desc: 'Official Facepunch 4-bracket progressive tax curve & TC protection countdown',
+    badge: 'TAX CURVE'
+  },
+  {
+    id: 'rust-combat',
+    title: 'Rust Combat TTK & Ballistics Matrix',
+    game: 'rust',
+    category: 'Rust Tactical',
+    path: '/rust/combat',
+    icon: Crosshair,
+    keywords: ['rust', 'combat', 'ttk', 'ak47', 'sar', 'bolty', 'mp5', 'thompson', 'armor', 'facemask', 'coffee can', 'roadsign', 'headshot'],
+    desc: 'Time-to-kill, 1-tap headshots, hit-to-kill & armor resistance curves',
+    badge: '1-TAP'
+  },
+  {
+    id: 'rust-techtree',
+    title: 'Rust Tech Tree & Scrap Planner',
+    game: 'rust',
+    category: 'Rust Tactical',
+    path: '/rust/techtree',
+    icon: Sparkles,
+    keywords: ['rust', 'scrap', 'workbench', 'wb1', 'wb2', 'wb3', 'tech tree', 'blueprints', 'garage door', 'syringe'],
+    desc: 'Wipe day workbench scrap paths & meta blueprint unlock goals',
+    badge: 'SCRAP'
+  },
+  {
+    id: 'rust-monuments',
+    title: 'Rust Monuments & Recycler Engine',
+    game: 'rust',
+    category: 'Rust Tactical',
+    path: '/rust/monuments',
+    icon: Map,
+    keywords: ['rust', 'monument', 'keycard', 'green card', 'blue card', 'red card', 'launch site', 'oil rig', 'recycler', 'scrap yield'],
+    desc: 'Keycard puzzle routes, rad protection, and component recycling calculator',
+    badge: 'PUZZLES'
   }
 ];
 

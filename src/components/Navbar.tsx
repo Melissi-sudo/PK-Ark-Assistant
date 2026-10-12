@@ -34,7 +34,8 @@ import {
   Sliders,
   Compass,
   Info,
-  Swords
+  Swords,
+  Heart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ServerRatePreset } from '../types';
@@ -222,11 +223,12 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const currentPath = location.pathname;
   
-  // Game mode: 'library' | 'ark' | 'minecraft' | 'terraria'
+  // Game mode: 'library' | 'ark' | 'minecraft' | 'terraria' | 'rust'
+  const isRust = currentPath.startsWith('/rust');
   const isMinecraft = currentPath.startsWith('/minecraft');
-  const isTerraria = currentPath.startsWith('/terraria');
+  const isTerraria = currentPath.startsWith('/terraria') || currentPath.startsWith('/bosses') || currentPath.startsWith('/evil') || currentPath.startsWith('/terraria-guide');
   const isLibrary = currentPath === '/' || currentPath === '/library';
-  const isArk = !isMinecraft && !isTerraria && !isLibrary;
+  const isArk = !isMinecraft && !isTerraria && !isRust && !isLibrary;
 
   const activeTabsList = isMinecraft ? MINECRAFT_TABS : ARK_TABS;
 
@@ -241,10 +243,13 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-40 bg-[#050914]/95 backdrop-blur-xl border-b border-white/[0.08] shadow-2xl">
+      {/* Top subtle accent ambient glow line */}
+      <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
+
       {/* Top Bar: Brand, Game Switcher, Presets, Sound, Sync & PK Store */}
-      <div className="max-w-7xl mx-auto px-2.5 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between gap-2">
-        {/* Left: Sidebar Toggle + Brand Identity */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
+      <div className="max-w-7xl mx-auto px-2.5 sm:px-6 py-2 flex items-center justify-between gap-2 lg:gap-4 min-h-[56px]">
+        {/* Left: Sidebar Toggle + Brand Identity (Rock solid, shrink-0, never collides) */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 select-none">
           <button
             onClick={onOpenSidebar}
             className="p-1.5 sm:p-2 rounded-xl bg-[#081222] hover:bg-cyan-950/70 border border-cyan-500/30 hover:border-cyan-400 text-cyan-300 transition-all cursor-pointer flex items-center justify-center shrink-0 shadow-sm shadow-cyan-950/40"
@@ -267,12 +272,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               />
             </div>
 
-            <div>
+            <div className="shrink-0">
               <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="text-xs sm:text-base font-bold font-hud text-slate-100 tracking-wider flex items-center gap-1 group-hover:text-cyan-300 transition-colors">
+                <span className="text-xs sm:text-base font-bold font-hud text-slate-100 tracking-wider flex items-center gap-1 group-hover:text-cyan-300 transition-colors whitespace-nowrap">
                   PK ULTIMATE <span className="text-cyan-400">GUIDE</span>
                 </span>
-                <span className="hidden md:inline-block px-1.5 py-0.5 text-[9px] font-tek font-semibold uppercase tracking-wider bg-slate-800/80 text-slate-300 border border-slate-700/60 rounded">
+                <span className="hidden md:inline-block px-1.5 py-0.2 text-[9px] font-tek font-semibold uppercase tracking-wider bg-slate-800/80 text-slate-300 border border-slate-700/60 rounded shrink-0">
                   Game Library
                 </span>
               </div>
@@ -286,63 +291,82 @@ export const Navbar: React.FC<NavbarProps> = ({
           </Link>
         </div>
 
-        {/* Center / Game Switcher Tabs (Desktop / Tablet) */}
-        <div className="hidden md:flex items-center bg-[#070e1c] p-1 rounded-xl border border-white/10 text-xs font-hud font-bold">
+        {/* Center / Game Switcher Tabs (Desktop / Tablet) - FIXED HEIGHT, SHRINK-0, NEVER WRAPS OR ENLARGES */}
+        <nav 
+          aria-label="Active Game Switcher"
+          className="hidden md:flex items-center bg-[#070e1c]/95 p-1 rounded-xl border border-white/10 text-xs font-hud font-bold shadow-inner shadow-black/50 backdrop-blur-md shrink-0 h-10 select-none mx-auto"
+        >
           <Link
             to="/library"
-            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+            className={`h-8 px-2.5 lg:px-3 rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 text-xs ${
               isLibrary
-                ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-md shadow-cyan-600/30 border border-cyan-400/40 font-bold'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
             }`}
           >
-            <BookOpen className="w-3.5 h-3.5" />
+            <BookOpen className="w-3.5 h-3.5 shrink-0" />
             <span>Library</span>
           </Link>
 
           <Link
             to="/taming"
-            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+            className={`h-8 px-2.5 lg:px-3 rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 text-xs ${
               isArk
-                ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-gradient-to-r from-cyan-600 to-teal-600 text-white shadow-md shadow-cyan-600/30 border border-cyan-400/40 font-bold'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
             }`}
           >
-            <span className="text-cyan-300 font-tek font-bold">◈</span>
-            <span>ARK Ascended</span>
+            <span className="text-cyan-300 font-tek font-bold shrink-0">◈</span>
+            <span>ARK</span>
+            <span className="hidden xl:inline">Ascended</span>
           </Link>
 
           <Link
             to="/minecraft/portal"
-            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+            className={`h-8 px-2.5 lg:px-3 rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 text-xs ${
               isMinecraft
-                ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-600/30 border border-purple-400/40 font-bold'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
             }`}
           >
-            <Flame className="w-3.5 h-3.5 text-purple-300" />
-            <span>Minecraft 1.21+</span>
+            <Flame className="w-3.5 h-3.5 text-purple-300 shrink-0" />
+            <span>Minecraft</span>
+            <span className="hidden xl:inline">1.21+</span>
           </Link>
 
           <Link
             to="/terraria"
-            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+            className={`h-8 px-2.5 lg:px-3 rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 text-xs ${
               isTerraria
-                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-md shadow-emerald-600/30 border border-emerald-400/40 font-bold'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
             }`}
           >
-            <Swords className="w-3.5 h-3.5 text-emerald-300" />
-            <span>Terraria 1.4.4+</span>
+            <Swords className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+            <span>Terraria</span>
+            <span className="hidden xl:inline">1.4.4+</span>
           </Link>
-        </div>
 
-        {/* Right: Controls & Actions */}
-        <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-end">
+          <Link
+            to="/rust"
+            className={`h-8 px-2.5 lg:px-3 rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 text-xs ${
+              isRust
+                ? 'bg-gradient-to-r from-orange-600 to-amber-700 text-white shadow-md shadow-orange-600/30 border border-orange-400/40 font-bold'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
+            }`}
+          >
+            <Bomb className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+            <span>Rust</span>
+            <span className="hidden xl:inline">Tactical</span>
+          </Link>
+        </nav>
+
+        {/* Right: Controls & Actions (Always single row flex-nowrap, shrink-0) */}
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0 justify-end flex-nowrap">
           {/* Server Preset Dropdown & Customizer (Shown on ARK pages) */}
           {isArk && (
-            <div className="flex items-center gap-1">
-              <div className="relative flex items-center bg-[#09101d] hover:bg-[#0c1628] border border-white/[0.08] hover:border-cyan-500/40 rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs text-slate-200 transition-colors">
+            <div className="flex items-center gap-1 shrink-0">
+              <div className="relative flex items-center bg-[#09101d] hover:bg-[#0c1628] border border-white/[0.08] hover:border-cyan-500/40 rounded-xl px-2 py-1 sm:px-2.5 sm:py-1.5 text-xs text-slate-200 transition-colors shrink-0">
                 <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-cyan-400 mr-1 shrink-0" />
                 <select
                   value={currentPreset.id}
@@ -356,7 +380,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }
                   }}
                   aria-label="Server Rate Preset"
-                  className="bg-transparent font-tek font-bold text-cyan-300 text-[11px] sm:text-xs focus:outline-none cursor-pointer pr-3.5 max-w-[95px] xs:max-w-[130px] sm:max-w-none truncate"
+                  className="bg-transparent font-tek font-bold text-cyan-300 text-[11px] sm:text-xs focus:outline-none cursor-pointer pr-3.5 max-w-[85px] sm:max-w-[110px] xl:max-w-[130px] truncate"
                 >
                   {SERVER_PRESETS.map((preset) => (
                     <option key={preset.id} value={preset.id} className="bg-[#0b1019] text-slate-100">
@@ -371,23 +395,39 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onOpenCustomRates}
                 title={currentPreset.id === 'custom' ? 'Customize server multipliers (Active Custom Preset)' : 'Customize ARK server multipliers'}
-                className={`p-1.5 sm:px-2 sm:py-1.5 rounded-xl border transition-all cursor-pointer flex items-center gap-1 text-xs font-hud ${
+                className={`p-1.5 sm:px-2 sm:py-1.5 rounded-xl border transition-all cursor-pointer flex items-center gap-1 text-xs font-hud shrink-0 ${
                   currentPreset.id === 'custom'
                     ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300 shadow-sm shadow-cyan-500/25 ring-1 ring-cyan-400/50'
                     : 'bg-[#09101d] hover:bg-[#0c1628] border-white/[0.08] text-slate-400 hover:text-cyan-300'
                 }`}
               >
-                <Sliders className="w-3.5 h-3.5 text-cyan-400" />
-                <span className="hidden xl:inline text-[11px] font-bold">RATES</span>
+                <Sliders className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                <span className="hidden 2xl:inline text-[11px] font-bold">RATES</span>
               </button>
             </div>
           )}
 
-          {/* Minecraft Version Indicator (Shown on Minecraft pages) */}
+          {/* Minecraft Version Indicator (Shown on Minecraft pages, compact on desktop) */}
           {isMinecraft && (
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 bg-[#120a21] border border-purple-500/30 rounded-xl text-purple-300 font-mono text-[11px]">
+            <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 bg-[#120a21] border border-purple-500/30 rounded-xl text-purple-300 font-mono text-[11px] shrink-0">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>v1.21 Tricky Trials</span>
+              <span>v1.21 Trials</span>
+            </div>
+          )}
+
+          {/* Terraria Version Indicator (Shown on Terraria pages, compact on desktop) */}
+          {isTerraria && (
+            <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 bg-[#081810] border border-emerald-500/30 rounded-xl text-emerald-300 font-mono text-[11px] shrink-0">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>v1.4.4+ Matrix</span>
+            </div>
+          )}
+
+          {/* Rust Version Indicator (Shown on Rust pages, compact on desktop) */}
+          {isRust && (
+            <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 bg-[#180e07] border border-orange-500/30 rounded-xl text-orange-300 font-mono text-[11px] shrink-0">
+              <span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
+              <span>Oxide v260+ Spec</span>
             </div>
           )}
 
@@ -420,10 +460,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               whileTap={{ scale: 0.95 }}
               onClick={onReplayIntro}
               title="Play Tactical Intro Cinematic"
-              className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl border border-cyan-500/30 bg-cyan-950/40 text-cyan-300 hover:text-white hover:border-cyan-400 transition-all cursor-pointer flex items-center gap-1 text-xs font-hud font-bold shadow-sm shadow-cyan-500/10"
+              className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl border border-cyan-500/30 bg-cyan-950/40 text-cyan-300 hover:text-white hover:border-cyan-400 transition-all cursor-pointer flex items-center gap-1 text-xs font-hud font-bold shadow-sm shadow-cyan-500/10 shrink-0"
             >
               <Sparkles className="w-3 h-3 text-cyan-400" />
-              <span className="hidden sm:inline text-[10px]">INTRO</span>
+              <span className="hidden xl:inline text-[10px]">INTRO</span>
             </motion.button>
           )}
 
@@ -432,14 +472,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={onOpenAuthModal}
-            className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl border text-xs font-hud font-semibold tracking-wider flex items-center gap-1.5 transition-all cursor-pointer bg-cyan-950/40 hover:bg-cyan-900/50 border-cyan-400/40 text-cyan-300 shadow-sm shadow-cyan-950/50"
+            className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl border text-xs font-hud font-semibold tracking-wider flex items-center gap-1.5 transition-all cursor-pointer bg-cyan-950/40 hover:bg-cyan-900/50 border-cyan-400/40 text-cyan-300 shadow-sm shadow-cyan-950/50 shrink-0"
             title="Survivor Account Profile & Cloud Sync"
           >
-            <div className={`w-2 h-2 rounded-full ${currentUser ? 'bg-emerald-400 shadow-sm shadow-emerald-400 animate-pulse' : 'bg-cyan-400 shadow-sm shadow-cyan-400'}`} />
-            <span className="hidden sm:inline max-w-[80px] md:max-w-[100px] truncate text-[11px] font-bold tracking-wide">
+            <div className={`w-2 h-2 rounded-full shrink-0 ${currentUser ? 'bg-emerald-400 shadow-sm shadow-emerald-400 animate-pulse' : 'bg-cyan-400 shadow-sm shadow-cyan-400'}`} />
+            <span className="hidden sm:inline max-w-[70px] md:max-w-[90px] xl:max-w-[110px] truncate text-[11px] font-bold tracking-wide">
               {profile?.displayName || accountName || 'Survivor'}
             </span>
-            <span className="text-[9px] bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 px-1 py-0.2 rounded font-tek">
+            <span className="text-[9px] bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 px-1 py-0.2 rounded font-tek shrink-0">
               {currentUser ? 'CLOUD' : 'SYNC'}
             </span>
           </motion.button>
@@ -451,20 +491,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             href="https://discord.gg/4ruEbqZSKT"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-[#5865F2]/15 hover:bg-[#5865F2]/25 border border-[#5865F2]/40 hover:border-[#5865F2] rounded-xl text-[#8ea1e1] hover:text-white text-xs font-hud font-bold tracking-wide flex items-center gap-1.5 transition-all cursor-pointer shadow-sm shadow-[#5865F2]/10"
+            className="px-2 py-1 sm:px-2.5 sm:py-1.5 bg-[#5865F2]/15 hover:bg-[#5865F2]/25 border border-[#5865F2]/40 hover:border-[#5865F2] rounded-xl text-[#8ea1e1] hover:text-white text-xs font-hud font-bold tracking-wide flex items-center gap-1.5 transition-all cursor-pointer shadow-sm shadow-[#5865F2]/10 shrink-0"
             title="Join the Official PK Guides Discord Server"
           >
-            <svg className="w-3.5 h-3.5 fill-current text-[#5865F2]" viewBox="0 0 24 24">
+            <svg className="w-3.5 h-3.5 fill-current text-[#5865F2] shrink-0" viewBox="0 0 24 24">
               <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
             </svg>
-            <span className="text-[10px] sm:text-xs">DISCORD</span>
+            <span className="hidden sm:inline text-[10px] sm:text-xs">DISCORD</span>
           </motion.a>
 
           {/* Mobile All-Tools Grid Drawer Button */}
           <motion.button
             whileTap={{ scale: 0.92 }}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden w-8 h-8 rounded-xl bg-slate-900 border border-slate-700/80 text-cyan-300 flex items-center justify-center cursor-pointer"
+            className="md:hidden w-8 h-8 rounded-xl bg-slate-900 border border-slate-700/80 text-cyan-300 flex items-center justify-center cursor-pointer shrink-0"
             title="Open all tools menu"
             aria-label="Open all tools menu"
           >
@@ -794,6 +834,76 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </Link>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* Terraria Section */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-hud font-bold text-emerald-300">
+                <Swords className="w-3.5 h-3.5 text-emerald-400" />
+                <span>TERRARIA 1.4.4+ LABOR OF LOVE</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { path: '/terraria/matrix', label: '18-Boss Health Matrix', badge: '18 BOSSES' },
+                  { path: '/terraria/bosses', label: 'Boss Progression Checklist', badge: 'CHECKLIST' },
+                  { path: '/terraria/evil', label: 'Quarantine & Purification', badge: 'SPREAD' },
+                  { path: '/terraria/ores', label: 'Ore Depths & Shimmer', badge: 'DEPTHS' },
+                  { path: '/terraria/biomes', label: 'Biome Pylons & Fishing', badge: 'PYLONS' },
+                ].map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="p-2 rounded-xl border border-emerald-500/20 bg-[#06140b] text-slate-300 hover:border-emerald-400 text-left flex items-start gap-2"
+                  >
+                    <Swords className="w-3.5 h-3.5 mt-0.5 shrink-0 text-emerald-400" />
+                    <div className="overflow-hidden">
+                      <div className="text-xs font-hud font-bold leading-tight truncate text-emerald-200">
+                        {item.label}
+                      </div>
+                      <div className="text-[9px] text-emerald-400 font-mono mt-0.5 truncate">
+                        {item.badge}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Rust Section */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-hud font-bold text-orange-300">
+                <Bomb className="w-3.5 h-3.5 text-orange-400" />
+                <span>RUST TACTICAL SUITE // RAID & COMBAT</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { path: '/rust/raid', label: 'Raid Cost & Raw Sulfur', badge: 'C4 & ROCKETS' },
+                  { path: '/rust/upkeep', label: 'Base Upkeep & TC Decay', badge: 'TAX CURVE' },
+                  { path: '/rust/combat', label: 'Combat TTK & Ballistics', badge: '1-TAP HEADSHOT' },
+                  { path: '/rust/techtree', label: 'Tech Tree & Scrap Plan', badge: 'WORKBENCH 1-3' },
+                  { path: '/rust/monuments', label: 'Monuments & Recycler', badge: 'KEYCARDS' },
+                ].map((item) => (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="p-2 rounded-xl border border-orange-500/20 bg-[#120a06] text-slate-300 hover:border-orange-400 text-left flex items-start gap-2"
+                  >
+                    <Bomb className="w-3.5 h-3.5 mt-0.5 shrink-0 text-orange-400" />
+                    <div className="overflow-hidden">
+                      <div className="text-xs font-hud font-bold leading-tight truncate text-orange-200">
+                        {item.label}
+                      </div>
+                      <div className="text-[9px] text-orange-400 font-mono mt-0.5 truncate">
+                        {item.badge}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
               </div>
             </div>
 

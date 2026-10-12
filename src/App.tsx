@@ -28,11 +28,13 @@ import { PageMetaSync } from './components/common/PageMetaSync';
 import { LibraryHub } from './components/LibraryHub';
 import { MinecraftHub } from './components/minecraft/MinecraftHub';
 import { TerrariaHub } from './components/terraria/TerrariaHub';
+import { RustHub } from './components/rust/RustHub';
 import { CustomRatesModal } from './components/CustomRatesModal';
 import { SidebarNavigation } from './components/SidebarNavigation';
 import { Breadcrumbs } from './components/Breadcrumbs';
 import { AboutMethodologyModal } from './components/AboutMethodologyModal';
 import { AboutMethodologyPage } from './components/AboutMethodologyPage';
+import { PageTransitionSkeleton } from './components/skeletons';
 import { ServerRatePreset, ActiveTimer } from './types';
 import { SERVER_PRESETS, getStoredCustomPreset } from './data/presets';
 import { sendBrowserNotification, playTekAlarmSound } from './utils/audioAlert';
@@ -51,8 +53,26 @@ function MainAppContent() {
 
   const isMinecraft = location.pathname.startsWith('/minecraft');
   const isTerraria = location.pathname.startsWith('/terraria');
+  const isRust = location.pathname.startsWith('/rust');
   const isLibrary = location.pathname === '/' || location.pathname === '/library';
-  const isArk = !isMinecraft && !isTerraria && !isLibrary;
+  const isArk = !isMinecraft && !isTerraria && !isRust && !isLibrary;
+
+  // Content navigation state for shimmer loading skeleton
+  const [isPageTransitioning, setIsPageTransitioning] = useState<boolean>(false);
+  const [currentRoutePath, setCurrentRoutePath] = useState<string>(location.pathname);
+
+  // Trigger shimmer skeleton during route transitions to eliminate layout shifts
+  useEffect(() => {
+    if (location.pathname !== currentRoutePath) {
+      setIsPageTransitioning(true);
+      const timer = setTimeout(() => {
+        setCurrentRoutePath(location.pathname);
+        setIsPageTransitioning(false);
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname, currentRoutePath]);
   
   // Rate preset (default to Official Small Tribes, restore custom if chosen)
   const [currentPreset, setCurrentPreset] = useState<ServerRatePreset>(() => {
@@ -333,119 +353,142 @@ function MainAppContent() {
         {/* Tactical Hierarchical Breadcrumbs */}
         <Breadcrumbs />
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.16, ease: 'easeOut' }}
-          >
-            <Routes location={location}>
-              {/* Library Home Route */}
-              <Route path="/" element={<LibraryHub />} />
-              <Route path="/library" element={<LibraryHub />} />
+        <div className="relative min-h-[550px]">
+          <AnimatePresence mode="wait">
+            {isPageTransitioning ? (
+              <motion.div
+                key={`transition-skeleton-${location.pathname}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.1 }}
+                className="w-full"
+              >
+                <PageTransitionSkeleton customPath={location.pathname} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key={currentRoutePath}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.16, ease: 'easeOut' }}
+                className="w-full"
+              >
+                <Routes location={location}>
+                  {/* Library Home Route */}
+                  <Route path="/" element={<LibraryHub />} />
+                  <Route path="/library" element={<LibraryHub />} />
 
-              {/* About & Methodology Route */}
-              <Route path="/about" element={<AboutMethodologyPage />} />
+                  {/* About & Methodology Route */}
+                  <Route path="/about" element={<AboutMethodologyPage />} />
 
-              {/* Minecraft Hub Routes */}
-              <Route path="/minecraft" element={<MinecraftHub />} />
-              <Route path="/minecraft/:subtab" element={<MinecraftHub />} />
+                  {/* Minecraft Hub Routes */}
+                  <Route path="/minecraft" element={<MinecraftHub />} />
+                  <Route path="/minecraft/:subtab" element={<MinecraftHub />} />
 
-              {/* Terraria Hub Routes */}
-              <Route path="/terraria" element={<TerrariaHub />} />
-              <Route path="/terraria/:subtab" element={<TerrariaHub />} />
+                  {/* Terraria Hub Routes */}
+                  <Route path="/terraria" element={<TerrariaHub />} />
+                  <Route path="/terraria/:subtab" element={<TerrariaHub />} />
+                  <Route path="/bosses" element={<Navigate to="/terraria/bosses" replace />} />
+                  <Route path="/evil" element={<Navigate to="/terraria/evil" replace />} />
+                  <Route path="/terraria-guide" element={<Navigate to="/terraria" replace />} />
 
-              {/* ARK Canonical & Game Routes */}
-              <Route path="/ark" element={<Navigate to="/taming" replace />} />
-              
-              <Route
-                path="/taming"
-                element={
-                  <TamingCalculator
-                    currentPreset={currentPreset}
-                    onAddTimer={handleAddTimer}
-                    onViewSoakerGuide={() => navigate('/soakers')}
-                    onViewPyromaneGuide={() => navigate('/pyromane')}
+                  {/* Rust Tactical Operations Suite Routes */}
+                  <Route path="/rust" element={<RustHub />} />
+                  <Route path="/rust/:subtab" element={<RustHub />} />
+
+                  {/* ARK Canonical & Game Routes */}
+                  <Route path="/ark" element={<Navigate to="/taming" replace />} />
+                  
+                  <Route
+                    path="/taming"
+                    element={
+                      <TamingCalculator
+                        currentPreset={currentPreset}
+                        onAddTimer={handleAddTimer}
+                        onViewSoakerGuide={() => navigate('/soakers')}
+                        onViewPyromaneGuide={() => navigate('/pyromane')}
+                      />
+                    }
                   />
-                }
-              />
 
-              <Route path="/soakers" element={<TurretSoakerGuide />} />
+                  <Route path="/soakers" element={<TurretSoakerGuide />} />
 
-              <Route path="/raiding" element={<RaidExplosivesCalculator />} />
+                  <Route path="/raiding" element={<RaidExplosivesCalculator />} />
 
-              <Route path="/kibble" element={<ArkRecipeMatrix />} />
+                  <Route path="/kibble" element={<ArkRecipeMatrix />} />
 
-              <Route path="/pyromane" element={<PyromaneTamingGuide />} />
+                  <Route path="/pyromane" element={<PyromaneTamingGuide />} />
 
-              <Route
-                path="/breeding"
-                element={
-                  <MatingCalculator
-                    currentPreset={currentPreset}
-                    onAddTimer={handleAddTimer}
+                  <Route
+                    path="/breeding"
+                    element={
+                      <MatingCalculator
+                        currentPreset={currentPreset}
+                        onAddTimer={handleAddTimer}
+                      />
+                    }
                   />
-                }
-              />
 
-              <Route
-                path="/maps"
-                element={<ResourceMaps />}
-              />
-
-              <Route
-                path="/maps/:mapId"
-                element={<ResourceMaps />}
-              />
-
-              <Route
-                path="/resources"
-                element={
-                  <TribeResourceHub
-                    currentPreset={currentPreset}
+                  <Route
+                    path="/maps"
+                    element={<ResourceMaps />}
                   />
-                }
-              />
 
-              <Route path="/ammo" element={<Navigate to="/resources" replace />} />
-
-              <Route
-                path="/stats"
-                element={
-                  <DinoStatLookup
-                    onSelectForTaming={(cid) => {
-                      navigate(`/taming?dino=${cid}`);
-                    }}
-                    onSelectForBreeding={(cid) => {
-                      navigate(`/breeding?dino=${cid}`);
-                    }}
+                  <Route
+                    path="/maps/:mapId"
+                    element={<ResourceMaps />}
                   />
-                }
-              />
 
-              <Route
-                path="/timers"
-                element={
-                  <TimerManager
-                    timers={timers}
-                    onDeleteTimer={handleDeleteTimer}
-                    onClearExpired={handleClearExpired}
-                    onAddTimer={handleAddTimer}
-                    soundEnabled={soundEnabled}
-                    setSoundEnabled={setSoundEnabled}
+                  <Route
+                    path="/resources"
+                    element={
+                      <TribeResourceHub
+                        currentPreset={currentPreset}
+                      />
+                    }
                   />
-                }
-              />
 
-              <Route path="/store" element={<Navigate to="/" replace />} />
+                  <Route path="/ammo" element={<Navigate to="/resources" replace />} />
 
-              {/* 404 Not Found Page */}
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </motion.div>
-        </AnimatePresence>
+                  <Route
+                    path="/stats"
+                    element={
+                      <DinoStatLookup
+                        onSelectForTaming={(cid) => {
+                          navigate(`/taming?dino=${cid}`);
+                        }}
+                        onSelectForBreeding={(cid) => {
+                          navigate(`/breeding?dino=${cid}`);
+                        }}
+                      />
+                    }
+                  />
+
+                  <Route
+                    path="/timers"
+                    element={
+                      <TimerManager
+                        timers={timers}
+                        onDeleteTimer={handleDeleteTimer}
+                        onClearExpired={handleClearExpired}
+                        onAddTimer={handleAddTimer}
+                        soundEnabled={soundEnabled}
+                        setSoundEnabled={setSoundEnabled}
+                      />
+                    }
+                  />
+
+                  <Route path="/store" element={<Navigate to="/" replace />} />
+
+                  {/* 404 Not Found Page */}
+                  <Route path="*" element={<NotFoundPage />} />
+                </Routes>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* Daily ARK Tip Component (shown when browsing ARK War Room) */}
         {isArk && (

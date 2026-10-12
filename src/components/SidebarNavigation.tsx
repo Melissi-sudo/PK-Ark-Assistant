@@ -62,6 +62,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   const [arkOpen, setArkOpen] = useState(true);
   const [mcOpen, setMcOpen] = useState(true);
   const [terrariaOpen, setTerrariaOpen] = useState(true);
+  const [rustOpen, setRustOpen] = useState(true);
 
   if (!isOpen) return null;
 
@@ -279,7 +280,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                   <Swords className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Terraria 1.4.4+</span>
                   <span className="px-1.5 py-0.2 rounded text-[9px] bg-emerald-500/20 border border-emerald-400/30 text-emerald-300">
-                    Companion
+                    5 Guides
                   </span>
                 </div>
                 {terrariaOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
@@ -288,7 +289,11 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
               {terrariaOpen && (
                 <div className="space-y-0.5 pl-2 border-l border-emerald-500/20 ml-2 mt-1">
                   {[
-                    { path: '/terraria', label: 'Master Boss & World Guide', icon: Swords, badge: '1.4.4+' }
+                    { path: '/terraria/matrix', label: '18-Boss Health Matrix', icon: Swords, badge: '18 BOSSES' },
+                    { path: '/terraria/bosses', label: 'Boss Progression & Arenas', icon: Skull, badge: 'CHECKLIST' },
+                    { path: '/terraria/evil', label: 'Quarantine & Purification', icon: ShieldAlert, badge: 'SPREAD' },
+                    { path: '/terraria/ores', label: 'Ore Depths & Shimmer', icon: Pickaxe, badge: 'DEPTHS' },
+                    { path: '/terraria/biomes', label: 'Biome Pylons & Fishing', icon: Map, badge: 'PYLONS' },
                   ].map((item) => {
                     const active = isActive(item.path);
                     const Icon = item.icon;
@@ -309,6 +314,63 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                         </div>
                         {item.badge && (
                           <span className="text-[9px] font-tek font-bold px-1 py-0.2 rounded bg-emerald-950 border border-emerald-500/30 text-emerald-400">
+                            {item.badge}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* SECTION: RUST TACTICAL SUITE */}
+            <div className="space-y-1">
+              <button
+                onClick={() => setRustOpen(!rustOpen)}
+                className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-[#140b07] hover:bg-[#1a0e08] border border-orange-500/30 text-xs font-hud text-orange-300 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <Bomb className="w-3.5 h-3.5 text-orange-400" />
+                  <span className="font-bold tracking-wider">RUST TACTICAL SUITE</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-tek font-bold px-1.5 py-0.2 rounded bg-orange-950 border border-orange-500/30 text-orange-400">
+                    5 TOOLS
+                  </span>
+                  {rustOpen ? <ChevronDown className="w-3 h-3 text-orange-400" /> : <ChevronRight className="w-3 h-3 text-orange-400" />}
+                </div>
+              </button>
+
+              {rustOpen && (
+                <div className="space-y-0.5 pl-2 pt-1 border-l-2 border-orange-500/30 ml-2.5">
+                  {[
+                    { path: '/rust/raid', label: 'Raid Cost & Raw Sulfur', icon: Bomb, badge: 'SULFUR' },
+                    { path: '/rust/upkeep', label: 'Base Upkeep & TC Decay', icon: Layers, badge: 'TAX' },
+                    { path: '/rust/combat', label: 'Combat TTK & Ballistics', icon: Crosshair, badge: '1-TAP' },
+                    { path: '/rust/techtree', label: 'Tech Tree & Scrap Plan', icon: Cpu, badge: 'WB 1-3' },
+                    { path: '/rust/monuments', label: 'Monuments & Recycler', icon: Map, badge: 'CARDS' },
+                  ].map((item) => {
+                    const active = isActive(item.path);
+                    const Icon = item.icon;
+
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={onClose}
+                        className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-hud transition-all ${
+                          active
+                            ? 'bg-orange-500/20 border border-orange-500/40 text-orange-300 font-bold'
+                            : 'text-slate-300 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <Icon className={`w-3.5 h-3.5 shrink-0 ${active ? 'text-orange-400' : 'text-slate-400'}`} />
+                          <span className="truncate">{item.label}</span>
+                        </div>
+                        {item.badge && (
+                          <span className="text-[9px] font-tek font-bold px-1 py-0.2 rounded bg-orange-950 border border-orange-500/30 text-orange-400">
                             {item.badge}
                           </span>
                         )}

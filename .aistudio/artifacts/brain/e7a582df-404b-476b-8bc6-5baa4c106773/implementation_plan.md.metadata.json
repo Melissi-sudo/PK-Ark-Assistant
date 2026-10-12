@@ -1,0 +1,6 @@
+{
+  "summary": "Comprehensive architectural blueprint for adding Rust to the tactical gaming companion library. Includes an interactive multi-tool companion hub featuring:\n- Raid Cost & Raw Sulfur Calculator with multi-target breakdown\n- Base Upkeep & Decay Protection Matrix with exact block-tier math\n- Weapon TTK & Ballistics Comparison Matrix against all armor sets\n- Scrap & Tech Tree Path Planner with Monument Loot Matrix\n- Electrical & Industrial Automation Wire Guide\n- Industrial Rust oxide aesthetic integration with custom theme tokens and seamless navbar/library navigation",
+  "updatedAt": "2026-10-12T13:16:13.046021247Z",
+  "requestFeedback": true,
+  "userFacing": true
+}
