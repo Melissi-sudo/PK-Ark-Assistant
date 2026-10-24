@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @font-face {
   font-family: 'Minecraftia';
   src: url('/fonts/minecraftia.woff') format('woff'),
@@ -11,31 +13,64 @@
 
 @layer base {
   :root {
+    /* Apple Gallery Color Tokens */
+    --color-gallery-white: #ffffff;
+    --color-studio-mist: #f5f5f7;
+    --color-paper-frost: #fafafc;
+    --color-hairline-silver: #d6d6d6;
+    --color-control-gray: #e6e6e8;
+    --color-ink: #1d1d1f;
+    --color-slate: #707070;
+    --color-steel: #86868b;
+    --color-apple-blue: #0066cc;
+    --color-pricing-blue: #0071e3;
+    --color-launch-orange: #b64400;
+
+    /* Typography — SF Pro Fallback Stack */
+    --font-sf-pro-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    --font-sf-pro-text: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+    --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
     --font-tek: 'Chakra Petch', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-hud: 'Rajdhani', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-sans: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-minecraft: 'Minecraftia', 'Silkscreen', 'Press Start 2P', 'VT323', monospace;
-    --font-minecraftia: 'Minecraftia', 'Silkscreen', 'Press Start 2P', 'VT323', monospace;
-    --font-mojangles: 'Minecraftia', 'Silkscreen', 'Press Start 2P', 'VT323', monospace;
+    --font-minecraft: 'Minecraftia', 'Silkscreen', monospace;
+
+    /* Geometry */
+    --radius-cards: 28px;
+    --radius-buttons: 9999px;
+    --radius-pills: 36px;
+    --radius-inputs: 980px;
+    --radius-navigation: 20px;
+
+    /* Shadows */
+    --shadow-subtle: rgb(230, 230, 232) 0px 0px 0px 1px;
+    --shadow-subtle-2: rgb(134, 134, 139) 0px 0px 0px 1px;
   }
 
   body {
     font-family: var(--font-sans);
-    background-color: #030712;
-    background-image: 
-      radial-gradient(at 15% 15%, rgba(6, 182, 212, 0.04) 0px, transparent 50%),
-      radial-gradient(at 85% 85%, rgba(147, 51, 234, 0.04) 0px, transparent 50%);
-    background-attachment: fixed;
-    color: #e2e8f0;
+    background-color: #ffffff;
+    color: #1d1d1f;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    letter-spacing: -0.015em;
   }
 
   ::selection {
-    background-color: rgba(6, 182, 212, 0.3);
-    color: #ffffff;
+    background-color: rgba(0, 113, 227, 0.2);
+    color: #1d1d1f;
   }
+}
+
+.font-sf-display {
+  font-family: var(--font-sf-pro-display);
+  letter-spacing: -0.025em;
+}
+
+.font-sf-text {
+  font-family: var(--font-sf-pro-text);
+  letter-spacing: -0.015em;
 }
 
 .font-tek {
@@ -46,45 +81,133 @@
   font-family: var(--font-hud);
 }
 
-.font-minecraftia, .font-minecraft, .font-mojangles {
+.font-minecraft {
   font-family: var(--font-minecraft);
-  letter-spacing: 0.5px;
 }
 
-/* Custom ARK Holographic & HUD Styling */
-.ark-panel {
-  background: linear-gradient(135deg, rgba(13, 20, 32, 0.92) 0%, rgba(8, 14, 23, 0.96) 100%);
-  border: 1px solid rgba(0, 229, 255, 0.22);
-  box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(0, 229, 255, 0.15);
+/* Apple Gallery Cards & Surfaces */
+.apple-card {
+  background-color: #ffffff;
+  border-radius: 28px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
 }
 
-.ark-panel-amber {
-  background: linear-gradient(135deg, rgba(28, 18, 10, 0.92) 0%, rgba(16, 11, 7, 0.96) 100%);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(245, 158, 11, 0.2);
+.dark .apple-card {
+  background-color: #1c1c1e;
+  border-color: #2c2c2e;
+  color: #f5f5f7;
+  box-shadow: none;
 }
 
-.ark-panel-glow {
-  box-shadow: 0 0 15px rgba(0, 229, 255, 0.18), inset 0 0 15px rgba(0, 229, 255, 0.05);
+.apple-card-mist {
+  background-color: #ffffff;
+  border-radius: 28px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.03);
 }
 
-.ark-border-cut {
-  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+.dark .apple-card-mist {
+  background-color: #161617;
+  border-color: #2c2c2e;
+  color: #f5f5f7;
 }
 
-.ark-border-cut-sm {
-  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+/* Apple Buttons & Interactive Pills */
+.apple-pill-blue {
+  background-color: #0071e3;
+  color: #ffffff;
+  border-radius: 9999px;
+  font-family: var(--font-sf-pro-text);
+  font-size: 12px;
+  line-height: 1.33;
+  letter-spacing: -0.12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+.apple-pill-blue:hover {
+  background-color: #0077ed;
 }
 
-/* Scanline and Grid Background */
-.bg-ark-grid {
-  background-size: 32px 32px;
-  background-image: 
-    linear-gradient(to right, rgba(0, 229, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+.apple-pill-outline {
+  background-color: transparent;
+  color: #111827;
+  border: 1px solid #d1d5db;
+  border-radius: 9999px;
+  font-family: var(--font-sf-pro-text);
+  font-size: 12px;
+  line-height: 1.33;
+  letter-spacing: -0.12px;
+  font-weight: 500;
+  padding: 6px 14px;
+  transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+.apple-pill-outline:hover {
+  border-color: #111827;
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
-/* Shimmer Loading Animations & Mask Utilities */
+.dark .apple-pill-outline {
+  color: #f5f5f7;
+  border-color: #3a3a3c;
+}
+.dark .apple-pill-outline:hover {
+  border-color: #f5f5f7;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Apple Rounded Search Input (980px pill radius) */
+.apple-input-search {
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 980px;
+  color: #111827;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+.apple-input-search:focus {
+  border-color: #0071e3;
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
+}
+
+.dark .apple-input-search {
+  background-color: #1c1c1e;
+  border-color: #3a3a3c;
+  color: #f5f5f7;
+}
+.dark .apple-input-search:focus {
+  border-color: #0071e3;
+  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.25);
+}
+
+/* Segmented Control Bar */
+.apple-segmented {
+  background-color: #e5e7eb;
+  border: 1px solid #d1d5db;
+  border-radius: 9999px;
+  padding: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.dark .apple-segmented {
+  background-color: #1c1c1e;
+  border-color: #2c2c2e;
+}
+
+/* Shimmer Loading Animations (Light Gallery) */
 @keyframes shimmer-sweep {
   0% {
     transform: translateX(-100%);
@@ -97,6 +220,7 @@
 .shimmer-mask {
   position: relative;
   overflow: hidden;
+  background-color: #f5f5f7;
 }
 
 .shimmer-mask::after {
@@ -109,168 +233,39 @@
   background-image: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.02) 20%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0.02) 80%,
+    rgba(255, 255, 255, 0.4) 20%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0.4) 80%,
     transparent 100%
   );
-  animation: shimmer-sweep 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation: shimmer-sweep 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   content: '';
   pointer-events: none;
 }
 
-.shimmer-mask-cyan::after {
-  background-image: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(6, 182, 212, 0.03) 20%,
-    rgba(6, 182, 212, 0.14) 50%,
-    rgba(6, 182, 212, 0.03) 80%,
-    transparent 100%
-  );
-}
-
-.shimmer-mask-purple::after {
-  background-image: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(168, 85, 247, 0.03) 20%,
-    rgba(168, 85, 247, 0.14) 50%,
-    rgba(168, 85, 247, 0.03) 80%,
-    transparent 100%
-  );
-}
-
-.shimmer-mask-emerald::after {
-  background-image: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(16, 185, 129, 0.03) 20%,
-    rgba(16, 185, 129, 0.14) 50%,
-    rgba(16, 185, 129, 0.03) 80%,
-    transparent 100%
-  );
-}
-
+.shimmer-mask-cyan::after,
+.shimmer-mask-purple::after,
+.shimmer-mask-emerald::after,
 .shimmer-mask-orange::after {
   background-image: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(249, 115, 22, 0.03) 20%,
-    rgba(249, 115, 22, 0.16) 50%,
-    rgba(249, 115, 22, 0.03) 80%,
+    rgba(255, 255, 255, 0.4) 20%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0.4) 80%,
     transparent 100%
   );
 }
 
-/* Minecraft Blocky UI Elements */
-.mc-button {
-  font-family: var(--font-minecraft);
-  background-color: #727272;
-  border-top: 3px solid #b4b4b4;
-  border-left: 3px solid #b4b4b4;
-  border-right: 3px solid #2b2b2b;
-  border-bottom: 3px solid #2b2b2b;
-  box-shadow: inset 2px 2px #dedede, inset -2px -2px #484848;
-  color: #ffffff;
-  text-shadow: 2px 2px #3f3f3f;
-  image-rendering: pixelated;
-  transition: none;
-}
-.mc-button:hover {
-  background-color: #8b8b8b;
-  border-top-color: #d1d1d1;
-  border-left-color: #d1d1d1;
-  border-right-color: #373737;
-  border-bottom-color: #373737;
-  color: #ffffa0;
-}
-.mc-button:active {
-  background-color: #555555;
-  border-top: 3px solid #2b2b2b;
-  border-left: 3px solid #2b2b2b;
-  border-right: 3px solid #b4b4b4;
-  border-bottom: 3px solid #b4b4b4;
-  box-shadow: inset 2px 2px #373737, inset -2px -2px #dedede;
+/* Legacy helpers kept safe */
+.ark-panel {
+  background: #ffffff;
+  border: 1px solid #e6e6e8;
+  border-radius: 20px;
 }
 
-.mc-button-green {
-  font-family: var(--font-minecraft);
-  background-color: #4a7522;
-  border-top: 3px solid #7cb342;
-  border-left: 3px solid #7cb342;
-  border-right: 3px solid #25400d;
-  border-bottom: 3px solid #25400d;
-  box-shadow: inset 2px 2px #8bc34a, inset -2px -2px #335414;
-  color: #ffffff;
-  text-shadow: 2px 2px #1b2e09;
-}
-.mc-button-green:hover {
-  background-color: #5b8c2c;
-  color: #ffffa0;
-}
-
-.mc-panel-dirt {
-  background-color: #1c130d;
-  border: 4px solid #0f0a06;
-  box-shadow: inset 0 0 0 2px #3d2a1d;
-}
-
-.mc-grass-header {
-  background: linear-gradient(180deg, #5b8731 0%, #466c24 100%);
-  border-bottom: 4px solid #2f4918;
-}
-
-.mc-slot {
-  background-color: #313131;
-  border-top: 3px solid #1a1a1a;
-  border-left: 3px solid #1a1a1a;
-  border-right: 3px solid #6e6e6e;
-  border-bottom: 3px solid #6e6e6e;
-}
-
-/* Tactical custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #070c14;
-}
-::-webkit-scrollbar-thumb {
-  background: #162438;
-  border-radius: 3px;
-  border: 1px solid rgba(0, 229, 255, 0.2);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #00e5ff;
-}
-
-/* Mobile Safe Area & Touch Responsiveness */
-.pb-safe {
-  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
-}
-
-.pt-safe {
-  padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
-}
-
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* Touch manipulation optimization */
-button, select, input, a {
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Accessibility */
-:focus-visible {
-  outline: 2px solid #00e5ff !important;
-  outline-offset: 2px;
+.ark-panel-amber {
+  background: #ffffff;
+  border: 1px solid #e6e6e8;
+  border-radius: 20px;
 }

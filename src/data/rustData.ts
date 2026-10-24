@@ -1026,172 +1026,442 @@ export const TECH_TREE_NODES: TechTreeNode[] = [
 ];
 
 // MONUMENTS & RECYCLER SCRAP ENGINE
+export type RustMonumentCategory = 
+  | 'Safe Zones'
+  | 'Tier 0 (Puzzle-Free / Early-Game)'
+  | 'Tier 1 & Industrial'
+  | 'Tier 2 (Mid-to-High Loot)'
+  | 'Tier 3 (End-Game)'
+  | 'Quarries & Transit';
+
 export interface RustMonument {
   id: string;
   name: string;
-  tier: 'Tier 1 (Green)' | 'Tier 2 (Blue)' | 'Tier 3 (Red)' | 'Safe Zone';
-  cardNeeded: 'None' | 'Green Card' | 'Blue Card' | 'Red Card';
-  fusesNeeded: number;
-  radiationRads: number; // Rad protection required to not take damage
-  eliteCrates: number;
-  militaryCrates: number;
-  dieselSpawns: number;
-  hasRecycler: boolean;
-  hasOilRefinery: boolean;
-  hasRepairBench: boolean;
+  category: RustMonumentCategory;
+  tier: string;
+  cardSpawned?: 'Green' | 'Blue' | 'Red';
+  cardRequired?: 'None' | 'Green Card' | 'Blue Card' | 'Red Card' | 'Green & Blue Cards';
+  fusesNeeded?: number;
+  radiationRads?: number;
+  hasSuppliedInfo: boolean;
   puzzleStrategy: string;
+  detailPlaceholder?: string;
+  hasRecycler?: boolean;
 }
 
+export const RUST_MONUMENT_CATEGORIES: { name: RustMonumentCategory; description: string; badge: string }[] = [
+  { name: 'Safe Zones', description: 'Protected zones with peacekeeper turrets, NPC vendors, and services.', badge: '6 LOCATIONS' },
+  { name: 'Tier 0 (Puzzle-Free / Early-Game)', description: 'Early-game monuments with no keycard puzzle requirements. Primary sources for Green Cards.', badge: '6 LOCATIONS' },
+  { name: 'Tier 1 & Industrial', description: 'Low-tier industrial monuments. Solve green card puzzles with fuses to obtain Blue Cards.', badge: '5 LOCATIONS' },
+  { name: 'Tier 2 (Mid-to-High Loot)', description: 'Mid-to-high loot monuments. Solve blue and green card puzzles with fuses to obtain Red Cards.', badge: '7 LOCATIONS' },
+  { name: 'Tier 3 (End-Game)', description: 'End-game military compounds and offshore rigs with elite loot crates.', badge: '7 LOCATIONS' },
+  { name: 'Quarries & Transit', description: 'Resource extraction quarries, underground transit network, and ocean vessel events.', badge: '6 LOCATIONS' }
+];
+
 export const RUST_MONUMENTS: RustMonument[] = [
+  // 1. Safe Zones (6)
   {
-    id: 'launch-site',
-    name: 'Launch Site (Cobalt Space Center)',
-    tier: 'Tier 3 (Red)',
-    cardNeeded: 'Red Card',
-    fusesNeeded: 2,
-    radiationRads: 51,
-    eliteCrates: 4,
-    militaryCrates: 8,
-    dieselSpawns: 2,
-    hasRecycler: true,
-    hasOilRefinery: true,
-    hasRepairBench: true,
-    puzzleStrategy: 'Requires Green + Red card and 2 fuses. Climb the main launch tower stairs to reach roof elite crates. High rads at top!'
+    id: 'bandit-camp',
+    name: 'Bandit Camp',
+    category: 'Safe Zones',
+    tier: 'Safe Zone',
+    cardRequired: 'None',
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Safe Zone protected by automated peacekeeper guards and turrets. Puzzle-free area with NPC vendors, gambling wheel, and helicopter dealer.',
+    hasRecycler: true
   },
   {
-    id: 'large-oilrig',
-    name: 'Large Oil Rig (North Sea)',
-    tier: 'Tier 3 (Red)',
-    cardNeeded: 'Red Card',
+    id: 'large-barn',
+    name: 'Large Barn',
+    category: 'Safe Zones',
+    tier: 'Safe Zone',
+    cardRequired: 'None',
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Safe Zone protected by peacekeeper guards. Puzzle-free location offering horse purchasing, saddle crafting, and stables.',
+    hasRecycler: false
+  },
+  {
+    id: 'large-fishing-village',
+    name: 'Large Fishing Village',
+    category: 'Safe Zones',
+    tier: 'Safe Zone',
+    cardRequired: 'None',
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Safe Zone on coastal waters. Puzzle-free area with boat vendors, fishing gear, and scuba diving equipment purchases.',
+    hasRecycler: true
+  },
+  {
+    id: 'outpost',
+    name: 'Outpost',
+    category: 'Safe Zones',
+    tier: 'Safe Zone',
+    cardRequired: 'None',
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Safe Zone protected by heavy peacekeeper sentries. Puzzle-free sanctuary with resource vending machines, drone delivery marketplace, research benches, and recyclers.',
+    hasRecycler: true
+  },
+  {
+    id: 'ranch',
+    name: 'Ranch',
+    category: 'Safe Zones',
+    tier: 'Safe Zone',
+    cardRequired: 'None',
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Safe Zone ranch protected by guards. Puzzle-free area for purchasing horses, horse tack, and farming supplies.',
+    hasRecycler: false
+  },
+  {
+    id: 'small-fishing-village',
+    name: 'Small Fishing Village',
+    category: 'Safe Zones',
+    tier: 'Safe Zone',
+    cardRequired: 'None',
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Coastal safe zone. Puzzle-free outpost for buying rowboats, RHIBs, and fishing quests.',
+    hasRecycler: true
+  },
+
+  // 2. Tier 0 (Puzzle-Free / Early-Game) (6)
+  {
+    id: 'abandoned-cabins',
+    name: 'Abandoned Cabins',
+    category: 'Tier 0 (Puzzle-Free / Early-Game)',
+    tier: 'Tier 0 (Puzzle-Free)',
+    cardSpawned: 'Green',
+    cardRequired: 'None',
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Puzzle-free early-game monument. Green Cards can be found here with no card or fuse requirements.',
+    hasRecycler: false
+  },
+  {
+    id: 'abandoned-supermarket',
+    name: 'Abandoned Supermarket',
+    category: 'Tier 0 (Puzzle-Free / Early-Game)',
+    tier: 'Tier 0 (Puzzle-Free)',
+    cardSpawned: 'Green',
+    cardRequired: 'None',
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Puzzle-free early-game monument. Green Cards spawn inside on the rear office desk. Includes a public recycler.',
+    hasRecycler: true
+  },
+  {
+    id: 'ferry-terminal',
+    name: 'Ferry Terminal',
+    category: 'Tier 0 (Puzzle-Free / Early-Game)',
+    tier: 'Tier 0 (Puzzle-Free)',
+    cardSpawned: 'Green',
+    cardRequired: 'None',
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Puzzle-free early-game coastal monument. Green Cards can be found here without puzzle steps. Features ferry boat transit.',
+    hasRecycler: true
+  },
+  {
+    id: 'lighthouse',
+    name: 'Lighthouse',
+    category: 'Tier 0 (Puzzle-Free / Early-Game)',
+    tier: 'Tier 0 (Puzzle-Free)',
+    cardSpawned: 'Green',
+    cardRequired: 'None',
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Puzzle-free early-game monument. Green Cards spawn inside the lower office quarters. High lookout spiral staircase.',
+    hasRecycler: true
+  },
+  {
+    id: 'mining-outpost',
+    name: 'Mining Outpost',
+    category: 'Tier 0 (Puzzle-Free / Early-Game)',
+    tier: 'Tier 0 (Puzzle-Free)',
+    cardRequired: 'None',
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Puzzle-free early-game roadside monument. Convenient recycler and repair bench with roadside crate spawns.',
+    hasRecycler: true
+  },
+  {
+    id: 'oxums-gas-station',
+    name: "Oxum's Gas Station",
+    category: 'Tier 0 (Puzzle-Free / Early-Game)',
+    tier: 'Tier 0 (Puzzle-Free)',
+    cardSpawned: 'Green',
+    cardRequired: 'None',
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Puzzle-free early-game monument. Green Cards spawn in the back office desk. Features public recycler and wheelbarrow/food crates.',
+    hasRecycler: true
+  },
+
+  // 3. Tier 1 & Industrial (5)
+  {
+    id: 'junkyard',
+    name: 'Junkyard',
+    category: 'Tier 1 & Industrial',
+    tier: 'Tier 1 & Industrial',
+    hasSuppliedInfo: false,
+    puzzleStrategy: 'Industrial shredder facility. Detailed puzzle walkthrough and vehicle scrap steps pending verification.',
+    detailPlaceholder: 'Official guide data for scrap shredder operations, crane controls, and loot tables to be supplied.',
+    hasRecycler: true
+  },
+  {
+    id: 'large-harbor',
+    name: 'Large Harbor',
+    category: 'Tier 1 & Industrial',
+    tier: 'Tier 1 & Industrial',
+    cardSpawned: 'Blue',
+    cardRequired: 'Green Card',
     fusesNeeded: 1,
-    radiationRads: 0,
-    eliteCrates: 2,
-    militaryCrates: 12,
-    dieselSpawns: 4,
-    hasRecycler: true,
-    hasOilRefinery: true,
-    hasRepairBench: true,
-    puzzleStrategy: 'Full keycard chain (Green -> Blue -> Red). Hack the locked crate on top helipad to trigger the Heavy Scientist chinook wave.'
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Obtained using a green card and a fuse. Insert fuse into the power terminal switch, then swipe your green card to unlock the puzzle room and retrieve the Blue Card.',
+    hasRecycler: true
   },
   {
-    id: 'small-oilrig',
-    name: 'Small Oil Rig',
-    tier: 'Tier 2 (Blue)',
-    cardNeeded: 'Blue Card',
+    id: 'satellite-dish-array',
+    name: 'Satellite Dish Array',
+    category: 'Tier 1 & Industrial',
+    tier: 'Tier 1 & Industrial',
+    cardSpawned: 'Blue',
+    cardRequired: 'Green Card',
     fusesNeeded: 1,
-    radiationRads: 0,
-    eliteCrates: 1,
-    militaryCrates: 8,
-    dieselSpawns: 2,
-    hasRecycler: true,
-    hasOilRefinery: true,
-    hasRepairBench: false,
-    puzzleStrategy: 'Requires Blue Card & 1 fuse. Great solo or duo wipe-day run with a RHIB boat or mini copter.'
-  },
-  {
-    id: 'military-tunnels',
-    name: 'Military Tunnels',
-    tier: 'Tier 3 (Red)',
-    cardNeeded: 'Red Card',
-    fusesNeeded: 2,
-    radiationRads: 25,
-    eliteCrates: 3,
-    militaryCrates: 10,
-    dieselSpawns: 1,
-    hasRecycler: true,
-    hasOilRefinery: false,
-    hasRepairBench: true,
-    puzzleStrategy: 'Underground labs guarded by armed scientist NPCs. Bring plenty of ammo, medical syringes, and shotgun for close tunnels.'
-  },
-  {
-    id: 'train-yard',
-    name: 'Train Yard',
-    tier: 'Tier 2 (Blue)',
-    cardNeeded: 'Blue Card',
-    fusesNeeded: 1,
-    radiationRads: 25,
-    eliteCrates: 0,
-    militaryCrates: 9,
-    dieselSpawns: 1,
-    hasRecycler: true,
-    hasOilRefinery: true,
-    hasRepairBench: true,
-    puzzleStrategy: 'Activate switch in warehouse 1, flip fuse in blue crane, run to main office building 3rd floor for blue card loot.'
-  },
-  {
-    id: 'water-treatment',
-    name: 'Water Treatment Plant',
-    tier: 'Tier 2 (Blue)',
-    cardNeeded: 'Blue Card',
-    fusesNeeded: 1,
-    radiationRads: 15,
-    eliteCrates: 0,
-    militaryCrates: 7,
-    dieselSpawns: 1,
-    hasRecycler: true,
-    hasOilRefinery: true,
-    hasRepairBench: true,
-    puzzleStrategy: 'Wheel valve jump puzzle inside main cylinder silo, followed by blue card office room.'
-  },
-  {
-    id: 'airfield',
-    name: 'Airfield',
-    tier: 'Tier 2 (Blue)',
-    cardNeeded: 'Blue Card',
-    fusesNeeded: 2,
-    radiationRads: 15,
-    eliteCrates: 0,
-    militaryCrates: 8,
-    dieselSpawns: 2,
-    hasRecycler: true,
-    hasOilRefinery: true,
-    hasRepairBench: true,
-    puzzleStrategy: 'Underground runway bunker unlocked via green card + fuse and blue card.'
-  },
-  {
-    id: 'dome',
-    name: 'The Sphere Tank (Dome)',
-    tier: 'Tier 1 (Green)',
-    cardNeeded: 'None',
-    fusesNeeded: 0,
-    radiationRads: 15,
-    eliteCrates: 0,
-    militaryCrates: 4,
-    dieselSpawns: 4,
-    hasRecycler: false,
-    hasOilRefinery: true,
-    hasRepairBench: false,
-    puzzleStrategy: 'Parkour pipe run to the very top. Watch the gaps! 4 military crates + 4 crude oil barrels + 4 diesel spawns on top rim.'
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Obtained using a green card and a fuse. Flip the breaker switch, insert the fuse into the auxiliary terminal, and swipe your green card to enter the office and acquire the Blue Card.',
+    hasRecycler: true
   },
   {
     id: 'sewer-branch',
     name: 'Sewer Branch',
-    tier: 'Tier 1 (Green)',
-    cardNeeded: 'Green Card',
+    category: 'Tier 1 & Industrial',
+    tier: 'Tier 1 & Industrial',
+    cardSpawned: 'Blue',
+    cardRequired: 'Green Card',
     fusesNeeded: 1,
-    radiationRads: 15,
-    eliteCrates: 0,
-    militaryCrates: 3,
-    dieselSpawns: 0,
-    hasRecycler: true,
-    hasOilRefinery: true,
-    hasRepairBench: false,
-    puzzleStrategy: 'Quickest early game card run. Flip generator switch, insert fuse in pump house, enter sewer drain for blue card spawn.'
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Obtained using a green card and a fuse. Start generator / insert fuse in pump house, swipe green card at underground sewer entrance to collect the Blue Card.',
+    hasRecycler: true
   },
   {
-    id: 'outpost',
-    name: 'Outpost (Safe Zone)',
-    tier: 'Safe Zone',
-    cardNeeded: 'None',
-    fusesNeeded: 0,
-    radiationRads: 0,
-    eliteCrates: 0,
-    militaryCrates: 0,
-    dieselSpawns: 0,
-    hasRecycler: true,
-    hasOilRefinery: true,
-    hasRepairBench: true,
-    puzzleStrategy: 'Protected by automated peacekeeper turrets. Exchange wood for stone, purchase metal frags, and safely recycle without PVP.'
+    id: 'small-harbor',
+    name: 'Small Harbor',
+    category: 'Tier 1 & Industrial',
+    tier: 'Tier 1 & Industrial',
+    cardSpawned: 'Blue',
+    cardRequired: 'Green Card',
+    fusesNeeded: 1,
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Obtained using a green card and a fuse. Activate the dockside fuse terminal and swipe your green card to unlock the blue card spawn office.',
+    hasRecycler: true
+  },
+
+  // 4. Tier 2 (Mid-to-High Loot) (7)
+  {
+    id: 'abandoned-military-base',
+    name: 'Abandoned Military Base',
+    category: 'Tier 2 (Mid-to-High Loot)',
+    tier: 'Tier 2 (Mid-to-High Loot)',
+    hasSuppliedInfo: false,
+    puzzleStrategy: 'Desert fortified bunker base with MLRS missile launcher. Detailed puzzle steps and loot tables pending verification.',
+    detailPlaceholder: 'Official guide data for MLRS rocket targeting, perimeter defense, and scientist patrol routes to be supplied.',
+    hasRecycler: true
+  },
+  {
+    id: 'airfield',
+    name: 'Airfield',
+    category: 'Tier 2 (Mid-to-High Loot)',
+    tier: 'Tier 2 (Mid-to-High Loot)',
+    cardSpawned: 'Red',
+    cardRequired: 'Green & Blue Cards',
+    fusesNeeded: 2,
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Obtained using blue and green cards with fuses. Requires inserting fuses in underground electrical stations and swiping green then blue cards to gain entry to the Red Card room.',
+    hasRecycler: true
+  },
+  {
+    id: 'arctic-research-base',
+    name: 'Arctic Research Base',
+    category: 'Tier 2 (Mid-to-High Loot)',
+    tier: 'Tier 2 (Mid-to-High Loot)',
+    cardSpawned: 'Red',
+    cardRequired: 'Green & Blue Cards',
+    fusesNeeded: 1,
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Obtained using blue and green cards with fuses in arctic biome conditions. Snowmobiles and heaters located around base; Red Card room unlocked via card chain.',
+    hasRecycler: true
+  },
+  {
+    id: 'military-tunnels',
+    name: 'Military Tunnels',
+    category: 'Tier 2 (Mid-to-High Loot)',
+    tier: 'Tier 2 (Mid-to-High Loot)',
+    hasSuppliedInfo: false,
+    puzzleStrategy: 'Deep underground fortified rail tunnels guarded by heavily armed scientist NPCs. Detailed room-by-room walkthrough pending verification.',
+    detailPlaceholder: 'Official guide data for fuse sequence, scientist patrol count, and elite underground armory crates to be supplied.',
+    hasRecycler: true
+  },
+  {
+    id: 'power-plant',
+    name: 'Power Plant',
+    category: 'Tier 2 (Mid-to-High Loot)',
+    tier: 'Tier 2 (Mid-to-High Loot)',
+    cardSpawned: 'Red',
+    cardRequired: 'Green & Blue Cards',
+    fusesNeeded: 2,
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Obtained using blue and green cards with fuses. Involves flipping 3 electrical switches across cooling towers and turbine halls to unlock the Red Card chamber.',
+    hasRecycler: true
+  },
+  {
+    id: 'the-dome',
+    name: 'The Dome',
+    category: 'Tier 2 (Mid-to-High Loot)',
+    tier: 'Tier 2 (Mid-to-High Loot)',
+    hasSuppliedInfo: false,
+    puzzleStrategy: 'Spherical industrial fuel depot. Parkour pipe-climbing to top catwalks. Puzzle-free loot access. Detailed jump guide pending verification.',
+    detailPlaceholder: 'Official jump trajectory diagrams, crude oil barrel counts, and rooftop crate locations to be supplied.',
+    hasRecycler: false
+  },
+  {
+    id: 'water-treatment-plant',
+    name: 'Water Treatment Plant',
+    category: 'Tier 2 (Mid-to-High Loot)',
+    tier: 'Tier 2 (Mid-to-High Loot)',
+    cardSpawned: 'Red',
+    cardRequired: 'Green & Blue Cards',
+    fusesNeeded: 1,
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Obtained using blue and green cards with fuses. Turn the pressure wheel valve inside the water silo tower and activate the fuse to unlock the Red Card office.',
+    hasRecycler: true
+  },
+
+  // 5. Tier 3 (End-Game) (7)
+  {
+    id: 'giant-excavator-pit',
+    name: 'Giant Excavator Pit',
+    category: 'Tier 3 (End-Game)',
+    tier: 'Tier 3 (End-Game)',
+    hasSuppliedInfo: false,
+    puzzleStrategy: 'Massive automated mining excavator running on Diesel Fuel to extract high-yield sulfur, HQM, or stone.',
+    detailPlaceholder: 'Official guide data for diesel consumption ratios, scientist patrol numbers, and radio broadcast timers to be supplied.',
+    hasRecycler: false
+  },
+  {
+    id: 'launch-site',
+    name: 'Launch Site',
+    category: 'Tier 3 (End-Game)',
+    tier: 'Tier 3 (End-Game)',
+    hasSuppliedInfo: false,
+    puzzleStrategy: 'End-game Cobalt Space Center with Bradley APC patrol and massive main launch complex. High radiation.',
+    detailPlaceholder: 'Official guide data for Bradley APC raid math, roof elite crate access, and red keycard room sequence to be supplied.',
+    hasRecycler: true
+  },
+  {
+    id: 'large-oil-rig',
+    name: 'Large Oil Rig',
+    category: 'Tier 3 (End-Game)',
+    tier: 'Tier 3 (End-Game)',
+    hasSuppliedInfo: false,
+    puzzleStrategy: 'Offshore deep-sea oil platform guarded by scientists and Heavy Scientist chinook helicopter response wave when locked crate is hacked.',
+    detailPlaceholder: 'Official guide data for offshore approach vectors, chinook wave timing, and locked crate defense positions to be supplied.',
+    hasRecycler: true
+  },
+  {
+    id: 'missile-silo',
+    name: 'Missile Silo',
+    category: 'Tier 3 (End-Game)',
+    tier: 'Tier 3 (End-Game)',
+    hasSuppliedInfo: false,
+    puzzleStrategy: 'Deep underground nuclear missile installation with wipe countdown clock and scientist security teams.',
+    detailPlaceholder: 'Official guide data for elevator keypad codes, radiation levels, and radiation door mechanics to be supplied.',
+    hasRecycler: false
+  },
+  {
+    id: 'oil-rig',
+    name: 'Oil Rig',
+    category: 'Tier 3 (End-Game)',
+    tier: 'Tier 3 (End-Game)',
+    hasSuppliedInfo: false,
+    puzzleStrategy: 'Small offshore oil platform. Solo/duo-friendly offshore raid with locked crate and scientist garrison.',
+    detailPlaceholder: 'Official guide data for boat docking points, sniper vantage perches, and locked crate timer breakdown to be supplied.',
+    hasRecycler: true
+  },
+  {
+    id: 'train-yard',
+    name: 'Train Yard',
+    category: 'Tier 3 (End-Game)',
+    tier: 'Tier 3 (End-Game)',
+    cardSpawned: 'Red',
+    cardRequired: 'Green & Blue Cards',
+    fusesNeeded: 1,
+    hasSuppliedInfo: true,
+    puzzleStrategy: 'Obtained using blue and green cards with fuses. Requires flipping power switch in warehouse 1, activating crane fuse terminal, and swiping blue card on 3rd floor of main tower to get Red Card.',
+    hasRecycler: true
+  },
+  {
+    id: 'underwater-labs',
+    name: 'Underwater Labs',
+    category: 'Tier 3 (End-Game)',
+    tier: 'Tier 3 (End-Game)',
+    hasSuppliedInfo: false,
+    puzzleStrategy: 'Submerged ocean laboratories accessible only via submarine or diving suit. Procedurally generated module layouts.',
+    detailPlaceholder: 'Official guide data for submarine docking, CCTV camera codes, and internal airlock puzzles to be supplied.',
+    hasRecycler: true
+  },
+
+  // 6. Quarries & Transit (6)
+  {
+    id: 'cargo-ship',
+    name: 'Cargo Ship',
+    category: 'Quarries & Transit',
+    tier: 'Quarries & Transit',
+    hasSuppliedInfo: false,
+    puzzleStrategy: 'Mobile ocean freighter event cruising around the island. Guarded by armed scientists; features 3 timed locked crates.',
+    detailPlaceholder: 'Official guide data for RHIB boarding ladders, radiation fog timer at departure, and captain bridge loot to be supplied.',
+    hasRecycler: true
+  },
+  {
+    id: 'caves',
+    name: 'Caves',
+    category: 'Quarries & Transit',
+    tier: 'Quarries & Transit',
+    hasSuppliedInfo: false,
+    puzzleStrategy: 'Underground cave systems with natural building spots, parkour bucket lifts, and pressure plate spike traps.',
+    detailPlaceholder: 'Official guide data for cave layout variations, building claim zones, and spike trap evasion to be supplied.',
+    hasRecycler: false
+  },
+  {
+    id: 'hqm-quarry',
+    name: 'HQM Quarry',
+    category: 'Quarries & Transit',
+    tier: 'Quarries & Transit',
+    hasSuppliedInfo: false,
+    puzzleStrategy: 'Fuel-driven automated High Quality Metal quarry. Consumes Diesel Fuel to mine HQM ore.',
+    detailPlaceholder: 'Official guide data for diesel fuel burn rate and HQM yield per barrel to be supplied.',
+    hasRecycler: false
+  },
+  {
+    id: 'stone-quarry',
+    name: 'Stone Quarry',
+    category: 'Quarries & Transit',
+    tier: 'Quarries & Transit',
+    hasSuppliedInfo: false,
+    puzzleStrategy: 'Fuel-driven automated stone quarry. Consumes Diesel Fuel to extract stone and metal fragments.',
+    detailPlaceholder: 'Official guide data for diesel consumption and resource yield to be supplied.',
+    hasRecycler: false
+  },
+  {
+    id: 'sulfur-quarry',
+    name: 'Sulfur Quarry',
+    category: 'Quarries & Transit',
+    tier: 'Quarries & Transit',
+    hasSuppliedInfo: false,
+    puzzleStrategy: 'Fuel-driven automated sulfur quarry. Consumes Diesel Fuel to produce raw sulfur ore for explosives.',
+    detailPlaceholder: 'Official guide data for diesel-to-sulfur conversion formulas to be supplied.',
+    hasRecycler: false
+  },
+  {
+    id: 'train-tunnel-network',
+    name: 'Train Tunnel Network',
+    category: 'Quarries & Transit',
+    tier: 'Quarries & Transit',
+    hasSuppliedInfo: false,
+    puzzleStrategy: 'Island-wide underground railway system connected by elevator shafts at various monuments. Features drivable locomotives and workcarts.',
+    detailPlaceholder: 'Official guide data for track switching mechanics, train fuel consumption, and underground station loot to be supplied.',
+    hasRecycler: false
   }
 ];
 

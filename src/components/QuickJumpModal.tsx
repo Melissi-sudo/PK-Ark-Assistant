@@ -366,7 +366,7 @@ export const QuickJumpModal: React.FC<QuickJumpModalProps> = ({ isOpen, onClose 
   return (
     <AnimatePresence>
       <div 
-        className="fixed inset-0 z-50 flex items-start justify-center p-3 sm:p-6 pt-16 sm:pt-24 bg-black/80 backdrop-blur-md"
+        className="fixed inset-0 z-50 flex items-start justify-center p-3 sm:p-6 pt-16 sm:pt-24 bg-black/60 dark:bg-black/80 backdrop-blur-md"
         role="dialog"
         aria-modal="true"
         aria-label="Quick Navigator"
@@ -378,11 +378,11 @@ export const QuickJumpModal: React.FC<QuickJumpModalProps> = ({ isOpen, onClose 
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: -10 }}
           transition={{ duration: 0.15 }}
-          className="relative w-full max-w-2xl bg-[#070e1c] border border-cyan-500/40 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh] z-10 font-hud"
+          className="relative w-full max-w-2xl bg-white dark:bg-[#070e1c] border border-[#e6e6e8] dark:border-cyan-500/40 rounded-[28px] shadow-2xl overflow-hidden flex flex-col max-h-[80vh] z-10 font-sf-text text-[#1d1d1f] dark:text-white"
         >
           {/* Top Search Input Bar */}
-          <div className="flex items-center gap-3 px-4 py-3.5 border-b border-white/10 bg-[#091427]">
-            <Search className="w-5 h-5 text-cyan-400 shrink-0" />
+          <div className="flex items-center gap-3 px-4 py-3.5 border-b border-[#e6e6e8] dark:border-white/10 bg-[#f5f5f7] dark:bg-[#091427]">
+            <Search className="w-5 h-5 text-[#0066cc] dark:text-cyan-400 shrink-0" />
             <input
               ref={inputRef}
               type="text"
@@ -393,22 +393,22 @@ export const QuickJumpModal: React.FC<QuickJumpModalProps> = ({ isOpen, onClose 
               }}
               onKeyDown={handleKeyDown}
               placeholder="Quick Jump: Type tool name, dinosaur, resource, or keyword... (e.g. C4, Stego, Kibble, Nether)"
-              className="w-full bg-transparent text-white placeholder-slate-400 text-sm font-sans focus:outline-none"
+              className="w-full bg-transparent text-[#1d1d1f] dark:text-white placeholder-[#86868b] text-sm focus:outline-none"
             />
             {query && (
               <button 
                 onClick={() => setQuery('')}
-                className="text-slate-400 hover:text-white p-1 text-xs"
+                className="text-[#707070] dark:text-slate-400 hover:text-[#1d1d1f] dark:hover:text-white p-1 text-xs cursor-pointer"
               >
                 Clear
               </button>
             )}
-            <kbd className="hidden sm:inline-block px-2 py-0.5 bg-black/40 border border-slate-700 rounded text-[10px] text-slate-400 font-mono">
+            <kbd className="hidden sm:inline-block px-2 py-0.5 bg-white dark:bg-black/40 border border-[#d6d6d6] dark:border-slate-700 rounded text-[10px] text-[#707070] dark:text-slate-400 font-mono">
               ESC
             </kbd>
             <button
               onClick={onClose}
-              className="text-slate-400 hover:text-white p-1 ml-1"
+              className="text-[#707070] dark:text-slate-400 hover:text-[#1d1d1f] dark:hover:text-white p-1 ml-1 cursor-pointer"
               aria-label="Close Navigator"
             >
               <X className="w-5 h-5" />
@@ -416,47 +416,67 @@ export const QuickJumpModal: React.FC<QuickJumpModalProps> = ({ isOpen, onClose 
           </div>
 
           {/* Quick Filter Tags */}
-          <div className="px-4 py-2 border-b border-white/[0.06] bg-[#050b14] flex items-center gap-2 overflow-x-auto text-[11px] no-scrollbar">
-            <span className="text-slate-500 text-[10px] uppercase tracking-wider font-tek">Filter:</span>
+          <div className="px-4 py-2 border-b border-[#e6e6e8] dark:border-white/[0.06] bg-white dark:bg-[#050b14] flex items-center gap-2 overflow-x-auto text-[11px] no-scrollbar">
+            <span className="text-[#707070] dark:text-slate-500 text-[10px] uppercase tracking-wider font-semibold">Filter:</span>
             <button
               onClick={() => setQuery('')}
-              className={`px-2 py-0.5 rounded-lg border cursor-pointer ${
+              className={`px-2.5 py-1 rounded-full border cursor-pointer font-medium transition-colors ${
                 query === '' 
-                  ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-300 font-bold' 
-                  : 'bg-white/[0.03] border-white/10 text-slate-400 hover:text-slate-200'
+                  ? 'bg-[#0071e3] text-white border-[#0071e3]' 
+                  : 'bg-[#f5f5f7] dark:bg-white/[0.03] border-[#e6e6e8] dark:border-white/10 text-[#707070] dark:text-slate-400 hover:text-[#1d1d1f] dark:hover:text-slate-200'
               }`}
             >
               All Tools ({ALL_JUMP_ITEMS.length})
             </button>
             <button
               onClick={() => setQuery('ark')}
-              className={`px-2 py-0.5 rounded-lg border cursor-pointer ${
+              className={`px-2.5 py-1 rounded-full border cursor-pointer font-medium transition-colors ${
                 query.toLowerCase() === 'ark' 
-                  ? 'bg-cyan-500/20 border-cyan-400/50 text-cyan-300 font-bold' 
-                  : 'bg-white/[0.03] border-white/10 text-slate-400 hover:text-cyan-300'
+                  ? 'bg-[#0071e3] text-white border-[#0071e3]' 
+                  : 'bg-[#f5f5f7] dark:bg-white/[0.03] border-[#e6e6e8] dark:border-white/10 text-[#707070] dark:text-slate-400 hover:text-[#1d1d1f]'
               }`}
             >
               ARK Guides
             </button>
             <button
               onClick={() => setQuery('minecraft')}
-              className={`px-2 py-0.5 rounded-lg border cursor-pointer ${
+              className={`px-2.5 py-1 rounded-full border cursor-pointer font-medium transition-colors ${
                 query.toLowerCase() === 'minecraft' 
-                  ? 'bg-purple-500/20 border-purple-400/50 text-purple-300 font-bold' 
-                  : 'bg-white/[0.03] border-white/10 text-slate-400 hover:text-purple-300'
+                  ? 'bg-[#0071e3] text-white border-[#0071e3]' 
+                  : 'bg-[#f5f5f7] dark:bg-white/[0.03] border-[#e6e6e8] dark:border-white/10 text-[#707070] dark:text-slate-400 hover:text-[#1d1d1f]'
               }`}
             >
-              Minecraft 1.21
+              Minecraft
+            </button>
+            <button
+              onClick={() => setQuery('terraria')}
+              className={`px-2.5 py-1 rounded-full border cursor-pointer font-medium transition-colors ${
+                query.toLowerCase() === 'terraria' 
+                  ? 'bg-[#0071e3] text-white border-[#0071e3]' 
+                  : 'bg-[#f5f5f7] dark:bg-white/[0.03] border-[#e6e6e8] dark:border-white/10 text-[#707070] dark:text-slate-400 hover:text-[#1d1d1f]'
+              }`}
+            >
+              Terraria
+            </button>
+            <button
+              onClick={() => setQuery('rust')}
+              className={`px-2.5 py-1 rounded-full border cursor-pointer font-medium transition-colors ${
+                query.toLowerCase() === 'rust' 
+                  ? 'bg-[#0071e3] text-white border-[#0071e3]' 
+                  : 'bg-[#f5f5f7] dark:bg-white/[0.03] border-[#e6e6e8] dark:border-white/10 text-[#707070] dark:text-slate-400 hover:text-[#1d1d1f]'
+              }`}
+            >
+              Rust
             </button>
             <button
               onClick={() => setQuery('raid')}
-              className="px-2 py-0.5 rounded-lg border bg-white/[0.03] border-white/10 text-slate-400 hover:text-red-300 cursor-pointer"
+              className="px-2.5 py-1 rounded-full border bg-[#f5f5f7] dark:bg-white/[0.03] border-[#e6e6e8] dark:border-white/10 text-[#707070] dark:text-slate-400 hover:text-[#1d1d1f] cursor-pointer"
             >
-              Raid & Combat
+              Raid & C4
             </button>
             <button
               onClick={() => setQuery('tame')}
-              className="px-2 py-0.5 rounded-lg border bg-white/[0.03] border-white/10 text-slate-400 hover:text-cyan-300 cursor-pointer"
+              className="px-2.5 py-1 rounded-full border bg-[#f5f5f7] dark:bg-white/[0.03] border-[#e6e6e8] dark:border-white/10 text-[#707070] dark:text-slate-400 hover:text-[#1d1d1f] cursor-pointer"
             >
               Taming & Starve
             </button>
@@ -465,10 +485,10 @@ export const QuickJumpModal: React.FC<QuickJumpModalProps> = ({ isOpen, onClose 
           {/* Results List */}
           <div className="flex-1 overflow-y-auto p-2 sm:p-3 space-y-1.5 max-h-[55vh]">
             {filteredItems.length === 0 ? (
-              <div className="text-center py-10 text-slate-400">
-                <Search className="w-8 h-8 mx-auto text-slate-600 mb-2" />
-                <p className="text-sm font-semibold text-slate-300">No tools found matching &quot;{query}&quot;</p>
-                <p className="text-xs text-slate-500 mt-1">Try searching for &quot;c4&quot;, &quot;taming&quot;, &quot;portal&quot;, or &quot;maps&quot;</p>
+              <div className="text-center py-10 text-[#707070] dark:text-slate-400">
+                <Search className="w-8 h-8 mx-auto text-[#86868b] mb-2" />
+                <p className="text-sm font-semibold text-[#1d1d1f] dark:text-slate-300">No tools found matching &quot;{query}&quot;</p>
+                <p className="text-xs text-[#707070] dark:text-slate-500 mt-1">Try searching for &quot;c4&quot;, &quot;taming&quot;, &quot;portal&quot;, &quot;bosses&quot;, or &quot;rust&quot;</p>
               </div>
             ) : (
               filteredItems.map((item, index) => {
@@ -484,58 +504,52 @@ export const QuickJumpModal: React.FC<QuickJumpModalProps> = ({ isOpen, onClose 
                       onClose();
                     }}
                     onMouseEnter={() => setSelectedIndex(index)}
-                    className={`group p-2.5 sm:p-3 rounded-xl border flex items-center justify-between gap-3 cursor-pointer transition-all ${
+                    className={`group p-2.5 sm:p-3 rounded-2xl border flex items-center justify-between gap-3 cursor-pointer transition-all ${
                       isSelected
-                        ? item.game === 'minecraft'
-                          ? 'bg-purple-950/50 border-purple-400 text-white shadow-md'
-                          : 'bg-cyan-950/60 border-cyan-400 text-white shadow-md'
-                        : 'bg-[#081120]/70 border-white/[0.06] text-slate-300 hover:border-white/20'
+                        ? 'bg-[#e6e6e8] dark:bg-cyan-950/60 border-[#0071e3] dark:border-cyan-400 text-[#1d1d1f] dark:text-white shadow-sm'
+                        : 'bg-[#f5f5f7] dark:bg-[#081120]/70 border-[#e6e6e8] dark:border-white/[0.06] text-[#1d1d1f] dark:text-slate-300 hover:border-[#86868b] dark:hover:border-white/20'
                     }`}
                   >
                     <div className="flex items-center gap-3 overflow-hidden">
                       <div className={`p-2 rounded-xl shrink-0 border ${
-                        item.game === 'minecraft'
-                          ? 'bg-purple-900/30 border-purple-500/30 text-purple-300'
-                          : 'bg-cyan-900/30 border-cyan-500/30 text-cyan-300'
+                        isSelected 
+                          ? 'bg-white dark:bg-cyan-900/30 border-[#d6d6d6] dark:border-cyan-500/30 text-[#0066cc] dark:text-cyan-300' 
+                          : 'bg-white dark:bg-white/5 border-[#e6e6e8] dark:border-white/10 text-[#707070] dark:text-slate-400'
                       }`}>
                         <Icon className="w-4 h-4" />
                       </div>
 
                       <div className="overflow-hidden">
                         <div className="flex items-center gap-2">
-                          <span className="font-hud font-bold text-xs sm:text-sm text-white truncate group-hover:text-cyan-300 transition-colors">
+                          <span className="font-semibold text-xs sm:text-sm text-[#1d1d1f] dark:text-white truncate">
                             {item.title}
                           </span>
-                          <span className={`text-[9px] px-1.5 py-0.2 rounded font-tek font-bold ${
-                            item.game === 'minecraft'
-                              ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                              : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                          }`}>
+                          <span className="text-[10px] px-1.5 py-0.2 rounded font-medium bg-[#e6e6e8] dark:bg-white/10 text-[#707070] dark:text-slate-300">
                             {item.category}
                           </span>
                           {item.badge && (
-                            <span className="hidden sm:inline-block text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-tek">
+                            <span className="hidden sm:inline-block text-[9px] px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30 font-medium">
                               {item.badge}
                             </span>
                           )}
                           {isCurrentRoute && (
-                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-tek">
+                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30 font-medium">
                               CURRENT
                             </span>
                           )}
                         </div>
-                        <div className="text-[11px] text-slate-400 truncate mt-0.5 font-sans">
+                        <div className="text-[11px] text-[#707070] dark:text-slate-400 truncate mt-0.5 font-sf-text">
                           {item.desc}
                         </div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="hidden md:inline-block text-[10px] text-slate-500 font-mono">
+                      <span className="hidden md:inline-block text-[10px] text-[#86868b] dark:text-slate-500 font-mono">
                         {item.path}
                       </span>
                       <ArrowRight className={`w-4 h-4 transition-transform group-hover:translate-x-1 ${
-                        isSelected ? 'text-cyan-400' : 'text-slate-600'
+                        isSelected ? 'text-[#0066cc] dark:text-cyan-400' : 'text-[#86868b] dark:text-slate-600'
                       }`} />
                     </div>
                   </div>
@@ -545,12 +559,12 @@ export const QuickJumpModal: React.FC<QuickJumpModalProps> = ({ isOpen, onClose 
           </div>
 
           {/* Footer Guide */}
-          <div className="px-4 py-2.5 bg-[#050914] border-t border-white/[0.08] flex items-center justify-between text-[11px] text-slate-400 font-tek">
+          <div className="px-4 py-2.5 bg-[#f5f5f7] dark:bg-[#050914] border-t border-[#e6e6e8] dark:border-white/[0.08] flex items-center justify-between text-[11px] text-[#707070] dark:text-slate-400">
             <div className="flex items-center gap-3">
-              <span><kbd className="px-1.5 py-0.5 bg-black/50 border border-slate-700 rounded text-[9px]">↑</kbd> <kbd className="px-1.5 py-0.5 bg-black/50 border border-slate-700 rounded text-[9px]">↓</kbd> to navigate</span>
-              <span><kbd className="px-1.5 py-0.5 bg-black/50 border border-slate-700 rounded text-[9px]">ENTER</kbd> to select</span>
+              <span><kbd className="px-1.5 py-0.5 bg-white dark:bg-black/50 border border-[#d6d6d6] dark:border-slate-700 rounded text-[9px]">↑</kbd> <kbd className="px-1.5 py-0.5 bg-white dark:bg-black/50 border border-[#d6d6d6] dark:border-slate-700 rounded text-[9px]">↓</kbd> to navigate</span>
+              <span><kbd className="px-1.5 py-0.5 bg-white dark:bg-black/50 border border-[#d6d6d6] dark:border-slate-700 rounded text-[9px]">ENTER</kbd> to select</span>
             </div>
-            <span className="text-cyan-400">Total {ALL_JUMP_ITEMS.length} tactical calculators</span>
+            <span className="text-[#0066cc] dark:text-cyan-400 font-medium">Total {ALL_JUMP_ITEMS.length} tactical calculators</span>
           </div>
         </motion.div>
       </div>

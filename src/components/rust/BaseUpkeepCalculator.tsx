@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Package, 
   Clock, 
@@ -10,7 +10,13 @@ import {
   Building,
   CheckCircle2,
   Hourglass,
-  Sliders
+  Sliders,
+  Bell,
+  Volume2,
+  VolumeX,
+  Timer,
+  Check,
+  Zap
 } from 'lucide-react';
 import { 
   calculateEffectiveTaxRate, 
@@ -21,6 +27,8 @@ import {
   MetalFragsIcon, 
   HqmIcon 
 } from './RustIcons';
+import { playTekAlarmSound } from '../../utils/audioAlert';
+import { ActiveTimer } from '../../types';
 
 interface BasePreset {
   name: string;
@@ -79,12 +87,21 @@ export const BaseUpkeepCalculator: React.FC = () => {
   const [storedMetal, setStoredMetal] = useState<number>(8000);
   const [storedHqm, setStoredHqm] = useState<number>(250);
 
+  // Upkeep Protection Alarm System State
+  const [alarmEnabled, setAlarmEnabled] = useState<boolean>(false);
+  const [audioAlertEnabled, setAudioAlertEnabled] = useState<boolean>(true);
+  const [alarmSynced, setAlarmSynced] = useState<boolean>(false);
+  const [alertThresholdHours, setAlertThresholdHours] = useState<number>(2);
+  const [syncNotice, setSyncNotice] = useState<string | null>(null);
+
   // Apply a template preset
   const handleApplyPreset = (preset: BasePreset) => {
     setWoodBlocks(preset.wood);
     setStoneBlocks(preset.stone);
     setMetalBlocks(preset.metal);
     setHqmBlocks(preset.hqm);
+    setAlarmSynced(false);
+    setSyncNotice(null);
   };
 
   // Reset to default
@@ -171,6 +188,60 @@ export const BaseUpkeepCalculator: React.FC = () => {
     const m = Math.floor((hours * 60) % 60);
     if (d > 0) return `${d}d ${h}h ${m}m`;
     return `${h}h ${m}m`;
+  };
+
+  // Arm Alarm & Sync with War Room Timers
+  const handleArmAndSyncWarRoom = () => {
+    // Calculate trigger offset based on threshold (e.g. alert 2h before depletion, or at 0)
+    const alertOffsetHours = Math.max(0, remainingHours.minHours - alertThresholdHours);
+    const durationSeconds = Math.max(60, Math.floor(alertOffsetHours * 3600));
+    const targetTimestamp = Date.now() + durationSeconds * 1000;
+
+    const newTimer: ActiveTimer = {
+      id: `rust-decay-${Date.now()}`,
+      title: `Rust TC Depletion: ${remainingHours.bottleneck?.name || 'Base Upkeep'}`,
+      creatureName: 'Rust Tool Cupboard',
+      type: 'custom',
+      targetTimestamp,
+      totalDurationSeconds: durationSeconds,
+      notes: `TC Bottleneck: ${remainingHours.bottleneck?.name || 'Upkeep'} (${alertThresholdHours}h safety buffer). Daily upkeep: ${dailyConsumption.wood}w / ${dailyConsumption.stone}s / ${dailyConsumption.metal}m / ${dailyConsumption.hqm}hqm.`,
+      soundAlerted: false
+    };
+
+    try {
+      const saved = localStorage.getItem('ark_companion_active_timers_v1');
+      let currentTimers: ActiveTimer[] = [];
+      if (saved) {
+        try {
+          currentTimers = JSON.parse(saved);
+        } catch {
+          currentTimers = [];
+        }
+      }
+      const updated = [newTimer, ...currentTimers];
+      localStorage.setItem('ark_companion_active_timers_v1', JSON.stringify(updated));
+      window.dispatchEvent(new Event('storage'));
+    } catch (err) {
+      console.warn('Could not save to localStorage:', err);
+    }
+
+    setAlarmEnabled(true);
+    setAlarmSynced(true);
+    setSyncNotice(`Protection alarm armed! Alert set for ${formatTime(alertOffsetHours)} (War Room Timer created).`);
+
+    if (audioAlertEnabled) {
+      playTekAlarmSound();
+    }
+  };
+
+  const handleDisarmAlarm = () => {
+    setAlarmEnabled(false);
+    setAlarmSynced(false);
+    setSyncNotice(null);
+  };
+
+  const handleTestAudio = () => {
+    playTekAlarmSound();
   };
 
   return (
@@ -609,6 +680,129 @@ export const BaseUpkeepCalculator: React.FC = () => {
                     ⚠️ <span className="font-semibold text-white">{remainingHours.bottleneck.name}</span> will run out first! Refill TC before this window expires.
                   </div>
                 )}
+              </div>
+
+              {/* UPKEEP PROTECTION ALARM & WAR ROOM SYNC PANEL */}
+              <div className="p-4 rounded-xl bg-[#080b11] border border-orange-500/30 space-y-3.5 mt-4">
+                <div className="flex items-center justify-between border-b border-white/[0.08] pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-orange-950/80 border border-orange-500/40 flex items-center justify-center text-orange-400">
+                      <Bell className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-hud font-bold text-white flex items-center gap-1.5">
+                        <span>DECAY PROTECTION ALARM</span>
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-mono">
+                        Browser audio alert & War Room sync
+                      </div>
+                    </div>
+                  </div>
+
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
+                    alarmEnabled ? 'bg-orange-500 text-white animate-pulse' : 'bg-[#151922] text-slate-400 border border-white/10'
+                  }`}>
+                    {alarmEnabled ? 'ARMED' : 'STANDBY'}
+                  </span>
+                </div>
+
+                {/* Alarm Threshold & Audio Toggle Controls */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <label className="text-[10px] font-hud text-slate-400 block mb-1">
+                      SAFETY BUFFER THRESHOLD
+                    </label>
+                    <select
+                      value={alertThresholdHours}
+                      onChange={(e) => setAlertThresholdHours(Number(e.target.value))}
+                      className="w-full px-2.5 py-1.5 bg-[#0f141c] border border-white/10 rounded-lg text-xs font-mono text-white focus:outline-none focus:border-orange-500 cursor-pointer"
+                    >
+                      <option value={0}>Alert at 0h (Empty TC)</option>
+                      <option value={1}>Alert 1h before decay</option>
+                      <option value={2}>Alert 2h before decay (Default)</option>
+                      <option value={4}>Alert 4h before decay</option>
+                      <option value={6}>Alert 6h before decay</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-hud text-slate-400 block mb-1">
+                      AUDIO ALERT SOUND
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => setAudioAlertEnabled(!audioAlertEnabled)}
+                        className={`flex-1 py-1.5 px-2.5 rounded-lg border text-xs font-hud font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                          audioAlertEnabled
+                            ? 'bg-orange-950/60 border-orange-500/40 text-orange-300'
+                            : 'bg-[#0f141c] border-white/10 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {audioAlertEnabled ? (
+                          <>
+                            <Volume2 className="w-3.5 h-3.5 text-orange-400" />
+                            <span>Audio On</span>
+                          </>
+                        ) : (
+                          <>
+                            <VolumeX className="w-3.5 h-3.5 text-slate-500" />
+                            <span>Muted</span>
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        onClick={handleTestAudio}
+                        title="Test Alert Chime"
+                        className="py-1.5 px-2 rounded-lg bg-[#0f141c] hover:bg-slate-800 border border-white/10 text-[11px] font-mono text-slate-300 hover:text-white transition-colors cursor-pointer"
+                      >
+                        Test
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status Notice */}
+                {syncNotice && (
+                  <div className="p-2.5 rounded-lg bg-orange-950/50 border border-orange-500/40 text-xs text-orange-200 flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-orange-400 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <div className="font-bold">{syncNotice}</div>
+                      <div className="text-[10px] text-slate-300">
+                        View and manage active alarms anytime in the War Room Timers dashboard.
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Primary Arm / Disarm Buttons */}
+                <div className="pt-1 flex items-center gap-2">
+                  {!alarmEnabled ? (
+                    <button
+                      onClick={handleArmAndSyncWarRoom}
+                      className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-hud font-bold text-xs shadow-md shadow-orange-600/30 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                    >
+                      <Timer className="w-4 h-4" />
+                      <span>Arm Decay Alarm & Sync with War Room</span>
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2 w-full">
+                      <button
+                        onClick={handleArmAndSyncWarRoom}
+                        className="flex-1 py-2 px-3 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-hud font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>Update War Room Timer</span>
+                      </button>
+                      <button
+                        onClick={handleDisarmAlarm}
+                        className="py-2 px-3 rounded-xl bg-[#141822] hover:bg-[#1a202c] border border-white/10 text-xs font-hud text-slate-400 hover:text-red-300 transition-colors cursor-pointer"
+                      >
+                        Disarm
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

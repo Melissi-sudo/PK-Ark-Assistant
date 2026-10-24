@@ -30,15 +30,15 @@ async function runTests() {
   }
 
   // 1. Version Enum Verification
-  const v1_18 = SUPPORTED_JAVA_VERSIONS.find(v => v.id === '1.18')!;
-  const v1_19 = SUPPORTED_JAVA_VERSIONS.find(v => v.id === '1.19')!;
-  const v1_20 = SUPPORTED_JAVA_VERSIONS.find(v => v.id === '1.20')!;
-  const v1_21 = SUPPORTED_JAVA_VERSIONS.find(v => v.id === '1.21')!;
+  const v1_18 = SUPPORTED_JAVA_VERSIONS.find(v => v.id.startsWith('1.18'))!;
+  const v1_19 = SUPPORTED_JAVA_VERSIONS.find(v => v.id.startsWith('1.19'))!;
+  const v1_20 = SUPPORTED_JAVA_VERSIONS.find(v => v.id.startsWith('1.20'))!;
+  const v1_21 = SUPPORTED_JAVA_VERSIONS.find(v => v.id.startsWith('1.21'))!;
 
-  assert(v1_18.enumVal === 22, 'Java 1.18 enum is 22 (MC_1_18)');
-  assert(v1_19.enumVal === 24, 'Java 1.19 enum is 24 (MC_1_19)');
-  assert(v1_20.enumVal === 25, 'Java 1.20 enum is 25 (MC_1_20)');
-  assert(v1_21.enumVal === 26, 'Java 1.21 enum is 26 (MC_1_21_1 Release)');
+  assert(Boolean(v1_18 && v1_18.enumVal === 22), 'Java 1.18 enum is 22 (MC_1_18)');
+  assert(Boolean(v1_19 && v1_19.enumVal === 24), 'Java 1.19 enum is 24 (MC_1_19)');
+  assert(Boolean(v1_20 && v1_20.enumVal === 25), 'Java 1.20 enum is 25 (MC_1_20)');
+  assert(Boolean(v1_21 && v1_21.enumVal === 26), 'Java 1.21 enum is 26 (MC_1_21_1 Release)');
 
   // 2. String & Numeric Seed Parsing
   assert(parseMinecraftSeed('7392817491') === 7392817491n, 'Numeric seed string parsed as BigInt');

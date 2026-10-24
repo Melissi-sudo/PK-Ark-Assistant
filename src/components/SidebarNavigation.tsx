@@ -89,23 +89,23 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           animate={{ x: 0 }}
           exit={{ x: -320 }}
           transition={{ type: 'spring', damping: 25, stiffness: 240 }}
-          className="relative w-80 max-w-[85vw] h-full bg-[#050914] border-r border-cyan-500/30 shadow-2xl flex flex-col z-10 overflow-hidden"
+          className="relative w-80 max-w-[85vw] h-full bg-white dark:bg-[#050914] text-[#1d1d1f] dark:text-[#f5f5f7] border-r border-[#e6e6e8] dark:border-cyan-500/30 shadow-2xl flex flex-col z-10 overflow-hidden font-sf-text"
         >
           {/* Top Brand Header */}
-          <div className="p-4 border-b border-white/[0.08] bg-[#070e1c] flex items-center justify-between">
+          <div className="p-4 border-b border-[#e6e6e8] dark:border-white/[0.08] bg-[#f5f5f7] dark:bg-[#070e1c] flex items-center justify-between">
             <Link 
               to="/library" 
               onClick={onClose}
               className="flex items-center gap-2.5 group"
             >
-              <div className="w-8 h-8 rounded-lg bg-cyan-950/60 border border-cyan-500/40 flex items-center justify-center p-1 shadow-md shadow-cyan-500/20">
+              <div className="w-8 h-8 rounded-lg bg-white dark:bg-cyan-950/60 border border-[#e6e6e8] dark:border-cyan-500/40 flex items-center justify-center p-1 shadow-sm">
                 <img src="/logo.png?v=pk-v3" alt="PK Logo" className="h-full w-auto object-contain" />
               </div>
               <div>
-                <div className="text-xs font-hud font-bold text-white group-hover:text-cyan-300 transition-colors">
-                  PK ULTIMATE <span className="text-cyan-400">GUIDE</span>
+                <div className="text-xs font-semibold text-[#1d1d1f] dark:text-white group-hover:text-[#0066cc] dark:group-hover:text-cyan-300 transition-colors">
+                  PK ULTIMATE <span className="text-[#0066cc] dark:text-cyan-400">GUIDE</span>
                 </div>
-                <div className="text-[10px] text-slate-400 font-tek">
+                <div className="text-[10px] text-[#707070] dark:text-slate-400 font-medium">
                   TACTICAL NAVIGATION HUB
                 </div>
               </div>
@@ -113,7 +113,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
 
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg text-[#707070] dark:text-slate-400 hover:text-[#1d1d1f] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
               aria-label="Close sidebar navigation"
             >
               <X className="w-5 h-5" />
@@ -121,19 +121,19 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           </div>
 
           {/* Quick Jump Search Button in Sidebar */}
-          <div className="p-3 border-b border-white/[0.06] bg-[#040810]">
+          <div className="p-3 border-b border-[#e6e6e8] dark:border-white/[0.06] bg-[#fafafc] dark:bg-[#040810]">
             <button
               onClick={() => {
                 onClose();
                 onOpenQuickJump();
               }}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-[#091222] hover:bg-cyan-950/60 border border-cyan-500/30 text-xs font-hud text-slate-300 hover:text-cyan-300 transition-all cursor-pointer shadow-sm"
+              className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white dark:bg-[#091222] hover:bg-[#f5f5f7] dark:hover:bg-cyan-950/60 border border-[#e6e6e8] dark:border-cyan-500/30 text-xs text-[#1d1d1f] dark:text-slate-300 transition-all cursor-pointer shadow-sm"
             >
               <div className="flex items-center gap-2">
-                <Search className="w-3.5 h-3.5 text-cyan-400" />
+                <Search className="w-3.5 h-3.5 text-[#0066cc] dark:text-cyan-400" />
                 <span>Quick Jump Search...</span>
               </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/40 border border-white/10 font-mono text-cyan-400">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#f5f5f7] dark:bg-black/40 border border-[#e6e6e8] dark:border-white/10 font-mono text-[#0066cc] dark:text-cyan-400">
                 /
               </span>
             </button>
@@ -349,7 +349,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                     { path: '/rust/upkeep', label: 'Base Upkeep & TC Decay', icon: Layers, badge: 'TAX' },
                     { path: '/rust/combat', label: 'Combat TTK & Ballistics', icon: Crosshair, badge: '1-TAP' },
                     { path: '/rust/techtree', label: 'Tech Tree & Scrap Plan', icon: Cpu, badge: 'WB 1-3' },
-                    { path: '/rust/monuments', label: 'Monuments & Recycler', icon: Map, badge: 'CARDS' },
+                    { path: '/rust/monuments', label: 'Rust Monuments & Keycards', icon: Compass, badge: '37 MONUMENTS' },
                   ].map((item) => {
                     const active = isActive(item.path);
                     const Icon = item.icon;
@@ -382,8 +382,8 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
             </div>
 
             {/* SECTION 4: UTILITIES & ENGINE CONFIG */}
-            <div className="pt-2 border-t border-white/[0.08] space-y-1">
-              <div className="px-2.5 py-1 text-[10px] font-hud font-bold text-slate-400 uppercase tracking-wider">
+            <div className="pt-2 border-t border-[#e6e6e8] dark:border-white/[0.08] space-y-1">
+              <div className="px-2.5 py-1 text-[10px] font-semibold text-[#707070] dark:text-slate-400 uppercase tracking-wider">
                 Tactical Utilities & Engine
               </div>
 
@@ -393,13 +393,13 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                   onClose();
                   onOpenCustomRates();
                 }}
-                className="w-full flex items-center justify-between px-2.5 py-2 rounded-xl bg-[#091322] hover:bg-cyan-950/60 border border-cyan-500/30 text-xs font-hud text-cyan-300 transition-colors cursor-pointer"
+                className="w-full flex items-center justify-between px-2.5 py-2 rounded-xl bg-[#f5f5f7] dark:bg-[#091322] hover:bg-[#e6e6e8] dark:hover:bg-cyan-950/60 border border-[#e6e6e8] dark:border-cyan-500/30 text-xs text-[#1d1d1f] dark:text-cyan-300 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-2">
-                  <Sliders className="w-3.5 h-3.5 text-cyan-400" />
+                  <Sliders className="w-3.5 h-3.5 text-[#0066cc] dark:text-cyan-400" />
                   <span>Configure Server Rates</span>
                 </div>
-                <span className="text-[10px] font-tek font-bold px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30">
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-white dark:bg-cyan-950 text-[#0066cc] dark:text-cyan-300 border border-[#e6e6e8] dark:border-cyan-500/30">
                   {currentPreset.badge}
                 </span>
               </button>
@@ -451,16 +451,16 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           </div>
 
           {/* Footer Social & Empire Credit */}
-          <div className="p-3 border-t border-white/[0.08] bg-[#040810] flex items-center justify-between text-[11px] font-hud text-slate-400">
+          <div className="p-3 border-t border-[#e6e6e8] dark:border-white/[0.08] bg-[#f5f5f7] dark:bg-[#040810] flex items-center justify-between text-[11px] text-[#707070] dark:text-slate-400">
             <div className="flex items-center gap-2">
               <a
                 href="https://www.tiktok.com/@pkguides"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-cyan-300 transition-colors flex items-center gap-1"
+                className="hover:text-[#1d1d1f] dark:hover:text-cyan-300 transition-colors flex items-center gap-1"
                 title="Follow PK Guides on TikTok"
               >
-                <span className="text-pink-400 font-bold">♪</span>
+                <span className="text-pink-500 font-bold">♪</span>
                 <span>TikTok</span>
               </a>
               <span>•</span>
@@ -468,14 +468,14 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                 href="https://discord.gg/4ruEbqZSKT"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-indigo-300 transition-colors flex items-center gap-1"
+                className="hover:text-[#1d1d1f] dark:hover:text-indigo-300 transition-colors flex items-center gap-1"
                 title="Join Official Discord Server (discord.gg/4ruEbqZSKT)"
               >
-                <span className="text-indigo-400 font-bold">◈</span>
-                <span>Official Discord</span>
+                <span className="text-[#5865F2] font-bold">◈</span>
+                <span>Discord</span>
               </a>
             </div>
-            <span className="text-[10px] text-slate-400 font-tek">THE PITSONI EMPIRE</span>
+            <span className="text-[10px] text-[#707070] dark:text-slate-400 font-medium">THE PITSONI EMPIRE</span>
           </div>
         </motion.aside>
       </div>

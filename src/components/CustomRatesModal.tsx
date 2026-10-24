@@ -82,44 +82,42 @@ export const CustomRatesModal: React.FC<CustomRatesModalProps> = ({
   };
 
   const handleReset = () => {
-    setFormData({ ...DEFAULT_CUSTOM_PRESET });
+    setFormData(DEFAULT_CUSTOM_PRESET);
   };
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-        {/* Backdrop */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="fixed inset-0 bg-black/80 backdrop-blur-md"
-        />
+      <div 
+        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto bg-black/60 dark:bg-black/80 backdrop-blur-md"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Server Multipliers Configurator"
+      >
+        <div className="fixed inset-0" onClick={onClose} />
 
-        {/* Modal Window */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="relative w-full max-w-2xl bg-[#070e1c] border-2 border-cyan-500/40 rounded-2xl shadow-2xl overflow-hidden my-auto z-10"
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          className="relative w-full max-w-2xl bg-white dark:bg-[#070e1c] border border-[#e6e6e8] dark:border-cyan-500/40 rounded-[28px] shadow-2xl overflow-hidden my-auto z-10 font-sf-text text-[#1d1d1f] dark:text-white"
         >
-          {/* Top HUD Header */}
-          <div className="bg-gradient-to-r from-cyan-950/80 via-[#0a162b] to-slate-900 px-5 py-4 border-b border-cyan-500/30 flex items-center justify-between">
+          {/* Top Header */}
+          <div className="bg-[#f5f5f7] dark:bg-gradient-to-r dark:from-cyan-950/80 dark:via-[#0a162b] dark:to-slate-900 px-5 py-4 border-b border-[#e6e6e8] dark:border-cyan-500/30 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shadow-md shadow-cyan-500/20">
+              <div className="w-10 h-10 rounded-full bg-white dark:bg-cyan-500/20 border border-[#e6e6e8] dark:border-cyan-400/40 flex items-center justify-center text-[#0066cc] dark:text-cyan-300 shadow-sm">
                 <Sliders className="w-5 h-5" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-hud font-bold text-lg text-white tracking-wide">
-                    ARK SERVER RATE CONFIGURATOR
+                  <h3 className="font-semibold text-base sm:text-lg text-[#1d1d1f] dark:text-white tracking-tight font-sf-display">
+                    ARK Server Rate Configurator
                   </h3>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-tek font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                    CUSTOM MULTIPLIERS
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#e6e6e8] dark:bg-cyan-500/20 text-[#0066cc] dark:text-cyan-300 border border-[#d6d6d6] dark:border-cyan-500/30">
+                    MULTIPLIERS
                   </span>
                 </div>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-[#707070] dark:text-slate-400">
                   Calibrate exact server ini multipliers for private clusters, unofficial servers, and custom events.
                 </p>
               </div>
@@ -127,9 +125,10 @@ export const CustomRatesModal: React.FC<CustomRatesModalProps> = ({
 
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+              className="w-8 h-8 rounded-full bg-white dark:bg-white/10 border border-[#e6e6e8] dark:border-transparent text-[#707070] dark:text-slate-400 hover:text-[#1d1d1f] dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Close modal"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
 
@@ -137,7 +136,7 @@ export const CustomRatesModal: React.FC<CustomRatesModalProps> = ({
           <div className="p-5 sm:p-6 space-y-6 max-h-[75vh] overflow-y-auto custom-scrollbar">
             {/* Quick Templates */}
             <div>
-              <div className="text-xs font-hud font-bold text-cyan-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <div className="text-xs font-semibold text-[#0066cc] dark:text-cyan-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Quick Rate Presets & Clusters</span>
               </div>
@@ -155,18 +154,18 @@ export const CustomRatesModal: React.FC<CustomRatesModalProps> = ({
                   <button
                     key={tpl.label}
                     onClick={() => handleTemplate(tpl.tame, tpl.harvest, tpl.mating, tpl.hatch, tpl.mature, tpl.xp, tpl.label)}
-                    className="px-2.5 py-1.5 rounded-lg bg-[#0a1526] hover:bg-cyan-950/70 border border-cyan-500/20 hover:border-cyan-400/50 text-[11px] font-hud text-slate-300 hover:text-cyan-300 transition-all text-left truncate flex items-center justify-between"
+                    className="px-2.5 py-1.5 rounded-xl bg-[#f5f5f7] dark:bg-[#0a1526] hover:bg-[#e6e6e8] dark:hover:bg-cyan-950/70 border border-[#e6e6e8] dark:border-cyan-500/20 text-[11px] text-[#1d1d1f] dark:text-slate-300 transition-all text-left truncate flex items-center justify-between cursor-pointer"
                   >
-                    <span className="truncate">{tpl.label}</span>
-                    <span className="text-[10px] text-cyan-400 font-tek ml-1">{tpl.tame}x</span>
+                    <span className="truncate font-medium">{tpl.label}</span>
+                    <span className="text-[10px] text-[#0066cc] dark:text-cyan-400 font-semibold ml-1">{tpl.tame}x</span>
                   </button>
                 ))}
               </div>
             </div>
 
             {/* Server Profile Name */}
-            <div className="bg-[#050b14] border border-cyan-500/20 rounded-xl p-3 sm:p-4">
-              <label className="block text-xs font-hud font-bold text-slate-300 mb-1">
+            <div className="bg-[#f5f5f7] dark:bg-[#050b14] border border-[#e6e6e8] dark:border-cyan-500/20 rounded-2xl p-4">
+              <label className="block text-xs font-semibold text-[#1d1d1f] dark:text-slate-300 mb-1">
                 Custom Server / Cluster Tag
               </label>
               <input
@@ -174,28 +173,28 @@ export const CustomRatesModal: React.FC<CustomRatesModalProps> = ({
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="e.g. My 10x Mega Cluster, MTS Season 15, Fibercraft Ark"
-                className="w-full bg-[#081220] border border-cyan-500/30 rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 font-hud"
+                className="w-full bg-white dark:bg-[#081220] border border-[#e6e6e8] dark:border-cyan-500/30 rounded-xl px-3 py-2 text-xs text-[#1d1d1f] dark:text-white placeholder-[#86868b] focus:outline-none focus:border-[#0071e3]"
               />
             </div>
 
             {/* Multipliers Grid */}
             <div className="space-y-4">
-              <div className="text-xs font-hud font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
+              <div className="text-xs font-semibold text-[#0066cc] dark:text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
                 <Gauge className="w-3.5 h-3.5" />
                 <span>Core Gameplay Multipliers (Taming, Breeding, Harvest)</span>
               </div>
 
               {/* Taming Multiplier */}
-              <div className="bg-[#050b14] border border-cyan-500/20 rounded-xl p-3.5 space-y-2">
+              <div className="bg-[#f5f5f7] dark:bg-[#050b14] border border-[#e6e6e8] dark:border-cyan-500/20 rounded-2xl p-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Utensils className="w-4 h-4 text-cyan-400" />
+                    <Utensils className="w-4 h-4 text-[#0066cc] dark:text-cyan-400" />
                     <div>
-                      <div className="text-xs font-hud font-bold text-white">TamingSpeedMultiplier</div>
-                      <div className="text-[10px] text-slate-400">Scales food affinity gained per bite. Reduces total food needed.</div>
+                      <div className="text-xs font-semibold text-[#1d1d1f] dark:text-white">TamingSpeedMultiplier</div>
+                      <div className="text-[10px] text-[#707070] dark:text-slate-400">Scales food affinity gained per bite. Reduces total food needed.</div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 bg-white dark:bg-[#091424] border border-[#e6e6e8] dark:border-cyan-500/30 rounded-xl px-2.5 py-1">
                     <input
                       type="number"
                       step="0.5"
@@ -203,146 +202,74 @@ export const CustomRatesModal: React.FC<CustomRatesModalProps> = ({
                       max="100"
                       value={formData.tamingMult}
                       onChange={(e) => setFormData(prev => ({ ...prev, tamingMult: Math.max(0.1, parseFloat(e.target.value) || 1) }))}
-                      className="w-18 bg-[#091424] border border-cyan-500/40 rounded px-2 py-1 text-xs font-tek font-bold text-cyan-300 text-right focus:outline-none focus:border-cyan-400"
+                      className="w-16 bg-transparent text-xs font-semibold text-[#0066cc] dark:text-cyan-300 focus:outline-none text-right"
                     />
-                    <span className="text-xs text-cyan-400 font-tek font-bold">x</span>
+                    <span className="text-xs text-[#0066cc] dark:text-cyan-400 font-bold">x</span>
                   </div>
                 </div>
                 <input
                   type="range"
                   min="0.5"
-                  max="30"
+                  max="25"
                   step="0.5"
-                  value={Math.min(30, formData.tamingMult)}
+                  value={Math.min(25, formData.tamingMult)}
                   onChange={(e) => setFormData(prev => ({ ...prev, tamingMult: parseFloat(e.target.value) }))}
-                  className="w-full accent-cyan-400 cursor-pointer"
+                  className="w-full accent-[#0071e3]"
                 />
               </div>
 
-              {/* Food Drain Multiplier */}
-              <div className="bg-[#050b14] border border-cyan-500/20 rounded-xl p-3.5 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-amber-400" />
-                    <div>
-                      <div className="text-xs font-hud font-bold text-white">DinoCharacterFoodDrainMultiplier</div>
-                      <div className="text-[10px] text-slate-400">Controls how fast wild dinos get hungry. Directly affects starve timer.</div>
+              {/* Breeding Multipliers */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="bg-[#f5f5f7] dark:bg-[#050b14] border border-[#e6e6e8] dark:border-cyan-500/20 rounded-2xl p-3.5 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-[#1d1d1f] dark:text-white">
+                      <Egg className="w-3.5 h-3.5 text-[#34c759] dark:text-emerald-400" />
+                      <span>EggHatchSpeed</span>
+                    </div>
+                    <div className="flex items-center gap-1 bg-white dark:bg-[#091424] border border-[#e6e6e8] dark:border-cyan-500/30 rounded-xl px-2 py-0.5">
+                      <input
+                        type="number"
+                        step="0.5"
+                        min="0.1"
+                        max="100"
+                        value={formData.eggHatchMult}
+                        onChange={(e) => setFormData(prev => ({ ...prev, eggHatchMult: Math.max(0.1, parseFloat(e.target.value) || 1) }))}
+                        className="w-12 bg-transparent text-xs font-semibold text-[#0066cc] dark:text-cyan-300 focus:outline-none text-right"
+                      />
+                      <span className="text-xs text-[#0066cc] dark:text-cyan-400 font-bold">x</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      step="0.1"
-                      min="0.1"
-                      max="10"
-                      value={formData.dinoFoodDrainMult || 1.0}
-                      onChange={(e) => setFormData(prev => ({ ...prev, dinoFoodDrainMult: Math.max(0.1, parseFloat(e.target.value) || 1) }))}
-                      className="w-18 bg-[#091424] border border-amber-500/40 rounded px-2 py-1 text-xs font-tek font-bold text-amber-300 text-right focus:outline-none focus:border-amber-400"
-                    />
-                    <span className="text-xs text-amber-400 font-tek font-bold">x</span>
-                  </div>
+                  <div className="text-[10px] text-[#707070] dark:text-slate-400">Incubation speed acceleration</div>
                 </div>
-                <input
-                  type="range"
-                  min="0.2"
-                  max="5"
-                  step="0.1"
-                  value={Math.min(5, formData.dinoFoodDrainMult || 1.0)}
-                  onChange={(e) => setFormData(prev => ({ ...prev, dinoFoodDrainMult: parseFloat(e.target.value) }))}
-                  className="w-full accent-amber-400 cursor-pointer"
-                />
-              </div>
 
-              {/* Breeding: Egg Hatch Speed Multiplier */}
-              <div className="bg-[#050b14] border border-cyan-500/20 rounded-xl p-3.5 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Egg className="w-4 h-4 text-emerald-400" />
-                    <div>
-                      <div className="text-xs font-hud font-bold text-white">EggHatchSpeedMultiplier</div>
-                      <div className="text-[10px] text-slate-400">Accelerates egg incubation & mammal gestation countdowns.</div>
+                <div className="bg-[#f5f5f7] dark:bg-[#050b14] border border-[#e6e6e8] dark:border-cyan-500/20 rounded-2xl p-3.5 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-[#1d1d1f] dark:text-white">
+                      <Heart className="w-3.5 h-3.5 text-[#ff2d55] dark:text-rose-400" />
+                      <span>BabyMatureSpeed</span>
+                    </div>
+                    <div className="flex items-center gap-1 bg-white dark:bg-[#091424] border border-[#e6e6e8] dark:border-cyan-500/30 rounded-xl px-2 py-0.5">
+                      <input
+                        type="number"
+                        step="0.5"
+                        min="0.1"
+                        max="100"
+                        value={formData.babyMatureMult}
+                        onChange={(e) => setFormData(prev => ({ ...prev, babyMatureMult: Math.max(0.1, parseFloat(e.target.value) || 1) }))}
+                        className="w-12 bg-transparent text-xs font-semibold text-[#0066cc] dark:text-cyan-300 focus:outline-none text-right"
+                      />
+                      <span className="text-xs text-[#0066cc] dark:text-cyan-400 font-bold">x</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      step="0.5"
-                      min="0.1"
-                      max="100"
-                      value={formData.eggHatchMult}
-                      onChange={(e) => setFormData(prev => ({ ...prev, eggHatchMult: Math.max(0.1, parseFloat(e.target.value) || 1) }))}
-                      className="w-18 bg-[#091424] border border-emerald-500/40 rounded px-2 py-1 text-xs font-tek font-bold text-emerald-300 text-right focus:outline-none focus:border-emerald-400"
-                    />
-                    <span className="text-xs text-emerald-400 font-tek font-bold">x</span>
-                  </div>
+                  <div className="text-[10px] text-[#707070] dark:text-slate-400">Maturation growth rate multiplier</div>
                 </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="50"
-                  step="1"
-                  value={Math.min(50, formData.eggHatchMult)}
-                  onChange={(e) => setFormData(prev => ({ ...prev, eggHatchMult: parseFloat(e.target.value) }))}
-                  className="w-full accent-emerald-400 cursor-pointer"
-                />
               </div>
 
-              {/* Breeding: Baby Mature Speed Multiplier */}
-              <div className="bg-[#050b14] border border-cyan-500/20 rounded-xl p-3.5 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Heart className="w-4 h-4 text-rose-400" />
-                    <div>
-                      <div className="text-xs font-hud font-bold text-white">BabyMatureSpeedMultiplier</div>
-                      <div className="text-[10px] text-slate-400">Accelerates baby maturation phase (Baby → Juvenile → Adolescent → Adult).</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <input
-                      type="number"
-                      step="0.5"
-                      min="0.1"
-                      max="100"
-                      value={formData.babyMatureMult}
-                      onChange={(e) => setFormData(prev => ({ ...prev, babyMatureMult: Math.max(0.1, parseFloat(e.target.value) || 1) }))}
-                      className="w-18 bg-[#091424] border border-rose-500/40 rounded px-2 py-1 text-xs font-tek font-bold text-rose-300 text-right focus:outline-none focus:border-rose-400"
-                    />
-                    <span className="text-xs text-rose-400 font-tek font-bold">x</span>
-                  </div>
-                </div>
-                <input
-                  type="range"
-                  min="1"
-                  max="50"
-                  step="1"
-                  value={Math.min(50, formData.babyMatureMult)}
-                  onChange={(e) => setFormData(prev => ({ ...prev, babyMatureMult: parseFloat(e.target.value) }))}
-                  className="w-full accent-rose-400 cursor-pointer"
-                />
-              </div>
-
-              {/* Mating Interval & Harvest & XP in 3 Columns */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="bg-[#050b14] border border-cyan-500/20 rounded-xl p-3 space-y-1">
-                  <div className="text-[11px] font-hud font-bold text-white">Mating Interval Mult</div>
-                  <div className="text-[9px] text-slate-400">Cooldown reduction between breedings</div>
-                  <div className="flex items-center gap-1 pt-1">
-                    <input
-                      type="number"
-                      step="0.5"
-                      min="0.1"
-                      max="100"
-                      value={formData.matingIntervalMult}
-                      onChange={(e) => setFormData(prev => ({ ...prev, matingIntervalMult: Math.max(0.1, parseFloat(e.target.value) || 1) }))}
-                      className="w-full bg-[#091424] border border-cyan-500/30 rounded px-2 py-1 text-xs font-tek text-cyan-300 focus:outline-none"
-                    />
-                    <span className="text-xs text-cyan-400 font-tek font-bold">x</span>
-                  </div>
-                </div>
-
-                <div className="bg-[#050b14] border border-cyan-500/20 rounded-xl p-3 space-y-1">
-                  <div className="text-[11px] font-hud font-bold text-white">Harvest Amount Mult</div>
-                  <div className="text-[9px] text-slate-400">Metal, gunpowder & resource yield</div>
+              {/* Harvest & XP */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="bg-[#f5f5f7] dark:bg-[#050b14] border border-[#e6e6e8] dark:border-cyan-500/20 rounded-2xl p-3.5 space-y-1">
+                  <div className="text-[11px] font-semibold text-[#1d1d1f] dark:text-white">HarvestAmountMultiplier</div>
+                  <div className="text-[9px] text-[#707070] dark:text-slate-400">Metal, wood, stone per node yield</div>
                   <div className="flex items-center gap-1 pt-1">
                     <input
                       type="number"
@@ -351,15 +278,15 @@ export const CustomRatesModal: React.FC<CustomRatesModalProps> = ({
                       max="100"
                       value={formData.harvestMult}
                       onChange={(e) => setFormData(prev => ({ ...prev, harvestMult: Math.max(0.1, parseFloat(e.target.value) || 1) }))}
-                      className="w-full bg-[#091424] border border-cyan-500/30 rounded px-2 py-1 text-xs font-tek text-cyan-300 focus:outline-none"
+                      className="w-full bg-white dark:bg-[#091424] border border-[#e6e6e8] dark:border-cyan-500/30 rounded-xl px-2 py-1 text-xs font-semibold text-[#0066cc] dark:text-cyan-300 focus:outline-none"
                     />
-                    <span className="text-xs text-cyan-400 font-tek font-bold">x</span>
+                    <span className="text-xs text-[#0066cc] dark:text-cyan-400 font-bold">x</span>
                   </div>
                 </div>
 
-                <div className="bg-[#050b14] border border-cyan-500/20 rounded-xl p-3 space-y-1">
-                  <div className="text-[11px] font-hud font-bold text-white">XP Multiplier</div>
-                  <div className="text-[9px] text-slate-400">Player & creature level up speed</div>
+                <div className="bg-[#f5f5f7] dark:bg-[#050b14] border border-[#e6e6e8] dark:border-cyan-500/20 rounded-2xl p-3.5 space-y-1">
+                  <div className="text-[11px] font-semibold text-[#1d1d1f] dark:text-white">XPMultiplier</div>
+                  <div className="text-[9px] text-[#707070] dark:text-slate-400">Player & creature level up speed</div>
                   <div className="flex items-center gap-1 pt-1">
                     <input
                       type="number"
@@ -368,17 +295,17 @@ export const CustomRatesModal: React.FC<CustomRatesModalProps> = ({
                       max="100"
                       value={formData.xpMult}
                       onChange={(e) => setFormData(prev => ({ ...prev, xpMult: Math.max(0.1, parseFloat(e.target.value) || 1) }))}
-                      className="w-full bg-[#091424] border border-cyan-500/30 rounded px-2 py-1 text-xs font-tek text-cyan-300 focus:outline-none"
+                      className="w-full bg-white dark:bg-[#091424] border border-[#e6e6e8] dark:border-cyan-500/30 rounded-xl px-2 py-1 text-xs font-semibold text-[#0066cc] dark:text-cyan-300 focus:outline-none"
                     />
-                    <span className="text-xs text-cyan-400 font-tek font-bold">x</span>
+                    <span className="text-xs text-[#0066cc] dark:text-cyan-400 font-bold">x</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Note on sync */}
-            <div className="p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/20 text-xs text-cyan-300/80 flex items-start gap-2.5">
-              <Info className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+            <div className="p-3.5 rounded-2xl bg-[#f5f5f7] dark:bg-cyan-950/30 border border-[#e6e6e8] dark:border-cyan-500/20 text-xs text-[#707070] dark:text-cyan-300/80 flex items-start gap-2.5">
+              <Info className="w-4 h-4 text-[#0066cc] dark:text-cyan-400 shrink-0 mt-0.5" />
               <span>
                 Applying these rates immediately recalculates all starve alarms, food quantities, kibble quotas, gestation times, and incubator requirements across the entire app. Your custom settings are saved persistently in local storage.
               </span>
@@ -386,10 +313,10 @@ export const CustomRatesModal: React.FC<CustomRatesModalProps> = ({
           </div>
 
           {/* Footer Controls */}
-          <div className="bg-[#050a16] border-t border-cyan-500/30 px-5 py-3.5 flex items-center justify-between gap-3">
+          <div className="bg-[#f5f5f7] dark:bg-[#050a16] border-t border-[#e6e6e8] dark:border-cyan-500/30 px-5 py-3.5 flex items-center justify-between gap-3">
             <button
               onClick={handleReset}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-hud transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-slate-800/80 border border-[#e6e6e8] dark:border-transparent text-[#707070] dark:text-slate-300 hover:text-[#1d1d1f] dark:hover:text-white text-xs font-medium transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Reset Defaults</span>
@@ -398,23 +325,23 @@ export const CustomRatesModal: React.FC<CustomRatesModalProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={onClose}
-                className="px-3 py-1.5 rounded-lg bg-[#0a1526] hover:bg-white/10 text-slate-300 text-xs font-hud transition-colors cursor-pointer"
+                className="apple-pill-outline px-4 py-1.5 text-xs cursor-pointer"
               >
                 Cancel
               </button>
 
               <button
                 onClick={handleApply}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-hud font-bold text-xs shadow-lg shadow-cyan-500/25 transition-all cursor-pointer"
+                className="apple-pill-blue px-4 py-1.5 text-xs flex items-center gap-1.5 cursor-pointer"
               >
                 {saveSuccess ? (
                   <>
-                    <Check className="w-4 h-4 text-emerald-300" />
+                    <Check className="w-3.5 h-3.5 text-white" />
                     <span>Applied!</span>
                   </>
                 ) : (
                   <>
-                    <Save className="w-4 h-4" />
+                    <Save className="w-3.5 h-3.5" />
                     <span>Apply Custom Rates</span>
                   </>
                 )}

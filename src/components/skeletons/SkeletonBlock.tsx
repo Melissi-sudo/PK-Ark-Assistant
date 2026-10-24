@@ -22,7 +22,7 @@ export const SkeletonBlock: React.FC<SkeletonBlockProps> = ({
   return (
     <div
       style={style}
-      className={`bg-[#0a1324]/80 border border-white/[0.05] shimmer-mask ${themeClass} ${rounded} ${className}`}
+      className={`bg-[#e6e6e8] dark:bg-[#1a2333] border border-[#d6d6d6] dark:border-white/[0.05] shimmer-mask ${themeClass} ${rounded} ${className}`}
       aria-hidden="true"
     />
   );

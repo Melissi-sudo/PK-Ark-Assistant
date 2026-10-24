@@ -7,6 +7,8 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { ThemeToggle } from './components/ThemeToggle';
 import { AuthModal } from './components/AuthModal';
 import { Navbar } from './components/Navbar';
 import { TamingCalculator } from './components/TamingCalculator';
@@ -40,6 +42,7 @@ import { SERVER_PRESETS, getStoredCustomPreset } from './data/presets';
 import { sendBrowserNotification, playTekAlarmSound } from './utils/audioAlert';
 import { Shield, ExternalLink, Zap, Keyboard, BookOpen, Flame, Beaker, Pickaxe, Sliders, Compass, Info, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { db, doc, setDoc, getDoc } from './lib/firebase';
 
 const LOCAL_STORAGE_TIMERS_KEY = 'ark_companion_active_timers_v1';
@@ -51,11 +54,26 @@ function MainAppContent() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const { theme, isDark } = useTheme();
+
   const isMinecraft = location.pathname.startsWith('/minecraft');
   const isTerraria = location.pathname.startsWith('/terraria');
   const isRust = location.pathname.startsWith('/rust');
-  const isLibrary = location.pathname === '/' || location.pathname === '/library';
+  const isLibrary = location.pathname === '/' || location.pathname === '/library' || location.pathname === '/about';
   const isArk = !isMinecraft && !isTerraria && !isRust && !isLibrary;
+
+  // Synchronize document classes:
+  // In Library & About, respect user's light/dark toggle.
+  // In game guides (ARK, Minecraft, Terraria, Rust), preserve authentic dark game themes.
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+    }
+  }, [isDark]);
 
   // Content navigation state for shimmer loading skeleton
   const [isPageTransitioning, setIsPageTransitioning] = useState<boolean>(false);
@@ -99,9 +117,22 @@ function MainAppContent() {
   const [isCustomRatesOpen, setIsCustomRatesOpen] = useState<boolean>(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const [isAboutModalOpen, setIsAboutModalOpen] = useState<boolean>(false);
+  const [isCookieModalOpen, setIsCookieModalOpen] = useState<boolean>(false);
+
+  // Listen for global open-cookie-modal trigger
+  useEffect(() => {
+    const handleOpenCookieModal = () => setIsCookieModalOpen(true);
+    window.addEventListener('open-cookie-modal', handleOpenCookieModal);
+    return () => window.removeEventListener('open-cookie-modal', handleOpenCookieModal);
+  }, []);
   
-  // Holographic Boot Intro Sequence
-  const [showIntro, setShowIntro] = useState<boolean>(true);
+  // Holographic Boot Intro Sequence (available on demand via intro button or Alt+I)
+  const [showIntro, setShowIntro] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem(SESSION_INTRO_KEY) === 'play';
+    }
+    return false;
+  });
 
   // Timers
   const [timers, setTimers] = useState<ActiveTimer[]>(() => {
@@ -308,8 +339,20 @@ function MainAppContent() {
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, [navigate]);
 
+  const containerThemeClass = isLibrary
+    ? isDark
+      ? 'bg-black text-[#f5f5f7]'
+      : 'bg-[#f8f9fa] text-[#111827]'
+    : isArk
+    ? 'bg-[#030712] text-slate-100'
+    : isMinecraft
+    ? 'bg-[#0a0d14] text-slate-100'
+    : isTerraria
+    ? 'bg-[#020905] text-slate-100'
+    : 'bg-[#070503] text-slate-100';
+
   return (
-    <div className="min-h-screen bg-[#040810] text-slate-100 flex flex-col bg-ark-grid relative">
+    <div className={`min-h-screen flex flex-col relative font-sans transition-colors duration-200 ${containerThemeClass}`}>
       {/* Synchronize page document title & scroll to top on path change */}
       <PageMetaSync />
 
@@ -350,8 +393,8 @@ function MainAppContent() {
         aria-label="PK Ultimate Guide Main Display"
         className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-6 focus:outline-none"
       >
-        {/* Tactical Hierarchical Breadcrumbs */}
-        <Breadcrumbs />
+        {/* Tactical Hierarchical Breadcrumbs (Shown on Game Guide pages) */}
+        {!isLibrary && <Breadcrumbs />}
 
         <div className="relative min-h-[550px]">
           <AnimatePresence mode="wait">
@@ -496,8 +539,9 @@ function MainAppContent() {
         )}
       </main>
 
-      {/* Bottom Action Bar */}
-      <aside className="sticky bottom-0 z-30 bg-[#060c18]/95 backdrop-blur-md border-t border-cyan-500/30 py-2 sm:py-2.5 px-3 sm:px-6 shadow-2xl pb-safe">
+      {/* Bottom Action Bar (Shown on Game Guide pages) */}
+      {!isLibrary && (
+        <aside className="sticky bottom-0 z-30 bg-[#060c18]/95 backdrop-blur-md border-t border-cyan-500/30 py-2 sm:py-2.5 px-3 sm:px-6 shadow-2xl pb-safe">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 text-xs font-hud">
           <div className="flex items-center gap-2 text-cyan-400 min-w-0">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
@@ -509,6 +553,10 @@ function MainAppContent() {
               ) : isTerraria ? (
                 <>
                   <span className="text-emerald-400 font-bold">TERRARIA 1.4.4+</span> • LABOR OF LOVE
+                </>
+              ) : isRust ? (
+                <>
+                  <span className="text-orange-400 font-bold">RUST PROTOCOL</span> • OXIDE TACTICAL
                 </>
               ) : isLibrary ? (
                 <>
@@ -529,6 +577,14 @@ function MainAppContent() {
                 className="mc-button px-3 py-1 text-[11px] sm:text-xs text-white uppercase font-bold flex items-center gap-1.5 cursor-pointer min-h-[34px]"
               >
                 <span>GAME MENU</span>
+              </Link>
+            ) : isRust ? (
+              <Link
+                to="/rust/raid"
+                className="px-2.5 py-1.5 bg-[#1f1008] hover:bg-orange-950/60 border border-orange-500/40 text-orange-300 rounded-lg text-[11px] sm:text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer min-h-[36px]"
+              >
+                <Flame className="w-3.5 h-3.5 text-orange-400" />
+                <span className="hidden sm:inline">RAID </span><span>MATH</span>
               </Link>
             ) : (
               <Link
@@ -555,9 +611,57 @@ function MainAppContent() {
           </div>
         </div>
       </aside>
+      )}
 
-      {/* Footer */}
-      <footer className="border-t border-slate-800/80 bg-[#040810] py-10 text-xs text-slate-400">
+      {/* Footer: Modern Studio Canvas for Library vs Tactical for Game Guides */}
+      {isLibrary ? (
+        <footer className="border-t border-gray-200 dark:border-[#2c2c2e] bg-white dark:bg-[#161617] py-12 text-xs text-[#4b5563] dark:text-[#9ca3af] font-sf-text transition-colors">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-6 border-b border-gray-200 dark:border-[#2c2c2e]">
+              <div className="space-y-1 text-center sm:text-left">
+                <div className="font-bold text-sm text-[#111827] dark:text-white font-sf-display">
+                  PK Ultimate Guide
+                </div>
+                <div>
+                  Crafted by <strong className="text-[#111827] dark:text-white font-bold">The Pitsoni Empire</strong> with decompiled engine mathematics.
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <ThemeToggle variant="segmented" />
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3 flex-wrap justify-center font-medium">
+                <Link to="/about" className="text-[#0066cc] dark:text-[#2997ff] hover:underline font-semibold">Methodology</Link>
+                <span aria-hidden="true" className="text-gray-300 dark:text-gray-600">·</span>
+                <button 
+                  onClick={() => setIsCookieModalOpen(true)}
+                  className="hover:text-[#111827] dark:hover:text-white cursor-pointer"
+                >
+                  Cookies & Analytics
+                </button>
+                <span aria-hidden="true" className="text-gray-300 dark:text-gray-600">·</span>
+                <Link to="/taming" className="hover:text-[#111827] dark:hover:text-white">ARK Guide</Link>
+                <span aria-hidden="true" className="text-gray-300 dark:text-gray-600">·</span>
+                <Link to="/minecraft" className="hover:text-[#111827] dark:hover:text-white">Minecraft</Link>
+                <span aria-hidden="true" className="text-gray-300 dark:text-gray-600">·</span>
+                <Link to="/terraria" className="hover:text-[#111827] dark:hover:text-white">Terraria</Link>
+                <span aria-hidden="true" className="text-gray-300 dark:text-gray-600">·</span>
+                <Link to="/rust" className="hover:text-[#111827] dark:hover:text-white">Rust Tactical</Link>
+                <span aria-hidden="true" className="text-gray-300 dark:text-gray-600">·</span>
+                <a href="https://discord.gg/4ruEbqZSKT" target="_blank" rel="noopener noreferrer" className="hover:text-[#111827] dark:hover:text-white">Discord</a>
+              </div>
+
+              <div className="text-[#4b5563] dark:text-[#9ca3af] text-center sm:text-right font-medium">
+                © 2026 The Pitsoni Empire. All rights reserved.
+              </div>
+            </div>
+          </div>
+        </footer>
+      ) : (
+        <footer className="border-t border-slate-800/80 bg-[#040810] py-10 text-xs text-slate-400">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
           {/* Top Row: Brand & Verification Methodology Banner */}
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 pb-6 border-b border-white/[0.06]">
@@ -631,6 +735,15 @@ function MainAppContent() {
                 <Keyboard className="w-3.5 h-3.5" />
                 <span>Shortcuts [?]</span>
               </button>
+
+              <button
+                onClick={() => setIsCookieModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#091322] hover:bg-cyan-950/60 border border-cyan-500/30 rounded-lg text-cyan-300 font-hud text-xs transition-colors cursor-pointer"
+                title="Manage Cookie & Analytics Preferences"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Cookies</span>
+              </button>
             </div>
 
             {/* Social Channels: TikTok & Discord */}
@@ -643,7 +756,9 @@ function MainAppContent() {
                 className="flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-pink-500/15 via-rose-500/15 to-purple-500/15 hover:from-pink-500/25 hover:to-purple-500/25 border border-pink-500/40 hover:border-pink-400 rounded-lg text-pink-300 font-hud font-bold text-xs transition-all shadow-md shadow-pink-500/10 cursor-pointer"
                 title="Follow PK Guides on TikTok (@pkguides)"
               >
-                <span className="text-pink-400 font-bold text-sm leading-none">♪</span>
+                <svg className="w-3.5 h-3.5 fill-current text-[#ff0050]" viewBox="0 0 24 24">
+                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 1 1-5.2-1.74 2.89 2.89 0 0 1 2.31-2.23V8.2a6.34 6.34 0 0 0-5.12 6.13A6.34 6.34 0 0 0 10.7 20.67a6.34 6.34 0 0 0 6.33-6.33V8.8a8.28 8.28 0 0 0 4.84 1.54V6.89a4.85 4.85 0 0 1-2.28-.2z"/>
+                </svg>
                 <span>TikTok @pkguides</span>
                 <ExternalLink className="w-3 h-3 text-pink-400/80" />
               </a>
@@ -666,6 +781,7 @@ function MainAppContent() {
           </div>
         </div>
       </footer>
+      )}
 
       {/* Modals & Navigation Drawers */}
       <CustomRatesModal
@@ -704,16 +820,23 @@ function MainAppContent() {
         isOpen={isQuickJumpOpen}
         onClose={() => setIsQuickJumpOpen(false)}
       />
+
+      <CookieConsentBanner
+        forceOpen={isCookieModalOpen}
+        onCloseForceOpen={() => setIsCookieModalOpen(false)}
+      />
     </div>
   );
 }
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <MainAppContent />
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <MainAppContent />
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
